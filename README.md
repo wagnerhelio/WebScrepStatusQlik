@@ -47,7 +47,12 @@ execute para obter os arquivos do monitoramento de logs.
 ```bash
 python .\statusqlik.py 
 ``` 
-para enviar via Whats App os logs.
+## para enviar via Whats App os logs.
+
+Siga os passos de configuração do Evolution API
+https://doc.evolution-api.com/v1/pt/get-started/introduction
+
 ```bash
 python .\send_statusqlik_evolution.py
 ```
+![Diagrama do Projeto](WebScrep_QMC.drawio.png)
