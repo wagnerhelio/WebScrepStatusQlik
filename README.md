@@ -55,4 +55,4 @@ https://doc.evolution-api.com/v1/pt/get-started/introduction
 ```bash
 python .\send_statusqlik_evolution.py
 ```
-![Diagrama do Projeto](WebScrep_QMC.drawio.png)
+![WebScrep_QMC.drawio](WebScrep_QMC.drawio.png)
