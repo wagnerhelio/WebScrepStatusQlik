@@ -24,14 +24,6 @@ git clone https://github.com/wagnerhelio/WebScrepStatusQlik.git
 ```
 
 ```bash
-pip install uv
-```
-
-```bash
-uv venv -p 3.12
-```
-
-```bash
 python -m venv venv
 ```
 
@@ -43,17 +35,19 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
 .\.venv\Scripts\Activate
 ```
 
-pip freeze > requirements.txt
-
-
-3. Instale as dependências usando pip:
 ```bash
 pip install -r requirements.txt
 ```
-3. Instale as dependências usando uv:
-```bash
-uv pip install -r requirements.txt
-```
-
 Baixe o WebDriver compativel com seu Google Chrome:
 https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/137.0.7151.69/win64/chromedriver-win64.zip
+
+configure o arquivo .env_exemple renomeando para .env
+
+execute para obter os arquivos do monitoramento de logs.
+```bash
+python .\statusqlik.py 
+``` 
+para enviar via Whats App os logs.
+```bash
+python .\send_statusqlik_evolution.py
+```

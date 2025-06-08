@@ -1,6 +1,6 @@
 import os
 import time
-import csv
+import pandas as pd
 from datetime import datetime, date
 from dotenv import load_dotenv
 from selenium import webdriver
@@ -11,6 +11,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 from colorama import init, Fore, Style
+from xhtml2pdf import pisa
+from jinja2 import Environment, FileSystemLoader
 
 init(autoreset=True)
 load_dotenv()
@@ -29,7 +31,7 @@ status_map = {
     "icon-qmc-task-finishedfail": "Failed",
     "icon-qmc-task-finishedqueued": "Queued",
     "icon-qmc-task-finishedneverstarted": "Never started",
-    "icon-qmc-task-finishedstarted": "Started",
+    "icon-qmc-task-started": "Started",
     "icon-qmc-task-finishedtriggered": "Triggered",
     "icon-qmc-task-abort-initiated": "Abort initiated",
     "icon-qmc-task-aborting": "Aborting",
@@ -71,7 +73,7 @@ def coletar_status(nome_sufixo, url_login, url_tasks):
     options.add_argument("--start-maximized")
     options.add_argument("--incognito")
     options.add_experimental_option("prefs", {
-        "download.default_directory": os.path.abspath("logs_qmc")
+        "download.default_directory": os.path.abspath("errorlogs_qmc"),
     })
     driver = webdriver.Chrome(service=Service(CAMINHO_CHROMEDRIVER), options=options)
 
@@ -121,38 +123,72 @@ def coletar_status(nome_sufixo, url_login, url_tasks):
                     print(f"\n⚠️ Tentando baixar log da tarefa '{nome}'...")
                     driver.execute_script("arguments[0].scrollIntoView({behavior: 'auto', block: 'center'});", linha)
                     time.sleep(0.5)
+                    linha.click()
+
+                    # Espera até que a linha fique com a classe "row row-selected"
+                    WebDriverWait(driver, 5).until(lambda d: "row-selected" in linha.get_attribute("class"))
+                    print(f"✅ Linha '{nome}' marcada como selecionada.")
+                    time.sleep(2)
+                    # Clica no botão de log
                     icone_info = colunas[4].find_element(By.CSS_SELECTOR, "i.icon-qmc-info")
                     if esperar_popover_abrir(icone_info):
-                        print(f"✅ Popover aberto para '{nome}'. Procurando botão de download...")
+                        print(f"✅ Log aberto para '{nome}'. Procurando botão de download...")
                         botao_log = WebDriverWait(driver, 10).until(
                             EC.element_to_be_clickable((By.XPATH, "//div[text()='Download script log']"))
                         )
                         botao_log.click()
                         print(f"📥 Log da tarefa '{nome}' baixado com sucesso.")
-                        time.sleep(2)
-                        
-                        # Renomeia o último .tmp baixado para o nome da tarefa
-                        download_dir = os.path.abspath("logs_qmc")
-                        arquivos_tmp = [f for f in os.listdir(download_dir) if f.endswith(".tmp")]
-                        if arquivos_tmp:
-                            mais_recente = max(arquivos_tmp, key=lambda x: os.path.getctime(os.path.join(download_dir, x)))
-                            caminho_antigo = os.path.join(download_dir, mais_recente)
-                            caminho_novo = os.path.join(download_dir, f"{nome}.log")
-                            os.rename(caminho_antigo, caminho_novo)
-                            print(f"📄 Log renomeado para: {caminho_novo}")
+                        time.sleep(5)
+                        download_dir = os.path.abspath("errorlogs_qmc")
+
+                        # Aguarda até 10s pelo novo arquivo .tmp
+                        tmp_encontrado = None
+                        for _ in range(10):
+                            arquivos = [f for f in os.listdir(download_dir) if f.endswith(".tmp")]
+                            if arquivos:
+                                tmp_encontrado = max(arquivos, key=lambda f: os.path.getctime(os.path.join(download_dir, f)))
+                                break
+                            time.sleep(1)
+
+                        if tmp_encontrado:
+                            caminho_antigo = os.path.join(download_dir, tmp_encontrado)
+                            caminho_novo = os.path.join(download_dir, f"{nome}.txt")
                             try:
-                                os.remove(caminho_antigo)
-                                print(f"🧹 Arquivo temporário removido: {caminho_antigo}")
+                                os.rename(caminho_antigo, caminho_novo)
+                                print(f"📄 Log renomeado para: {caminho_novo}")
+                                # Clica no botão Start após garantir que está habilitado
+                                try:
+                                    WebDriverWait(driver, 10).until(
+                                        lambda d: d.find_element(By.ID, "qmc.actionbar.task.start").find_element(By.TAG_NAME, "button").is_enabled()
+                                    )
+                                    start_button = driver.find_element(By.ID, "qmc.actionbar.task.start").find_element(By.TAG_NAME, "button")
+                                    driver.execute_script("arguments[0].click();", start_button)
+                                    time.sleep(5)
+                                    print(f"▶️ Tarefa '{nome}' foi reiniciada com sucesso.")
+                                except Exception as e:
+                                    print(f"⚠️ Erro ao tentar clicar no botão Start da tarefa '{nome}': {e}")
                             except Exception as e:
-                                print(f"⚠️ Erro ao remover .tmp: {e}")
+                                print(f"⚠️ Erro ao renomear: {e}")
                         else:
                             print("⚠️ Nenhum arquivo .tmp encontrado para renomear.")
                     else:
-                        print(f"⏱️ Timeout: popover não abriu para '{nome}'")
+                        print(f"⏱️ Timeout: Error log não abriu para '{nome}'")
             except Exception as e:
-                print(f"⚠️ Erro ao processar linha: {e}")
+                print(f"⚠️ Erro ao tentar baixar o log '{nome}'")
+                # Clica no botão Start após garantir que está habilitado
+                try:
+                    # Aguarda até o botão Start estar habilitado
+                    WebDriverWait(driver, 10).until(
+                        lambda d: d.find_element(By.ID, "qmc.actionbar.task.start").find_element(By.TAG_NAME, "button").is_enabled()
+                    )
+                    start_button = driver.find_element(By.ID, "qmc.actionbar.task.start").find_element(By.TAG_NAME, "button")
+                    driver.execute_script("arguments[0].click();", start_button)
+                    
+                    time.sleep(5)
+                    print(f"▶️ Tarefa '{nome}' foi reiniciada com sucesso.")
+                except Exception as e:
+                    print(f"⚠️ Erro ao tentar clicar no botão Start da tarefa '{nome}': {e}")
 
-            
         print(f"\n📋 Tarefas no QMC '{nome_sufixo}':")
         for status, tarefas in sorted(tarefas_por_status.items()):
             print(colorir(status, f"\n🔸 Status: {status} ({len(tarefas)} tarefa(s))"))
@@ -163,21 +199,28 @@ def coletar_status(nome_sufixo, url_login, url_tasks):
         for status, tarefas in sorted(tarefas_por_status.items()):
             print(colorir(status, f" - {status}: {len(tarefas)}"))
 
-        nome_arquivo = f"status_qlik_{nome_sufixo}_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
-        with open(nome_arquivo, "w", newline="", encoding="utf-8") as f:
-            writer = csv.writer(f)
-            writer.writerow(["Nome da Tarefa", "Status", "Última Execução"])
-            for tarefas in tarefas_por_status.values():
-                for registro in tarefas:
-                    writer.writerow(registro)
+        # Geração de PDF ao final
+        registros = [tarefa for tarefas in tarefas_por_status.values() for tarefa in tarefas]
+        nome_arquivo = f"status_qlik_{nome_sufixo}_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.pdf"
+        caminho_pdf = os.path.join("tasks_qmc", nome_arquivo)
 
-        print(f"\n✅ Dados exportados para: {nome_arquivo}")
+        env = Environment(loader=FileSystemLoader("."))
+        template = env.get_template("template.html")
+        html_renderizado = template.render(
+            nome_sufixo=nome_sufixo,
+            tarefas=registros
+        )
+
+        with open(caminho_pdf, "wb") as saida_pdf:
+            pisa.CreatePDF(html_renderizado, dest=saida_pdf)
+
+        print(f"\n✅ PDF gerado com xhtml2pdf: {caminho_pdf}")
+
     finally:
         driver.quit()
 
-# Garante que pasta existe
-os.makedirs("logs_qmc", exist_ok=True)
+os.makedirs("errorlogs_qmc", exist_ok=True)
+os.makedirs("tasks_qmc", exist_ok=True)
 
-# Executa
 for qmc in QMCs:
     coletar_status(qmc["nome"], qmc["url_login"], qmc["url_tasks"])

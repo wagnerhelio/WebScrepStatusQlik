@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Status das Tarefas - {{ nome_sufixo|capitalize }}</title>
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 2cm;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 24px;
+            margin: 20px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            table-layout: fixed;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 4px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background-color: #f0f0f0;
+        }
+
+        td {
+            overflow: hidden;
+        }
+
+        .Success { background-color: #d4edda; }
+        .Failed, .Error { background-color: #f8d7da; }
+        .Em_rota_de_atualização { background-color: #d1ecf1; }
+        .Outros { background-color: #fff3cd; }
+    </style>
+</head>
+<body>
+    <h1>Status das Tarefas - {{ nome_sufixo|capitalize }}</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 65%;">Nome da Tarefa</th>
+                <th style="width: 15%;">Status</th>
+                <th style="width: 20%;">Última Execução</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for nome, status, execucao in tarefas %}
+            <tr class="{{ status.replace(' ', '_') }}">
+                <td>{{ nome }}</td>
+                <td>{{ status }}</td>
+                <td>{{ execucao }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
