@@ -33,6 +33,7 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
 
 ```bash
 .\.venv\Scripts\Activate
+.\venv\Scripts\Activate
 ```
 
 ```bash
