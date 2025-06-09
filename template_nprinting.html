@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Status das Tarefas - {{ nome_sufixo|capitalize }}</title>
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 2cm;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 24px;
+            margin: 20px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+            table-layout: fixed;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 4px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background-color: #f0f0f0;
+        }
+
+        td {
+            overflow: hidden;
+            word-wrap: break-word;
+        }
+
+        .Concluída { background-color: #d4edda; }       /* Verde claro */
+        .Falha { background-color: #f8d7da; }           /* Vermelho claro */
+        .Aviso { background-color: #fff3cd; }           /* Amarelo claro */
+        .Outros { background-color: #e2e3e5; }          /* Cinza claro */
+    </style>
+</head>
+<body>
+    <h1>Status das Tarefas - {{ nome_sufixo|capitalize }}</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 30%;">Nome da Tarefa</th>
+                <th style="width: 15%;">Tipo</th>
+                <th style="width: 10%;">Status</th>
+                <th style="width: 10%;">Progresso</th>
+                <th style="width: 17.5%;">Criado</th>
+                <th style="width: 17.5%;">Última Atualização</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for nome, tipo, status, progresso, criado, atualizado in tarefas %}
+            <tr class="{{ status }}">
+                <td>{{ nome }}</td>
+                <td>{{ tipo }}</td>
+                <td>{{ status }}</td>
+                <td>{{ progresso }}</td>
+                <td>{{ criado }}</td>
+                <td>{{ atualizado }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

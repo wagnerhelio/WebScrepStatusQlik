@@ -22,8 +22,8 @@ senha = os.getenv("QLIK_SENHA")
 CAMINHO_CHROMEDRIVER = os.getenv("CHROMEDRIVER")
 
 QMCs = [
-    {"nome": "estatistica", "url_login": os.getenv("QLIK_QMC1"), "url_tasks": os.getenv("QLIK_TASK1")},
-    {"nome": "paineis", "url_login": os.getenv("QLIK_QMC2"), "url_tasks": os.getenv("QLIK_TASK2")}
+    {"nome": "estatistica", "url_login": os.getenv("QLIK_QMC_QAP"), "url_tasks": os.getenv("QLIK_TASK_QAP")},
+    {"nome": "paineis", "url_login": os.getenv("QLIK_QMC_HUB"), "url_tasks": os.getenv("QLIK_TASK_HUB")}
 ]
 
 status_map = {
@@ -73,7 +73,7 @@ def coletar_status(nome_sufixo, url_login, url_tasks):
     options.add_argument("--start-maximized")
     options.add_argument("--incognito")
     options.add_experimental_option("prefs", {
-        "download.default_directory": os.path.abspath("errorlogs_qmc"),
+        "download.default_directory": os.path.abspath("errorlogs"),
     })
     driver = webdriver.Chrome(service=Service(CAMINHO_CHROMEDRIVER), options=options)
 
@@ -139,7 +139,7 @@ def coletar_status(nome_sufixo, url_login, url_tasks):
                         botao_log.click()
                         print(f"📥 Log da tarefa '{nome}' baixado com sucesso.")
                         time.sleep(5)
-                        download_dir = os.path.abspath("errorlogs_qmc")
+                        download_dir = os.path.abspath("errorlogs")
 
                         # Aguarda até 10s pelo novo arquivo .tmp
                         tmp_encontrado = None
@@ -219,7 +219,7 @@ def coletar_status(nome_sufixo, url_login, url_tasks):
     finally:
         driver.quit()
 
-os.makedirs("errorlogs_qmc", exist_ok=True)
+os.makedirs("errorlogs", exist_ok=True)
 os.makedirs("tasks_qmc", exist_ok=True)
 
 for qmc in QMCs:
