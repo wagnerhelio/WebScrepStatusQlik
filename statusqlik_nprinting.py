@@ -1,6 +1,6 @@
 import os
 import time
-from datetime import datetime
+from datetime import datetime, date
 from dotenv import load_dotenv
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -8,17 +8,17 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException
-
+from colorama import init, Fore, Style
 from xhtml2pdf import pisa
 from jinja2 import Environment, FileSystemLoader
+from bs4 import BeautifulSoup
 
+init(autoreset=True)
 load_dotenv()
 
 email = os.getenv("QLIK_EMAIL")
 senha = os.getenv("QLIK_SENHA")
 CAMINHO_CHROMEDRIVER = os.getenv("CHROMEDRIVER")
-URL_NPRINT = os.getenv("QLIK_NPRINT_TASK")
 
 NPRINTINGs = [
     {"nome": "relatorios", "url_login": os.getenv("QLIK_NPRINT"), "url_tasks": os.getenv("QLIK_NPRINT_TASK")}
@@ -29,7 +29,7 @@ status_map = {
     "label label-success": "Concluída",
     "label label-warning": "Aviso",
     "label label-default": "Em fila",
-    "label label-info blink": "Em execução",
+    "label label-info blink": "Em execução"
 }
 
 cores = {
@@ -37,13 +37,11 @@ cores = {
     "Em execução": Fore.BLUE,
     "Em fila": Fore.BLUE,
     "Falha": Fore.RED,
-    "Falha": Fore.RED,
     "Aviso": Fore.YELLOW,
 }
 
 def colorir(status, texto):
     return cores.get(status, Fore.YELLOW) + texto + Style.RESET_ALL
-
 
 def coletar_status(nome_sufixo, url_login, url_tasks):
     print(f"\n🌐 Iniciando sessão em: {url_login}")
@@ -58,9 +56,10 @@ def coletar_status(nome_sufixo, url_login, url_tasks):
 
     try:
         driver.get(url_login)
-        time.sleep(2)
-        driver.find_element(By.ID, "username-input").send_keys(email)
-        campo_senha = driver.find_element(By.ID, "password-input")
+        wait = WebDriverWait(driver, 10)
+        campo_email = wait.until(EC.presence_of_element_located((By.ID, "email")))
+        campo_email.send_keys(email)
+        campo_senha = wait.until(EC.presence_of_element_located((By.ID, "password")))
         campo_senha.send_keys(senha)
         campo_senha.send_keys(Keys.ENTER)
         print("✅ Login enviado.")
@@ -68,30 +67,31 @@ def coletar_status(nome_sufixo, url_login, url_tasks):
 
         driver.get(url_tasks)
         print("📄 Carregando tarefas...")
-        time.sleep(6)
+        wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "table.table tbody tr.ng-scope")))
+        time.sleep(1)  # extra tempo para Angular finalizar renderização
 
-        linhas = driver.find_elements(By.CSS_SELECTOR, "table.table tbody tr")
         hoje = date.today()
         tarefas_por_status = {}
 
-        for linha in linhas:
+        linhas = driver.find_elements(By.CSS_SELECTOR, "table.table tbody tr.ng-scope")
+        for i in range(len(linhas)):
             try:
-                colunas = linha.find_elements(By.TAG_NAME, "tr")
-                if len(colunas) < 7:
+                linha = driver.find_elements(By.CSS_SELECTOR, "table.table tbody tr.ng-scope")[i]
+                colunas = linha.find_elements(By.TAG_NAME, "td")
+                if len(colunas) < 6:
                     continue
-                link_elem = colunas[0].find_element(By.TAG_NAME, "a")
-                nome = link_elem.text.strip()
-                href = link_elem.get_attribute("href")
-                id_tarefa = href.split("/")[-1]
-                url_log = f"{URL_BASE}/#/tasks/executions/{id_tarefa}"
+
+                nome = colunas[0].text.strip()
+                a_tag = colunas[0].find_element(By.TAG_NAME, "a")
+                href = a_tag.get_attribute("href")
                 tipo = colunas[1].text.strip()
-                status = colunas[2].text.strip()
-                classe_status = next((cls for cls in icone_status.get_attribute("class").split() if cls.startswith("icon-qmc-task")), "")
-                status = status_map.get(classe_status, "Outros")
+                status_texto = colunas[2].text.strip()
+                classe_status = colunas[2].find_element(By.TAG_NAME, "span").get_attribute("class")
+                status = status_map.get(classe_status.strip(), status_texto)
                 progresso = colunas[3].text.strip()
                 criado = colunas[4].text.strip()
-                atualizado = colunas[5].text.strip()             
-                        
+                atualizado = colunas[5].text.strip()
+
                 if status == "Concluída":
                     try:
                         data_execucao = datetime.strptime(criado[:16], "%Y-%m-%d %H:%M").date()
@@ -100,34 +100,42 @@ def coletar_status(nome_sufixo, url_login, url_tasks):
                     except:
                         status = "Em rota de atualização"
 
-                tarefas_por_status.setdefault(status, []).append([nome, status, criado])
+                tarefas_por_status.setdefault(status, []).append([
+                    nome, tipo, status, progresso, criado, atualizado
+                ])
 
-                # Baixar log se Failed
                 if status == "Falha":
                     print(f"\n⚠️ Tentando baixar log da tarefa '{nome}'...")
-                    href = a_tag.get_attribute("href")
-                    a_tag = linha.find_element(By.TAG_NAME, "a")
-                    driver.execute_script("arguments[0].scrollIntoView({behavior: 'auto', block: 'center'});", a_tag)
-                    a_tag.click()
-                    
-                    # Troca para nova aba aberta pelo link
+                    driver.execute_script("window.open(arguments[0]);", href)
                     driver.switch_to.window(driver.window_handles[-1])
-                    print(f"🔄 Mudando para a aba da tarefa '{nome}'...")
+                    time.sleep(3)
+
+                    soup = BeautifulSoup(driver.page_source, "html.parser")
+                    log_linhas = soup.select("table#executionsLogTable tbody tr")
+                    if log_linhas:
+                        log_path = f"errorlogs_nprinting/{nome}_log.txt"
+                        with open(log_path, "w", encoding="utf-8") as f:
+                            for linha_log in log_linhas:
+                                tds = linha_log.find_all("td")
+                                if len(tds) == 3:
+                                    f.write(f"[{tds[0].text.strip()}] {tds[1].text.strip()} - {tds[2].text.strip()}\n")
+                        print(f"📁 Log salvo: {log_path}")
+                    driver.close()
+                    driver.switch_to.window(driver.window_handles[0])
 
             except Exception as e:
-                print(f"⚠️ Erro ao tentar baixar o log '{nome}'")
-                
+                print(f"⚠️ Erro ao tentar processar linha {i}: {e}")
+
         print(f"\n📋 Tarefas no QMC '{nome_sufixo}':")
         for status, tarefas in sorted(tarefas_por_status.items()):
             print(colorir(status, f"\n🔸 Status: {status} ({len(tarefas)} tarefa(s))"))
-            for nome, _, data in tarefas:
-                print(f" - {nome} | Última Execução: {data}")
+            for tarefa in tarefas:
+                print(f" - {tarefa[0]} | Última Execução: {tarefa[4]}")
 
         print("\n📊 Resumo:")
         for status, tarefas in sorted(tarefas_por_status.items()):
             print(colorir(status, f" - {status}: {len(tarefas)}"))
 
-        # Geração de PDF ao final
         registros = [tarefa for tarefas in tarefas_por_status.values() for tarefa in tarefas]
         nome_arquivo = f"status_nprinting_{nome_sufixo}_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.pdf"
         caminho_pdf = os.path.join("tasks_nprinting", nome_arquivo)
@@ -146,7 +154,8 @@ def coletar_status(nome_sufixo, url_login, url_tasks):
 
     finally:
         driver.quit()
-        
+
+# Execução
 os.makedirs("errorlogs_nprinting", exist_ok=True)
 os.makedirs("tasks_nprinting", exist_ok=True)
 
