@@ -13,12 +13,14 @@ evo_instance_token = os.getenv("EVOLUTION_INSTANCE_ID")
 evo_destino = os.getenv("EVO_DESTINO")  # Ex: 5562992422540
 
 # Pastas de origem
+pasta_compartilhada = r"\\relatorios\NPrintingServer\Relatorios"
+
 pastas_envio = [
     "errorlogs",
     "errorlogs_nprinting",
     "tasks_nprinting",
     "tasks_qmc",
-    r"\\relatorios\NPrintingServer"
+    pasta_compartilhada
 ]
 
 # Inicializa cliente Evolution
