@@ -10,7 +10,6 @@ load_dotenv()
 evo_api_token = os.getenv("EVOLUTION_API_TOKEN")
 evo_instance_id = os.getenv("EVOLUTION_INSTANCE_NAME")
 evo_instance_token = os.getenv("EVOLUTION_INSTANCE_ID")
-evo_destino = os.getenv("EVO_DESTINO")  # Ex: 5562992422540
 evo_grupo = os.getenv("EVO_DESTINO_GRUPO")  # Grupo padrão
 
 # Pastas de origem
@@ -30,7 +29,7 @@ client = EvolutionClient(
 )
 
 # Mensagem inicial para ambos
-for destino in [evo_destino, evo_grupo]:
+for destino in [evo_grupo]:
     try:
         client.messages.send_text(
             evo_instance_id,
@@ -85,7 +84,7 @@ for pasta in pastas_envio:
 
     for arquivo in arquivos:
         try:
-            for destino in [evo_destino, evo_grupo]:
+            for destino in [evo_grupo]:
                 enviar_arquivo_para(destino, arquivo)
         except Exception as e:
             print(f"❌ Erro ao enviar {arquivo}: {e}")

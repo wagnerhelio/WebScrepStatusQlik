@@ -11,10 +11,10 @@ evo_api_token = os.getenv("EVOLUTION_API_TOKEN")
 evo_instance_id = os.getenv("EVOLUTION_INSTANCE_NAME")
 evo_instance_token = os.getenv("EVOLUTION_INSTANCE_ID")
 evo_destino = os.getenv("EVO_DESTINO")  # Ex: 5562992422540
-evo_grupo = os.getenv("EVO_DESTINO_GRUPO")  # Grupo padrão
 
 # Pastas de origem
 pasta_compartilhada = r"\\relatorios\NPrintingServer\Relatorios"
+
 pastas_envio = [
     "errorlogs",
     "errorlogs_nprinting",
@@ -29,29 +29,24 @@ client = EvolutionClient(
     api_token=evo_api_token
 )
 
-# Mensagem inicial para ambos
-for destino in [evo_destino, evo_grupo]:
-    try:
-        client.messages.send_text(
-            evo_instance_id,
-            TextMessage(
-                number=destino,
-                text="📤 Enviando relatórios e logs atualizados."
-            ),
-            evo_instance_token
-        )
-        print(f"✅ Mensagem enviada para: {destino}")
-    except Exception as e:
-        print(f"❌ Erro ao enviar mensagem para {destino}: {e}")
+# Mensagem inicial
+client.messages.send_text(
+    evo_instance_id,
+    TextMessage(
+        number=evo_destino,
+        text="📤 Enviando relatórios e logs atualizados."
+    ),
+    evo_instance_token
+)
 
 # Função auxiliar para envio de arquivo
-def enviar_arquivo_para(destinatario, caminho_completo):
+def enviar_arquivo(caminho_completo):
     nome_arquivo = os.path.basename(caminho_completo)
     ext = os.path.splitext(nome_arquivo)[1].lower()
     mimetype = "application/pdf" if ext == ".pdf" else "text/plain"
 
     media_message = MediaMessage(
-        number=destinatario,
+        number=evo_destino,
         mediatype="document",
         mimetype=mimetype,
         caption=f"📎 {nome_arquivo}",
@@ -65,7 +60,7 @@ def enviar_arquivo_para(destinatario, caminho_completo):
         evo_instance_token,
         caminho_completo
     )
-    print(f"📨 Enviado para {destinatario}: {nome_arquivo} | Resultado: {response}")
+    print(f"📨 Enviado: {nome_arquivo} | Resultado: {response}")
 
 # Envio e limpeza das pastas
 for pasta in pastas_envio:
@@ -85,8 +80,7 @@ for pasta in pastas_envio:
 
     for arquivo in arquivos:
         try:
-            for destino in [evo_destino, evo_grupo]:
-                enviar_arquivo_para(destino, arquivo)
+            enviar_arquivo(arquivo)
         except Exception as e:
             print(f"❌ Erro ao enviar {arquivo}: {e}")
 

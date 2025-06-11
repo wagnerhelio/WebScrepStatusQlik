@@ -1,5 +1,6 @@
 import os
 import time
+import locale
 from datetime import datetime, date
 from dotenv import load_dotenv
 from selenium import webdriver
@@ -12,6 +13,15 @@ from colorama import init, Fore, Style
 from xhtml2pdf import pisa
 from jinja2 import Environment, FileSystemLoader
 from bs4 import BeautifulSoup
+
+# Define locale para parsing de datas em português
+try:
+    locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+except:
+    try:
+        locale.setlocale(locale.LC_TIME, 'pt_BR')
+    except:
+        print("⚠️ Locale 'pt_BR' não disponível. Datas podem não ser interpretadas corretamente.")
 
 init(autoreset=True)
 load_dotenv()
@@ -68,15 +78,14 @@ def coletar_status(nome_sufixo, url_login, url_tasks):
         driver.get(url_tasks)
         print("📄 Carregando tarefas...")
         wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "table.table tbody tr.ng-scope")))
-        time.sleep(1)  # extra tempo para Angular finalizar renderização
+        time.sleep(1)
 
         hoje = date.today()
         tarefas_por_status = {}
 
         linhas = driver.find_elements(By.CSS_SELECTOR, "table.table tbody tr.ng-scope")
-        for i in range(len(linhas)):
+        for linha in linhas:
             try:
-                linha = driver.find_elements(By.CSS_SELECTOR, "table.table tbody tr.ng-scope")[i]
                 colunas = linha.find_elements(By.TAG_NAME, "td")
                 if len(colunas) < 6:
                     continue
@@ -92,13 +101,14 @@ def coletar_status(nome_sufixo, url_login, url_tasks):
                 criado = colunas[4].text.strip()
                 atualizado = colunas[5].text.strip()
 
-                if status == "Concluída":
-                    try:
-                        data_execucao = datetime.strptime(criado[:16], "%Y-%m-%d %H:%M").date()
-                        if data_execucao != hoje:
-                            status = "Em rota de atualização"
-                    except:
-                        status = "Em rota de atualização"
+                try:
+                    data_execucao = datetime.strptime(criado, "%d de %B de %Y às %H:%M").date()
+                except Exception as e:
+                    print(f"⚠️ Erro ao converter data '{criado}': {e}")
+                    continue
+
+                if data_execucao != hoje:
+                    continue  # ignora tarefas que não são de hoje
 
                 tarefas_por_status.setdefault(status, []).append([
                     nome, tipo, status, progresso, criado, atualizado
@@ -124,7 +134,7 @@ def coletar_status(nome_sufixo, url_login, url_tasks):
                     driver.switch_to.window(driver.window_handles[0])
 
             except Exception as e:
-                print(f"⚠️ Erro ao tentar processar linha {i}: {e}")
+                print(f"⚠️ Erro ao processar linha: {e}")
 
         print(f"\n📋 Tarefas no QMC '{nome_sufixo}':")
         for status, tarefas in sorted(tarefas_por_status.items()):
@@ -137,7 +147,7 @@ def coletar_status(nome_sufixo, url_login, url_tasks):
             print(colorir(status, f" - {status}: {len(tarefas)}"))
 
         registros = [tarefa for tarefas in tarefas_por_status.values() for tarefa in tarefas]
-        nome_arquivo = f"status_nprinting_{nome_sufixo}_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.pdf"
+        nome_arquivo = f"status_nprinting_{nome_sufixo}_{hoje.strftime('%Y-%m-%d_%H-%M-%S')}.pdf"
         caminho_pdf = os.path.join("tasks_nprinting", nome_arquivo)
 
         env = Environment(loader=FileSystemLoader("."))
@@ -155,7 +165,7 @@ def coletar_status(nome_sufixo, url_login, url_tasks):
     finally:
         driver.quit()
 
-# Execução
+# Execução principal
 os.makedirs("errorlogs_nprinting", exist_ok=True)
 os.makedirs("tasks_nprinting", exist_ok=True)
 
