@@ -10,7 +10,7 @@ Gera relatórios em HTML e envia automaticamente.
 
 Suporte a envio via Evolution API para número individual, grupo ou múltiplos destinos.
 
-##🧰 Extensões Recomendadas (VSCode)
+## 🧰 Extensões Recomendadas (VSCode)
 ``` bash
 ms-python.vscode-python-envs
 ```
@@ -21,7 +21,7 @@ ms-python.vscode-python-envs
 - Google Chrome instalado
 - ChromeDriver compatível com a versão do seu navegador
 
-##⚙️ Dependências do Sistema
+## ⚙️ Dependências do Sistema
 Para usuários Windows:
 Baixe o Build Tools para compilar pacotes Python com dependências nativas:
 https://visualstudio.microsoft.com/visual-cpp-build-tools/
@@ -131,6 +131,7 @@ https://doc.evolution-api.com/v1/pt/get-started/introduction
 - Defina os destinos (número ou grupo com remoteJid)
 
 ## 🗂 Estrutura do Projeto
+```bash
 WEBSCREPSTATUSQLIK/
 ├── chromedriver/               # ChromeDriver compatível com sua versão
 ├── docker/                     # Arquivos para futura dockerização
@@ -151,6 +152,7 @@ WEBSCREPSTATUSQLIK/
 ├── statusqlik_qmc.py           # Coleta de status do QMC
 ├── template.html               # Template para relatório geral
 ├── template_nprinting.html     # Template específico para NPrinting
+``` 
 
 ## 🖼 Diagrama do Projeto
 
