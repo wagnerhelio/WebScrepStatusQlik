@@ -160,6 +160,7 @@ WEBSCREPSTATUSQLIK/
 
 ## 📬 Contato
 Contribuições, sugestões e correções são bem-vindas!
+Entre em contato wagner.helio@discente.ufg.br
 
 ## 📄 Licença
 Este projeto é licenciado sob os termos da MIT License – veja o arquivo LICENSE para mais detalhes.
