@@ -158,3 +158,30 @@ WEBSCREPSTATUSQLIK/
 
 ## 📬 Contato
 Contribuições, sugestões e correções são bem-vindas!
+
+## 📄 Licença
+Este projeto é licenciado sob os termos da MIT License – veja o arquivo LICENSE para mais detalhes.
+
+Você é livre para:
+
+- Usar, copiar, modificar e redistribuir este software para qualquer finalidade, inclusive comercial;
+
+- Incorporar este projeto em produtos próprios ou de terceiros.
+
+Com a condição de manter os créditos ao(s) autor(es) original(is).
+
+## 📚 Menção às Fontes e Créditos
+- Este projeto foi desenvolvido com base em:
+
+- Qlik Sense® – Ferramenta de Business Intelligence.
+
+- Qlik NPrinting® – Módulo de geração e distribuição de relatórios do Qlik.
+
+- Evolution API – Solução de integração com o WhatsApp via API.
+
+- Selenium – Framework de automação de navegação web.
+
+- pdfkit / WeasyPrint – Geração de PDF a partir de HTML.
+
+- Inspiração na comunidade de desenvolvedores do GitHub, Stack Overflow e fóruns técnicos diversos.
+
