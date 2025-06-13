@@ -24,10 +24,12 @@ def executar_envio_evolution():
     subprocess.run([python_exec, "send_statusqlik_evolution.py"])
 
 # Agenda diária
-schedule.every().day.at("12:02").do(executar_status_qmc)
-schedule.every().day.at("12:03").do(executar_status_nprinting)
-schedule.every().day.at("12:04").do(executar_envio_evolution)
-
+schedule.every().day.at("07:50").do(executar_status_qmc)
+schedule.every().day.at("07:55").do(executar_status_nprinting)
+schedule.every().day.at("08:00").do(executar_envio_evolution)
+schedule.every().day.at("17:50").do(executar_status_qmc)
+schedule.every().day.at("17:55").do(executar_status_nprinting)
+schedule.every().day.at("18:00").do(executar_envio_evolution)
 log("⏰ Agendador iniciado. Aguardando tarefas...")
 
 # Loop infinito
