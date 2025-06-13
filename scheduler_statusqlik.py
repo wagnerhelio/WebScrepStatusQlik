@@ -20,9 +20,9 @@ def executar_envio_evolution():
     subprocess.run(["python", "send_statusqlik_evolution.py"])
 
 # Agenda diária
-schedule.every().day.at("10:56").do(executar_status_qmc)
-schedule.every().day.at("10:58").do(executar_status_nprinting)
-schedule.every().day.at("11:00").do(executar_envio_evolution)
+schedule.every().day.at("07:45").do(executar_status_qmc)
+schedule.every().day.at("07:50").do(executar_status_nprinting)
+schedule.every().day.at("08:00").do(executar_envio_evolution)
 
 log("⏰ Agendador iniciado. Aguardando tarefas...")
 
