@@ -156,7 +156,7 @@ WEBSCREPSTATUSQLIK/
 
 ## 🖼 Diagrama do Projeto
 
-![WebScrep_QMC.drawio](img/WebScrep_QMC.drawio.png)
+![WebScrep_QMC.drawio](img/WebScrep_QMC.jpg)
 
 ## 📬 Contato
 Contribuições, sugestões e correções são bem-vindas!
