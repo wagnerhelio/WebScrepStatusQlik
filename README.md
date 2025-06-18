@@ -160,8 +160,12 @@ WEBSCREPSTATUSQLIK/
 
 ## 📬 Contato
 Contribuições, sugestões e correções são bem-vindas!
-Entre em contato wagner.helio@discente.ufg.br
-
+Entre em contato 
+Wagner Filho wagner.helio@discente.ufg.br
+Carlos Eduardo Miqui carlosmiqui@discente.ufg.br
+Pedro Koziel Diniz pedrokoziel@discente.ufg.br
+Marcos Vinicius Satil Medeiros marcos.medeiros@discente.ufg.br
+Hailton David Lemos haiilton@discente.ufg.br
 ## 📄 Licença
 Este projeto é licenciado sob os termos da MIT License – veja o arquivo LICENSE para mais detalhes.
 
