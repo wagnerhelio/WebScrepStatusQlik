@@ -1,0 +1,805 @@
+﻿2025-07-09 05:30:32      Execution started.
+2025-07-09 05:30:32      Qlik Sense Server Version     12.334.4
+2025-07-09 05:30:32      CPU Target                    x64
+2025-07-09 05:30:32      Operating System              Windows Server 2012 Standard  (64 bit edition)
+2025-07-09 05:30:32      Wow64 mode                    Not using Wow64
+2025-07-09 05:30:32      Language                      0416 português Portuguese
+2025-07-09 05:30:32      Country                       BRA Brasil Brazil
+2025-07-09 05:30:32      MDAC Version                  6.2.9200.16384
+2025-07-09 05:30:32      MDAC Full Install Version     6.2.9200.16384
+2025-07-09 05:30:32      PreferredCompression          2
+2025-07-09 05:30:32      EnableParallelReload          1
+2025-07-09 05:30:32      ParallelizeQvdLoads           1
+2025-07-09 05:30:32      AutoSaveAfterReload           0
+2025-07-09 05:30:32      BackupBeforeReload            0
+2025-07-09 05:30:32      EnableFlushLog                0
+2025-07-09 05:30:32      UserLogfileCharset            65001
+2025-07-09 05:30:32      OdbcLoginTimeout              -1
+2025-07-09 05:30:32      OdbcConnectionTimeout         -1
+2025-07-09 05:30:32      LongestPossibleLine           1048576
+2025-07-09 05:30:32      MaxCoreMask                   15
+2025-07-09 05:30:32      WebFileTimeout                0
+2025-07-09 05:30:32      WebFileUserAgent              Mozilla/5.0
+2025-07-09 05:30:32      DontUseInternetCache          1
+2025-07-09 05:30:32      ScriptWantsDbWrite            false
+2025-07-09 05:30:32      ScriptWantsExe                false
+2025-07-09 05:30:32      ICU_FOR_CHARACTER_CLASSIFICATION true
+2025-07-09 05:30:32      ICU_FOR_CODE_PAGES            true
+2025-07-09 05:30:32      ICU_FOR_COLLATION             true
+2025-07-09 05:30:32      ICU_FOR_LOCALE_INFO           true
+2025-07-09 05:30:32      ICU_FOR_SUPPORT_INFO          true
+2025-07-09 05:30:32      ICU_FOR_TIME_ZONE_INFO        true
+2025-07-09 05:30:32      LogFile CodePage Used:        65001
+2025-07-09 05:30:32      UseMemoryFillPattern          1
+2025-07-09 05:30:32      ScriptMode                    Standard (limits system access)
+2025-07-09 05:30:32      SequentialThreadCount         14
+2025-07-09 05:30:32      NumberOfCores (effective)     4
+2025-07-09 05:30:32      ReloadCodebase                Bnf
+2025-07-09 05:30:33      Reload ID                     96c6132d-5058-4dc9-9161-c071eea1bbea
+2025-07-09 05:30:33      Reload Executed By            UserDirectory=INTERNAL; UserId=sa_scheduler
+2025-07-09 05:30:33      Process Executing             Qlik Sense Server
+2025-07-09 05:30:33      Process ID                    4152
+2025-07-09 05:30:33      Grpc version                  5.0.0
+2025-07-09 05:30:33      Protobuf version              3.4.0
+2025-07-09 05:30:33 0002 SET ThousandSep='.'
+2025-07-09 05:30:33 0003 SET DecimalSep=','
+2025-07-09 05:30:33 0004 SET MoneyThousandSep='.'
+2025-07-09 05:30:33 0005 SET MoneyDecimalSep=','
+2025-07-09 05:30:33 0006 SET MoneyFormat='R$#.##0,00;-R$#.##0,00'
+2025-07-09 05:30:33 0007 SET TimeFormat='hh:mm:ss'
+2025-07-09 05:30:33 0008 SET DateFormat='DD/MM/YYYY'
+2025-07-09 05:30:33 0009 SET TimestampFormat='DD/MM/YYYY hh:mm:ss[.fff]'
+2025-07-09 05:30:33 0010 SET FirstWeekDay=6
+2025-07-09 05:30:33 0011 SET BrokenWeeks=1
+2025-07-09 05:30:33 0012 SET ReferenceDay=0
+2025-07-09 05:30:33 0013 SET FirstMonthOfYear=1
+2025-07-09 05:30:33 0014 SET CollationLocale='pt-BR'
+2025-07-09 05:30:33 0015 SET CreateSearchIndexOnReload=1
+2025-07-09 05:30:33 0016 SET MonthNames='jan;fev;mar;abr;mai;jun;jul;ago;set;out;nov;dez'
+2025-07-09 05:30:33 0017 SET LongMonthNames='janeiro;fevereiro;março;abril;maio;junho;julho;agosto;setembro;outubro;novembro;dezembro'
+2025-07-09 05:30:33 0018 SET DayNames='seg;ter;qua;qui;sex;sáb;dom'
+2025-07-09 05:30:33 0019 SET LongDayNames='segunda-feira;terça-feira;quarta-feira;quinta-feira;sexta-feira;sábado;domingo'
+2025-07-09 05:30:33 0020 SET NumericalAbbreviation='3:k;6:M;9:G;12:T;15:P;18:E;21:Z;24:Y;-3:m;-6:μ;-9:n;-12:p;-15:f;-18:a;-21:z;-24:y'
+2025-07-09 05:30:33 0023 MAX_DATA_ULTIMA_ATUALIZACAO:
+2025-07-09 05:30:33 0024 LOAD
+2025-07-09 05:30:33 0025     MAX(DATA_ULTIMA_ATUALIZACAO) AS MAX_DATA_ULTIMA_ATUALIZACAO
+2025-07-09 05:30:33 0026 FROM [lib://ETL/extract_diversos_ofc/E_RAI_OCORRENCIA.qvd] (qvd)
+2025-07-09 05:48:37      	1 fields found: MAX_DATA_ULTIMA_ATUALIZACAO, 
+2025-07-09 05:48:37      1 lines fetched
+2025-07-09 05:48:40 0028 LET vMAX_DATA_ULTIMA_ATUALIZACAO = Timestamp(Peek('MAX_DATA_ULTIMA_ATUALIZACAO', 0, 'MAX_DATA_ULTIMA_ATUALIZACAO'), 'YYYY-MM-DD hh:mm:ss.fff')
+2025-07-09 05:48:41 0030 TRACE MAX_DATA: 2025-07-08 04:02:26.830
+2025-07-09 05:48:41 0030 MAX_DATA: 2025-07-08 04:02:26.830
+2025-07-09 05:48:41 0031 
+2025-07-09 05:48:41 0032 LIB CONNECT TO 'ORACLE - DG TNS'
+2025-07-09 05:48:51      Connected.
+2025-07-09 05:48:51 0034 set StripComments=0
+2025-07-09 05:48:51 0035 E_RAI_OCORRENCIA:
+2025-07-09 05:48:51 0036 SQL
+2025-07-09 05:48:51 0037 SELECT
+2025-07-09 05:48:51 0038 
+2025-07-09 05:48:51 0039 --OCORRENCIA
+2025-07-09 05:48:51 0040 oc.id AS id_rai,
+2025-07-09 05:48:51 0041 oc.dataultimaatualizacao AS data_ultima_atualizacao,
+2025-07-09 05:48:51 0042 oc.datafato AS data_fato,
+2025-07-09 05:48:51 0043 oc.origemocorrencia AS origem_ocorrencia,
+2025-07-09 05:48:51 0044 oc.dataregistro AS data_registro,
+2025-07-09 05:48:51 0045 oc.unidadecriacao_corporacao AS corporacao_criacao,
+2025-07-09 05:48:51 0046 oc.unidadecriacao_nome AS unidade_criacao,
+2025-07-09 05:48:51 0047 oc.vulto,
+2025-07-09 05:48:51 0048 --UNIDADE
+2025-07-09 05:48:51 0049 eor.descricao_estrutura AS regional,
+2025-07-09 05:48:51 0050 --OCORRENCIA_AMBIENTE
+2025-07-09 05:48:51 0051 oco_a.tipoestabelecimento_nome AS tipo_local,
+2025-07-09 05:48:51 0052 oco_a.localespecifico_nome AS local_especifico,
+2025-07-09 05:48:51 0053 oco_a.iluminacao_nome AS condicao_ilumincao,
+2025-07-09 05:48:51 0054 oco_a.condicaotempo_nome AS condicao_tempo,
+2025-07-09 05:48:51 0055 --ENDERECO
+2025-07-09 05:48:51 0056 UPPER(ende.logradouro) AS logradouro,
+2025-07-09 05:48:51 0057 ende.pontodereferencia,
+2025-07-09 05:48:51 0058 ende.rodovia,
+2025-07-09 05:48:51 0059 cid.nome AS municipio_nome,
+2025-07-09 05:48:51 0060 cid.uf,
+2025-07-09 05:48:51 0061 cib.populacao,
+2025-07-09 05:48:51 0062 ende.lat,
+2025-07-09 05:48:51 0063 ende.lng,
+2025-07-09 05:48:51 0064 bai.nome AS bairro,
+2025-07-09 05:48:51 0065 area.siglas as area,
+2025-07-09 05:48:51 0066 ais.nome AS aisp,
+2025-07-09 05:48:51 0067 ris.nome AS risp,
+2025-07-09 05:48:51 0068 mes.descricao AS mesoregiao,
+2025-07-09 05:48:51 0069 mic.descricao AS microregiao,
+2025-07-09 05:48:51 0070 --REGIAO_OBSERVATORIO
+2025-07-09 05:48:51 0071 CASE
+2025-07-09 05:48:51 0072 WHEN cid.uf <> 'GO' THEN NULL
+2025-07-09 05:48:51 0073 WHEN cid.cidade = 25300 THEN 'GOIÂNIA'
+2025-07-09 05:48:51 0074 WHEN cid.microrregiao = 520012 THEN 'ENTORNO DO DF'
+2025-07-09 05:48:51 0075 ELSE 'INTERIOR'
+2025-07-09 05:48:51 0076 END AS regiao_observatorio,
+2025-07-09 05:48:51 0077 CASE
+2025-07-09 05:48:51 0078     WHEN bai.bairro IN (2369, 41680, 2354, 2505, 2566, 37659, 42286, 2217, 2215, 2410) THEN 'AIO 01'
+2025-07-09 05:48:51 0079     WHEN bai.bairro IN (2298, 2305, 2406, 38426, 14125, 14126, 14127, 14571, 16173, 14572, 14573, 14574, 16300, 16301, 16302, 16779, 16780, 2403, 2409, 2608, 2514) THEN 'AIO 02'
+2025-07-09 05:48:51 0080     ELSE NULL
+2025-07-09 05:48:51 0081 END AS AIO
+2025-07-09 05:48:51 0082 FROM bu.ocorrencia oc
+2025-07-09 05:48:51 0083 --ENDERECO/AMBIENTE
+2025-07-09 05:48:51 0084 LEFT JOIN bu.endereco ende
+2025-07-09 05:48:51 0085      INNER JOIN sspj.bairros bai
+2025-07-09 05:48:51 0086            LEFT JOIN (SELECT cod_bairro, LISTAGG(eor.sigla, ', ') AS siglas FROM sicad.circunscricao circ INNER JOIN sicad.estrutura_organizacional_real eor ON eor.cod_estrutura_organizacional = circ.cod_estrutura_organizacional GROUP BY cod_bairro) area
+2025-07-09 05:48:51 0087 		   ON area.cod_bairro = bai.bairro
+2025-07-09 05:48:51 0088            LEFT JOIN sspj.aisps ais
+2025-07-09 05:48:51 0089                 LEFT JOIN sspj.risps ris
+2025-07-09 05:48:51 0090                 ON ris.risp = ais.risp
+2025-07-09 05:48:51 0091            ON ais.aisp = bai.aisp
+2025-07-09 05:48:51 0092            LEFT JOIN sspj.cidades cid
+2025-07-09 05:48:51 0093                 LEFT JOIN sspj.cidades_ibge cib
+2025-07-09 05:48:51 0094                 ON cib.codigo_sspj = cid.cidade
+2025-07-09 05:48:51 0095                 LEFT JOIN sspj.microrregioes mic
+2025-07-09 05:48:51 0096                       LEFT JOIN sspj.mesorregioes mes
+2025-07-09 05:48:51 0097                       ON mes.mesorregiao = mic.mesorregiao
+2025-07-09 05:48:51 0098                 ON mic.microrregiao = cid.microrregiao
+2025-07-09 05:48:51 0099            ON cid.cidade = bai.cidade
+2025-07-09 05:48:51 0100      ON bai.bairro = ende.bairro_id
+2025-07-09 05:48:51 0101 ON ende.id = oc.endereco_id
+2025-07-09 05:48:51 0102 LEFT JOIN bu.ocorrenciaambiente oco_a
+2025-07-09 05:48:51 0103 ON oco_a.id = oc.ocorrenciaambiente_id
+2025-07-09 05:48:51 0104 LEFT JOIN estrutura_organizacional_real eor
+2025-07-09 05:48:51 0105 ON eor.cod_estrutura_organizacional = oc.unidadecriacao_id
+2025-07-09 05:48:51 0106 WHERE
+2025-07-09 05:48:51 0107 ende.estado_sigla = 'GO'
+2025-07-09 05:48:51 0108 AND oc.statusocorrencia = 'OCORRENCIA'
+2025-07-09 05:48:51 0109 --FILTRO
+2025-07-09 05:48:51 0110 AND oc.dataultimaatualizacao >= TO_TIMESTAMP('2025-07-08 04:02:26.830', 'YYYY-MM-DD HH24:MI:SS.FF3')
+2025-07-09 05:48:56      	29 fields found: ID_RAI, DATA_ULTIMA_ATUALIZACAO, DATA_FATO, ORIGEM_OCORRENCIA, DATA_REGISTRO, CORPORACAO_CRIACAO, UNIDADE_CRIACAO, VULTO, REGIONAL, TIPO_LOCAL, LOCAL_ESPECIFICO, CONDICAO_ILUMINCAO, CONDICAO_TEMPO, LOGRADOURO, PONTODEREFERENCIA, RODOVIA, MUNICIPIO_NOME, UF, POPULACAO, LAT, LNG, BAIRRO, AREA, AISP, RISP, MESOREGIAO, MICROREGIAO, REGIAO_OBSERVATORIO, AIO, 
+2025-07-09 05:48:56      15.309 lines fetched
+2025-07-09 05:48:56 0113 LOAD * FROM [lib://ETL/extract_diversos_ofc/E_RAI_OCORRENCIA.qvd](qvd)WHERE NOT EXISTS(ID_RAI)
+2025-07-09 05:53:16      	29 fields found: ID_RAI, DATA_ULTIMA_ATUALIZACAO, DATA_FATO, ORIGEM_OCORRENCIA, DATA_REGISTRO, CORPORACAO_CRIACAO, UNIDADE_CRIACAO, VULTO, REGIONAL, TIPO_LOCAL, LOCAL_ESPECIFICO, CONDICAO_ILUMINCAO, CONDICAO_TEMPO, LOGRADOURO, PONTODEREFERENCIA, RODOVIA, MUNICIPIO_NOME, UF, POPULACAO, LAT, LNG, BAIRRO, AREA, AISP, RISP, MESOREGIAO, MICROREGIAO, REGIAO_OBSERVATORIO, AIO, 
+2025-07-09 05:53:16      40.228.899 lines fetched
+2025-07-09 05:53:17 0115 Store E_RAI_OCORRENCIA into [lib://ETL/extract_diversos_ofc/E_RAI_OCORRENCIA.qvd](qvd)
+2025-07-09 05:54:14 0116 Store E_RAI_OCORRENCIA into [lib://ETLDesktop/extract_diversos_ofc/E_RAI_OCORRENCIA.qvd](qvd)
+2025-07-09 05:57:35 0117 Drop Table E_RAI_OCORRENCIA,MAX_DATA_ULTIMA_ATUALIZACAO
+2025-07-09 05:57:37 0118 DisConnect
+2025-07-09 05:57:37 0120 MAX_DATA_ULTIMA_ATUALIZACAO:
+2025-07-09 05:57:37 0121 LOAD
+2025-07-09 05:57:37 0122     MAX(DATA_ULTIMA_ATUALIZACAO) AS MAX_DATA_ULTIMA_ATUALIZACAO
+2025-07-09 05:57:37 0123 FROM [lib://ETL/extract_diversos_ofc/E_RAI_OCORRENCIA_NATUREZA.qvd] (qvd)
+2025-07-09 06:12:46      	1 fields found: MAX_DATA_ULTIMA_ATUALIZACAO, 
+2025-07-09 06:12:46      1 lines fetched
+2025-07-09 06:12:49 0125 LET vMAX_DATA_ULTIMA_ATUALIZACAO = Timestamp(Peek('MAX_DATA_ULTIMA_ATUALIZACAO', 0, 'MAX_DATA_ULTIMA_ATUALIZACAO'), 'YYYY-MM-DD hh:mm:ss.fff')
+2025-07-09 06:12:49 0127 TRACE MAX_DATA: 2025-07-08 04:08:15.020
+2025-07-09 06:12:49 0127 MAX_DATA: 2025-07-08 04:08:15.020
+2025-07-09 06:12:49 0128 
+2025-07-09 06:12:49 0129 
+2025-07-09 06:12:49 0130 
+2025-07-09 06:12:49 0129 LIB CONNECT TO 'ORACLE - DG TNS'
+2025-07-09 06:13:00      Connected.
+2025-07-09 06:13:00 0131 set StripComments=0
+2025-07-09 06:13:00 0132 E_RAI_OCORRENCIA_NATUREZA:
+2025-07-09 06:13:00 0133 SQL
+2025-07-09 06:13:00 0134 SELECT
+2025-07-09 06:13:00 0135 
+2025-07-09 06:13:00 0136 ocn.ocorrencia_id || '/' || ocn.naturezas_id AS nat_oco_id,
+2025-07-09 06:13:00 0137 oc.id AS id_rai,
+2025-07-09 06:13:00 0138 oc.dataultimaatualizacao AS data_ultima_atualizacao,
+2025-07-09 06:13:00 0139 nat_oco.naturezaid AS naturezaid_oco,
+2025-07-09 06:13:00 0140 nat_oco.consumacaoenum AS consumacaoenum_oco,
+2025-07-09 06:13:00 0141 nat_tip_oco.natureza AS natureza_oco,
+2025-07-09 06:13:00 0142 nat_tip_oco.grupo AS grupo_oco,
+2025-07-09 06:13:00 0143 nat_tip_oco.spi_natureza_id AS spi_natureza_id_oco,
+2025-07-09 06:13:00 0144 nat_tip_oco.titulo AS titulo_oco,
+2025-07-09 06:13:00 0145 nat_tip_oco.capitulo AS capitulo_oco,
+2025-07-09 06:13:00 0146 nat_tip_oco.tipicidade AS tipicidade_oco,
+2025-07-09 06:13:00 0147 nat_tip_oco.legislacao AS legislacao_oco
+2025-07-09 06:13:00 0148 FROM bu.ocorrencia oc
+2025-07-09 06:13:00 0149 --ENDERECO/AMBIENTE
+2025-07-09 06:13:00 0150 LEFT JOIN bu.endereco ende
+2025-07-09 06:13:00 0151 ON ende.id = oc.endereco_id
+2025-07-09 06:13:00 0152 --OCORRENCIA
+2025-07-09 06:13:00 0153 INNER JOIN bu.ocorrencia_natureza ocn
+2025-07-09 06:13:00 0154 	  INNER JOIN bu.natureza nat_oco
+2025-07-09 06:13:00 0155 	 	    INNER JOIN user_transacional.e_natureza_spi_tipificada_mview nat_tip_oco
+2025-07-09 06:13:00 0156     	    ON nat_tip_oco.spi_natureza_id = nat_oco.naturezaid
+2025-07-09 06:13:00 0157 	  ON nat_oco.id = ocn.naturezas_id  
+2025-07-09 06:13:00 0158 ON ocn.ocorrencia_id = oc.id
+2025-07-09 06:13:00 0159 WHERE
+2025-07-09 06:13:00 0160 ende.estado_sigla = 'GO'
+2025-07-09 06:13:00 0161 AND oc.statusocorrencia = 'OCORRENCIA'
+2025-07-09 06:13:00 0162 --FILTRO
+2025-07-09 06:13:00 0163 AND oc.dataultimaatualizacao >= TO_TIMESTAMP('2025-07-08 04:08:15.020', 'YYYY-MM-DD HH24:MI:SS.FF3')
+2025-07-09 06:13:05      	12 fields found: NAT_OCO_ID, ID_RAI, DATA_ULTIMA_ATUALIZACAO, NATUREZAID_OCO, CONSUMACAOENUM_OCO, NATUREZA_OCO, GRUPO_OCO, SPI_NATUREZA_ID_OCO, TITULO_OCO, CAPITULO_OCO, TIPICIDADE_OCO, LEGISLACAO_OCO, 
+2025-07-09 06:13:05      28.470 lines fetched
+2025-07-09 06:13:05 0166 LOAD * FROM [lib://ETL/extract_diversos_ofc/E_RAI_OCORRENCIA_NATUREZA.qvd](qvd)WHERE NOT EXISTS(NAT_OCO_ID)
+2025-07-09 06:16:56      	12 fields found: NAT_OCO_ID, ID_RAI, DATA_ULTIMA_ATUALIZACAO, NATUREZAID_OCO, CONSUMACAOENUM_OCO, NATUREZA_OCO, GRUPO_OCO, SPI_NATUREZA_ID_OCO, TITULO_OCO, CAPITULO_OCO, TIPICIDADE_OCO, LEGISLACAO_OCO, 
+2025-07-09 06:16:56      65.976.838 lines fetched
+2025-07-09 06:16:57 0168 Store E_RAI_OCORRENCIA_NATUREZA into [lib://ETL/extract_diversos_ofc/E_RAI_OCORRENCIA_NATUREZA.qvd](qvd)
+2025-07-09 06:17:47 0169 Store E_RAI_OCORRENCIA_NATUREZA into [lib://ETLDesktop/extract_diversos_ofc/E_RAI_OCORRENCIA_NATUREZA.qvd](qvd)
+2025-07-09 06:20:34 0170 Drop Table E_RAI_OCORRENCIA_NATUREZA,MAX_DATA_ULTIMA_ATUALIZACAO
+2025-07-09 06:20:34 0171 DisConnect
+2025-07-09 06:20:35 0173 MAX_DATA_ULTIMA_ATUALIZACAO:
+2025-07-09 06:20:35 0174 LOAD
+2025-07-09 06:20:35 0175     MAX(DATA_ULTIMA_ATUALIZACAO) AS MAX_DATA_ULTIMA_ATUALIZACAO
+2025-07-09 06:20:35 0176 FROM [lib://ETL/extract_diversos_ofc/E_RAI_OCORRENCIA_ENVOLVIMENTO.qvd] (qvd)
+2025-07-09 06:21:02      	1 fields found: MAX_DATA_ULTIMA_ATUALIZACAO, 
+2025-07-09 06:21:02      1 lines fetched
+2025-07-09 06:21:02 0178 LET vMAX_DATA_ULTIMA_ATUALIZACAO = Timestamp(Peek('MAX_DATA_ULTIMA_ATUALIZACAO', 0, 'MAX_DATA_ULTIMA_ATUALIZACAO'), 'YYYY-MM-DD hh:mm:ss.fff')
+2025-07-09 06:21:02 0180 TRACE MAX_DATA: 2025-07-08 04:07:51.686
+2025-07-09 06:21:02 0180 MAX_DATA: 2025-07-08 04:07:51.686
+2025-07-09 06:21:02 0181 
+2025-07-09 06:21:02 0182 
+2025-07-09 06:21:02 0183 
+2025-07-09 06:21:02 0182 LIB CONNECT TO 'ORACLE - DG TNS'
+2025-07-09 06:21:11      Connected.
+2025-07-09 06:21:11 0184 set StripComments=0
+2025-07-09 06:21:11 0185 E_RAI_OCORRENCIA_ENVOLVIMENTO:
+2025-07-09 06:21:11 0186 SQL
+2025-07-09 06:21:11 0187 SELECT
+2025-07-09 06:21:11 0188 
+2025-07-09 06:21:11 0189 env.id AS envolvimento_id,
+2025-07-09 06:21:11 0190 oc.id AS id_rai,
+2025-07-09 06:21:11 0191 oc.dataultimaatualizacao AS data_ultima_atualizacao,
+2025-07-09 06:21:11 0192 cae.nome AS envolvimento_ocorrenica
+2025-07-09 06:21:11 0193 FROM bu.ocorrencia oc
+2025-07-09 06:21:11 0194 --ENDERECO/AMBIENTE
+2025-07-09 06:21:11 0195 LEFT JOIN bu.endereco ende
+2025-07-09 06:21:11 0196 ON ende.id = oc.endereco_id
+2025-07-09 06:21:11 0197 INNER JOIN bu.ocorrencia_envolvimento oc_env
+2025-07-09 06:21:11 0198       LEFT JOIN bu.envolvimento env
+2025-07-09 06:21:11 0199      	  LEFT JOIN spi.caso_especiais cae
+2025-07-09 06:21:11 0200      	  ON cae.caso_especial = env.envolvimentoid
+2025-07-09 06:21:11 0201      ON env.id = oc_env.envolvimentos_id		
+2025-07-09 06:21:11 0202 ON oc_env.ocorrencia_id = oc.id 
+2025-07-09 06:21:11 0203 WHERE
+2025-07-09 06:21:11 0204 ende.estado_sigla = 'GO'
+2025-07-09 06:21:11 0205 AND oc.statusocorrencia = 'OCORRENCIA'
+2025-07-09 06:21:11 0206 --FILTRO
+2025-07-09 06:21:11 0207 AND oc.dataultimaatualizacao >= TO_TIMESTAMP('2025-07-08 04:07:51.686', 'YYYY-MM-DD HH24:MI:SS.FF3')
+2025-07-09 06:21:14      	4 fields found: ENVOLVIMENTO_ID, ID_RAI, DATA_ULTIMA_ATUALIZACAO, ENVOLVIMENTO_OCORRENICA, 
+2025-07-09 06:21:14      2.499 lines fetched
+2025-07-09 06:21:14 0210 LOAD * FROM [lib://ETL/extract_diversos_ofc/E_RAI_OCORRENCIA_ENVOLVIMENTO.qvd](qvd)WHERE NOT EXISTS(ENVOLVIMENTO_ID)
+2025-07-09 06:21:23      	4 fields found: ENVOLVIMENTO_ID, ID_RAI, DATA_ULTIMA_ATUALIZACAO, ENVOLVIMENTO_OCORRENICA, 
+2025-07-09 06:21:23      2.915.929 lines fetched
+2025-07-09 06:21:23 0212 Store E_RAI_OCORRENCIA_ENVOLVIMENTO into [lib://ETL/extract_diversos_ofc/E_RAI_OCORRENCIA_ENVOLVIMENTO.qvd](qvd)
+2025-07-09 06:21:26 0213 Store E_RAI_OCORRENCIA_ENVOLVIMENTO into [lib://ETLDesktop/extract_diversos_ofc/E_RAI_OCORRENCIA_ENVOLVIMENTO.qvd](qvd)
+2025-07-09 06:21:33 0214 Drop Table E_RAI_OCORRENCIA_ENVOLVIMENTO,MAX_DATA_ULTIMA_ATUALIZACAO
+2025-07-09 06:21:34 0215 DisConnect
+2025-07-09 06:21:34 0217 MAX_DATA_ULTIMA_ATUALIZACAO:
+2025-07-09 06:21:34 0218 LOAD
+2025-07-09 06:21:34 0219     MAX(DATA_ULTIMA_ATUALIZACAO) AS MAX_DATA_ULTIMA_ATUALIZACAO
+2025-07-09 06:21:34 0220 FROM [lib://ETL/extract_diversos_ofc/E_RAI_OCORRENCIA_VEICULO.qvd] (qvd)
+2025-07-09 06:23:34      	1 fields found: MAX_DATA_ULTIMA_ATUALIZACAO, 
+2025-07-09 06:23:34      1 lines fetched
+2025-07-09 06:23:35 0222 LET vMAX_DATA_ULTIMA_ATUALIZACAO = Timestamp(Peek('MAX_DATA_ULTIMA_ATUALIZACAO', 0, 'MAX_DATA_ULTIMA_ATUALIZACAO'), 'YYYY-MM-DD hh:mm:ss.fff')
+2025-07-09 06:23:35 0224 TRACE MAX_DATA: 2025-07-08 03:53:17.189
+2025-07-09 06:23:35 0224 MAX_DATA: 2025-07-08 03:53:17.189
+2025-07-09 06:23:35 0225 
+2025-07-09 06:23:35 0226 
+2025-07-09 06:23:35 0227 
+2025-07-09 06:23:35 0226 LIB CONNECT TO 'ORACLE - DG TNS'
+2025-07-09 06:23:46      Connected.
+2025-07-09 06:23:46 0228 set StripComments=0
+2025-07-09 06:23:46 0229 E_RAI_OCORRENCIA_VEICULO:
+2025-07-09 06:23:46 0230 SQL
+2025-07-09 06:23:46 0231 SELECT
+2025-07-09 06:23:46 0232 
+2025-07-09 06:23:46 0233 vei.id AS veiculo_id,
+2025-07-09 06:23:46 0234 oc.id AS id_rai,
+2025-07-09 06:23:46 0235 oc.dataultimaatualizacao AS data_ultima_atualizacao,
+2025-07-09 06:23:46 0236 vei.placa,
+2025-07-09 06:23:46 0237 vei.tipoveiculo,
+2025-07-09 06:23:46 0238 CASE WHEN vei.fabricante IS NOT NULL THEN vei.fabricante ELSE
+2025-07-09 06:23:46 0239 CASE WHEN (INSTR(vei.versao, '/') <= 0)
+2025-07-09 06:23:46 0240 THEN vei.versao ELSE
+2025-07-09 06:23:46 0241 CASE WHEN (UPPER(SUBSTR(vei.versao, 1, INSTR(vei.versao, '/'))) = 'I/')
+2025-07-09 06:23:46 0242 THEN SUBSTR(vei.versao, INSTR(vei.versao, '/') + 1, INSTR(vei.versao, ' ', 1) - 3) ELSE SUBSTR(vei.versao, 1, INSTR(vei.versao, '/') - 1) END
+2025-07-09 06:23:46 0243 END
+2025-07-09 06:23:46 0244 END AS marca,
+2025-07-09 06:23:46 0245 CASE WHEN vei.modelo IS NOT NULL THEN vei.modelo ELSE
+2025-07-09 06:23:46 0246 CASE WHEN (INSTR(vei.versao, '/') <= 0) THEN vei.versao ELSE
+2025-07-09 06:23:46 0247 CASE WHEN (INSTR(vei.modelo, ' ') <= 0) THEN
+2025-07-09 06:23:46 0248 CASE WHEN (UPPER(SUBSTR(vei.versao, 1, INSTR(vei.versao, '/'))) = 'I/')
+2025-07-09 06:23:46 0249 THEN SUBSTR(vei.versao, INSTR(vei.versao, ' ') + 1) ELSE SUBSTR(vei.versao, INSTR(vei.versao, '/') + 1)
+2025-07-09 06:23:46 0250 END ELSE SUBSTR
+2025-07-09 06:23:46 0251 (CASE WHEN (UPPER(SUBSTR(vei.versao, 1, INSTR(vei.versao, '/'))) = 'I/')
+2025-07-09 06:23:46 0252 THEN SUBSTR(vei.versao, INSTR(vei.versao, ' ') + 1) ELSE SUBSTR(vei.versao, INSTR(vei.versao, '/') + 1)
+2025-07-09 06:23:46 0253 END, 1, INSTR
+2025-07-09 06:23:46 0254 (CASE WHEN (UPPER(SUBSTR(vei.versao, 1, INSTR(vei.versao, '/'))) = 'I/')
+2025-07-09 06:23:46 0255 THEN SUBSTR(vei.versao, INSTR(versao, ' ') + 1) ELSE SUBSTR(vei.versao, INSTR(vei.versao, '/') + 1)
+2025-07-09 06:23:46 0256 END, ' ') - 1) END
+2025-07-09 06:23:46 0257 END
+2025-07-09 06:23:46 0258 END AS modelo,
+2025-07-09 06:23:46 0259 vei.categoria,
+2025-07-09 06:23:46 0260 vei.cor,
+2025-07-09 06:23:46 0261 vei.anofabricacao AS ano_fabricacao,
+2025-07-09 06:23:46 0262 ov.unidadeapreensao_nome AS unidadeapreensao,
+2025-07-09 06:23:46 0263 ov.situacaoabordagem_nome AS situacaoabordagem
+2025-07-09 06:23:46 0264 FROM bu.ocorrencia oc
+2025-07-09 06:23:46 0265 --ENDERECO/AMBIENTE
+2025-07-09 06:23:46 0266 LEFT JOIN bu.endereco ende
+2025-07-09 06:23:46 0267 ON ende.id = oc.endereco_id
+2025-07-09 06:23:46 0268 --VEICULO
+2025-07-09 06:23:46 0269 INNER JOIN bu.ocorrenciaveiculo ov
+2025-07-09 06:23:46 0270       LEFT JOIN bu.veiculo vei
+2025-07-09 06:23:46 0271       ON vei.id = ov.veiculo_id
+2025-07-09 06:23:46 0272 ON ov.ocorrencia_id = oc.id
+2025-07-09 06:23:46 0273 WHERE
+2025-07-09 06:23:46 0274 ende.estado_sigla = 'GO'
+2025-07-09 06:23:46 0275 AND oc.statusocorrencia = 'OCORRENCIA'
+2025-07-09 06:23:46 0276 --FILTRO
+2025-07-09 06:23:46 0277 AND oc.dataultimaatualizacao >= TO_TIMESTAMP('2025-07-08 03:53:17.189', 'YYYY-MM-DD HH24:MI:SS.FF3')
+2025-07-09 06:23:51      	12 fields found: VEICULO_ID, ID_RAI, DATA_ULTIMA_ATUALIZACAO, PLACA, TIPOVEICULO, MARCA, MODELO, CATEGORIA, COR, ANO_FABRICACAO, UNIDADEAPREENSAO, SITUACAOABORDAGEM, 
+2025-07-09 06:23:51      3.942 lines fetched
+2025-07-09 06:23:51 0280 LOAD * FROM [lib://ETL/extract_diversos_ofc/E_RAI_OCORRENCIA_VEICULO.qvd](qvd)WHERE NOT EXISTS(VEICULO_ID)
+2025-07-09 06:24:17      	12 fields found: VEICULO_ID, ID_RAI, DATA_ULTIMA_ATUALIZACAO, PLACA, TIPOVEICULO, MARCA, MODELO, CATEGORIA, COR, ANO_FABRICACAO, UNIDADEAPREENSAO, SITUACAOABORDAGEM, 
+2025-07-09 06:24:17      9.331.650 lines fetched
+2025-07-09 06:24:17 0282 Store E_RAI_OCORRENCIA_VEICULO into [lib://ETL/extract_diversos_ofc/E_RAI_OCORRENCIA_VEICULO.qvd](qvd)
+2025-07-09 06:24:26 0283 Store E_RAI_OCORRENCIA_VEICULO into [lib://ETLDesktop/extract_diversos_ofc/E_RAI_OCORRENCIA_VEICULO.qvd](qvd)
+2025-07-09 06:24:54 0284 Drop Table E_RAI_OCORRENCIA_VEICULO,MAX_DATA_ULTIMA_ATUALIZACAO
+2025-07-09 06:24:54 0285 DisConnect
+2025-07-09 06:24:54 0287 MAX_DATA_ULTIMA_ATUALIZACAO:
+2025-07-09 06:24:54 0288 LOAD
+2025-07-09 06:24:54 0289     MAX(DATA_ULTIMA_ATUALIZACAO) AS MAX_DATA_ULTIMA_ATUALIZACAO
+2025-07-09 06:24:54 0290 FROM [lib://ETL/extract_diversos_ofc/E_RAI_OCORRENCIA_VEICULO_NATUREZA.qvd] (qvd)
+2025-07-09 06:27:47      	1 fields found: MAX_DATA_ULTIMA_ATUALIZACAO, 
+2025-07-09 06:27:47      1 lines fetched
+2025-07-09 06:27:47 0292 LET vMAX_DATA_ULTIMA_ATUALIZACAO = Timestamp(Peek('MAX_DATA_ULTIMA_ATUALIZACAO', 0, 'MAX_DATA_ULTIMA_ATUALIZACAO'), 'YYYY-MM-DD hh:mm:ss.fff')
+2025-07-09 06:27:47 0294 TRACE MAX_DATA: 2025-07-08 04:11:52.376
+2025-07-09 06:27:47 0294 MAX_DATA: 2025-07-08 04:11:52.376
+2025-07-09 06:27:47 0295 
+2025-07-09 06:27:47 0296 
+2025-07-09 06:27:47 0297 
+2025-07-09 06:27:47 0296 LIB CONNECT TO 'ORACLE - DG TNS'
+2025-07-09 06:27:57      Connected.
+2025-07-09 06:27:57 0298 set StripComments=0
+2025-07-09 06:27:57 0299 E_RAI_OCORRENCIA_VEICULO_NATUREZA:
+2025-07-09 06:27:57 0300 SQL
+2025-07-09 06:27:57 0301 SELECT
+2025-07-09 06:27:57 0302 
+2025-07-09 06:27:57 0303 ovn.ocorrenciaveiculo_id || '/' || ovn.naturezas_id AS nat_vei_id,
+2025-07-09 06:27:57 0304 ov.veiculo_id,
+2025-07-09 06:27:57 0305 oc.dataultimaatualizacao AS data_ultima_atualizacao,
+2025-07-09 06:27:57 0306 nat_vei.naturezaid AS naturezaid_vei,
+2025-07-09 06:27:57 0307 nat_vei.consumacaoenum AS consumacaoenum_vei,
+2025-07-09 06:27:57 0308 nat_tip_vei.natureza AS natureza_vei,
+2025-07-09 06:27:57 0309 nat_tip_vei.grupo AS grupo_vei,
+2025-07-09 06:27:57 0310 nat_tip_vei.spi_natureza_id AS spi_natureza_id_vei,
+2025-07-09 06:27:57 0311 nat_tip_vei.titulo AS titulo_vei,
+2025-07-09 06:27:57 0312 nat_tip_vei.capitulo AS capitulo_vei,
+2025-07-09 06:27:57 0313 nat_tip_vei.tipicidade AS tipicidade_vei,
+2025-07-09 06:27:57 0314 nat_tip_vei.legislacao AS legislacao_vei
+2025-07-09 06:27:57 0315 FROM bu.ocorrencia oc
+2025-07-09 06:27:57 0316 --ENDERECO/AMBIENTE
+2025-07-09 06:27:57 0317 LEFT JOIN bu.endereco ende
+2025-07-09 06:27:57 0318 ON ende.id = oc.endereco_id
+2025-07-09 06:27:57 0319 --VEICULO
+2025-07-09 06:27:57 0320 INNER JOIN bu.ocorrenciaveiculo ov
+2025-07-09 06:27:57 0321       INNER JOIN bu.ocorrencia_veiculo_natur ovn
+2025-07-09 06:27:57 0322             INNER JOIN bu.natureza nat_vei
+2025-07-09 06:27:57 0323                   INNER JOIN user_transacional.e_natureza_spi_tipificada_mview nat_tip_vei
+2025-07-09 06:27:57 0324     	 	      ON nat_tip_vei.spi_natureza_id = nat_vei.naturezaid
+2025-07-09 06:27:57 0325             ON nat_vei.id = ovn.naturezas_id
+2025-07-09 06:27:57 0326       ON ovn.ocorrenciaveiculo_id = ov.id
+2025-07-09 06:27:57 0327 ON ov.ocorrencia_id = oc.id
+2025-07-09 06:27:57 0328 WHERE
+2025-07-09 06:27:57 0329 ende.estado_sigla = 'GO'
+2025-07-09 06:27:57 0330 AND oc.statusocorrencia = 'OCORRENCIA'
+2025-07-09 06:27:57 0331 --FILTRO
+2025-07-09 06:27:57 0332 AND oc.dataultimaatualizacao >= TO_TIMESTAMP('2025-07-08 04:11:52.376', 'YYYY-MM-DD HH24:MI:SS.FF3')
+2025-07-09 06:27:59      	12 fields found: NAT_VEI_ID, VEICULO_ID, DATA_ULTIMA_ATUALIZACAO, NATUREZAID_VEI, CONSUMACAOENUM_VEI, NATUREZA_VEI, GRUPO_VEI, SPI_NATUREZA_ID_VEI, TITULO_VEI, CAPITULO_VEI, TIPICIDADE_VEI, LEGISLACAO_VEI, 
+2025-07-09 06:27:59      6.229 lines fetched
+2025-07-09 06:27:59 0335 LOAD * FROM [lib://ETL/extract_diversos_ofc/E_RAI_OCORRENCIA_VEICULO_NATUREZA.qvd](qvd)WHERE NOT EXISTS(NAT_VEI_ID)
+2025-07-09 06:28:34      	12 fields found: NAT_VEI_ID, VEICULO_ID, DATA_ULTIMA_ATUALIZACAO, NATUREZAID_VEI, CONSUMACAOENUM_VEI, NATUREZA_VEI, GRUPO_VEI, SPI_NATUREZA_ID_VEI, TITULO_VEI, CAPITULO_VEI, TIPICIDADE_VEI, LEGISLACAO_VEI, 
+2025-07-09 06:28:34      13.513.316 lines fetched
+2025-07-09 06:28:35 0337 Store E_RAI_OCORRENCIA_VEICULO_NATUREZA into [lib://ETL/extract_diversos_ofc/E_RAI_OCORRENCIA_VEICULO_NATUREZA.qvd](qvd)
+2025-07-09 06:28:44 0338 Store E_RAI_OCORRENCIA_VEICULO_NATUREZA into [lib://ETLDesktop/extract_diversos_ofc/E_RAI_OCORRENCIA_VEICULO_NATUREZA.qvd](qvd)
+2025-07-09 06:29:36 0339 Drop Table E_RAI_OCORRENCIA_VEICULO_NATUREZA,MAX_DATA_ULTIMA_ATUALIZACAO
+2025-07-09 06:29:37 0340 DisConnect
+2025-07-09 06:29:37 0342 MAX_DATA_ULTIMA_ATUALIZACAO:
+2025-07-09 06:29:37 0343 LOAD
+2025-07-09 06:29:37 0344     MAX(DATA_ULTIMA_ATUALIZACAO) AS MAX_DATA_ULTIMA_ATUALIZACAO
+2025-07-09 06:29:37 0345 FROM [lib://ETL/extract_diversos_ofc/E_RAI_OCORRENCIA_OBJETO.qvd] (qvd)
+2025-07-09 06:30:04      	1 fields found: MAX_DATA_ULTIMA_ATUALIZACAO, 
+2025-07-09 06:30:04      1 lines fetched
+2025-07-09 06:30:04 0347 LET vMAX_DATA_ULTIMA_ATUALIZACAO = Timestamp(Peek('MAX_DATA_ULTIMA_ATUALIZACAO', 0, 'MAX_DATA_ULTIMA_ATUALIZACAO'), 'YYYY-MM-DD hh:mm:ss.fff')
+2025-07-09 06:30:04 0349 TRACE MAX_DATA: 2025-07-08 04:12:13.194
+2025-07-09 06:30:04 0349 MAX_DATA: 2025-07-08 04:12:13.194
+2025-07-09 06:30:04 0350 
+2025-07-09 06:30:04 0351 
+2025-07-09 06:30:04 0352 
+2025-07-09 06:30:04 0351 LIB CONNECT TO 'ORACLE - DG TNS'
+2025-07-09 06:30:14      Connected.
+2025-07-09 06:30:14 0353 set StripComments=0
+2025-07-09 06:30:14 0354 E_RAI_OCORRENCIA_OBJETO:
+2025-07-09 06:30:14 0355 SQL
+2025-07-09 06:30:14 0356 SELECT
+2025-07-09 06:30:14 0357 
+2025-07-09 06:30:14 0358 obj.id AS objeto_id,
+2025-07-09 06:30:14 0359 oc.id AS id_rai,
+2025-07-09 06:30:14 0360 oc.dataultimaatualizacao AS data_ultima_atualizacao,
+2025-07-09 06:30:14 0361 --OBJETO
+2025-07-09 06:30:14 0362 obj.categoriaobjeto_nome,
+2025-07-09 06:30:14 0363 obj.tipodroga_nome AS tipo_droga,
+2025-07-09 06:30:14 0364 obj.grandeza_nome,
+2025-07-09 06:30:14 0365 obj.quantidade AS qtde_objeto,
+2025-07-09 06:30:14 0366 obj.nome AS nome_objeto,
+2025-07-09 06:30:14 0367 obj.categoriaobjetoespecifica_nome AS categoria_objeto_especifica,
+2025-07-09 06:30:14 0368 obj.categoriaobjeto_nome AS categoria_objeto,
+2025-07-09 06:30:14 0369 obj.modeloobjeto AS modelo_objeto,
+2025-07-09 06:30:14 0370 obj.marcaobjeto AS marca_objeto,
+2025-07-09 06:30:14 0371 oco_b.recuperado
+2025-07-09 06:30:14 0372 FROM bu.ocorrencia oc
+2025-07-09 06:30:14 0373 --ENDERECO/AMBIENTE
+2025-07-09 06:30:14 0374 LEFT JOIN bu.endereco ende
+2025-07-09 06:30:14 0375 ON ende.id = oc.endereco_id
+2025-07-09 06:30:14 0376 --OBJETO
+2025-07-09 06:30:14 0377 INNER JOIN bu.ocorrenciaobjeto oco_b
+2025-07-09 06:30:14 0378       LEFT JOIN bu.objeto obj
+2025-07-09 06:30:14 0379       ON obj.id = oco_b.objeto_id
+2025-07-09 06:30:14 0380 ON oco_b.ocorrencia_id = oc.id
+2025-07-09 06:30:14 0381 WHERE
+2025-07-09 06:30:14 0382 ende.estado_sigla = 'GO'
+2025-07-09 06:30:14 0383 AND oc.statusocorrencia = 'OCORRENCIA'
+2025-07-09 06:30:14 0384 --FILTRO
+2025-07-09 06:30:14 0385 AND oc.dataultimaatualizacao >= TO_TIMESTAMP('2025-07-08 04:12:13.194', 'YYYY-MM-DD HH24:MI:SS.FF3')
+2025-07-09 06:30:16      	13 fields found: OBJETO_ID, ID_RAI, DATA_ULTIMA_ATUALIZACAO, CATEGORIAOBJETO_NOME, TIPO_DROGA, GRANDEZA_NOME, QTDE_OBJETO, NOME_OBJETO, CATEGORIA_OBJETO_ESPECIFICA, CATEGORIA_OBJETO, MODELO_OBJETO, MARCA_OBJETO, RECUPERADO, 
+2025-07-09 06:30:16      684 lines fetched
+2025-07-09 06:30:16 0388 LOAD * FROM [lib://ETL/extract_diversos_ofc/E_RAI_OCORRENCIA_OBJETO.qvd](qvd)WHERE NOT EXISTS(OBJETO_ID)
+2025-07-09 06:30:21      	13 fields found: OBJETO_ID, ID_RAI, DATA_ULTIMA_ATUALIZACAO, CATEGORIAOBJETO_NOME, TIPO_DROGA, GRANDEZA_NOME, QTDE_OBJETO, NOME_OBJETO, CATEGORIA_OBJETO_ESPECIFICA, CATEGORIA_OBJETO, MODELO_OBJETO, MARCA_OBJETO, RECUPERADO, 
+2025-07-09 06:30:21      1.737.647 lines fetched
+2025-07-09 06:30:21 0390 Store E_RAI_OCORRENCIA_OBJETO into [lib://ETL/extract_diversos_ofc/E_RAI_OCORRENCIA_OBJETO.qvd](qvd)
+2025-07-09 06:30:24 0391 Store E_RAI_OCORRENCIA_OBJETO into [lib://ETLDesktop/extract_diversos_ofc/E_RAI_OCORRENCIA_OBJETO.qvd](qvd)
+2025-07-09 06:30:33 0392 Drop Table E_RAI_OCORRENCIA_OBJETO,MAX_DATA_ULTIMA_ATUALIZACAO
+2025-07-09 06:30:33 0393 DisConnect
+2025-07-09 06:30:33 0395 MAX_DATA_ULTIMA_ATUALIZACAO:
+2025-07-09 06:30:33 0396 LOAD
+2025-07-09 06:30:33 0397     MAX(DATA_ULTIMA_ATUALIZACAO) AS MAX_DATA_ULTIMA_ATUALIZACAO
+2025-07-09 06:30:33 0398 FROM [lib://ETL/extract_diversos_ofc/E_RAI_OCORRENCIA_OBJETO_NATUREZA.qvd] (qvd)
+2025-07-09 06:30:59      	1 fields found: MAX_DATA_ULTIMA_ATUALIZACAO, 
+2025-07-09 06:30:59      1 lines fetched
+2025-07-09 06:30:59 0400 LET vMAX_DATA_ULTIMA_ATUALIZACAO = Timestamp(Peek('MAX_DATA_ULTIMA_ATUALIZACAO', 0, 'MAX_DATA_ULTIMA_ATUALIZACAO'), 'YYYY-MM-DD hh:mm:ss.fff')
+2025-07-09 06:30:59 0402 TRACE MAX_DATA: 2025-07-08 04:12:46.567
+2025-07-09 06:30:59 0402 MAX_DATA: 2025-07-08 04:12:46.567
+2025-07-09 06:30:59 0403 
+2025-07-09 06:30:59 0404 
+2025-07-09 06:30:59 0405 
+2025-07-09 06:30:59 0404 LIB CONNECT TO 'ORACLE - DG TNS'
+2025-07-09 06:31:08      Connected.
+2025-07-09 06:31:08 0406 set StripComments=0
+2025-07-09 06:31:08 0407 E_RAI_OCORRENCIA_OBJETO_NATUREZA:
+2025-07-09 06:31:08 0408 SQL
+2025-07-09 06:31:08 0409 SELECT
+2025-07-09 06:31:08 0410 
+2025-07-09 06:31:08 0411 oco_bn.ocorrenciaobjeto_id  || '/' || oco_bn.naturezas_id AS nat_obj_id,
+2025-07-09 06:31:08 0412 oco_b.objeto_id,
+2025-07-09 06:31:08 0413 oc.dataultimaatualizacao AS data_ultima_atualizacao,
+2025-07-09 06:31:08 0414 nat_obj.naturezaid AS naturezaid_obj,
+2025-07-09 06:31:08 0415 nat_obj.consumacaoenum AS consumacaoenum_obj,
+2025-07-09 06:31:08 0416 nat_tip_obj.natureza AS natureza_obj,
+2025-07-09 06:31:08 0417 nat_tip_obj.grupo AS grupo_obj,
+2025-07-09 06:31:08 0418 nat_tip_obj.spi_natureza_id AS spi_natureza_id_obj,
+2025-07-09 06:31:08 0419 nat_tip_obj.titulo AS titulo_obj,
+2025-07-09 06:31:08 0420 nat_tip_obj.capitulo AS capitulo_obj,
+2025-07-09 06:31:08 0421 nat_tip_obj.tipicidade AS tipicidade_obj,
+2025-07-09 06:31:08 0422 nat_tip_obj.legislacao AS legislacao_obj
+2025-07-09 06:31:08 0423 FROM bu.ocorrencia oc
+2025-07-09 06:31:08 0424 --ENDERECO/AMBIENTE
+2025-07-09 06:31:08 0425 LEFT JOIN bu.endereco ende
+2025-07-09 06:31:08 0426 ON ende.id = oc.endereco_id
+2025-07-09 06:31:08 0427 --OBJETO
+2025-07-09 06:31:08 0428 INNER JOIN bu.ocorrenciaobjeto oco_b
+2025-07-09 06:31:08 0429       INNER JOIN bu.ocorrencia_objeto_natur oco_bn
+2025-07-09 06:31:08 0430             INNER JOIN bu.natureza nat_obj
+2025-07-09 06:31:08 0431           	      INNER JOIN user_transacional.e_natureza_spi_tipificada_mview nat_tip_obj
+2025-07-09 06:31:08 0432     	 	      ON nat_tip_obj.spi_natureza_id = nat_obj.naturezaid
+2025-07-09 06:31:08 0433             ON nat_obj.id = oco_bn.naturezas_id
+2025-07-09 06:31:08 0434       ON oco_bn.ocorrenciaobjeto_id = oco_b.id
+2025-07-09 06:31:08 0435 ON oco_b.ocorrencia_id = oc.id
+2025-07-09 06:31:08 0436 WHERE
+2025-07-09 06:31:08 0437 ende.estado_sigla = 'GO'
+2025-07-09 06:31:08 0438 AND oc.statusocorrencia = 'OCORRENCIA'
+2025-07-09 06:31:08 0439 --FILTRO
+2025-07-09 06:31:08 0440 AND oc.dataultimaatualizacao >= TO_TIMESTAMP('2025-07-08 04:12:46.567', 'YYYY-MM-DD HH24:MI:SS.FF3')
+2025-07-09 06:31:10      	12 fields found: NAT_OBJ_ID, OBJETO_ID, DATA_ULTIMA_ATUALIZACAO, NATUREZAID_OBJ, CONSUMACAOENUM_OBJ, NATUREZA_OBJ, GRUPO_OBJ, SPI_NATUREZA_ID_OBJ, TITULO_OBJ, CAPITULO_OBJ, TIPICIDADE_OBJ, LEGISLACAO_OBJ, 
+2025-07-09 06:31:10      762 lines fetched
+2025-07-09 06:31:10 0443 LOAD * FROM [lib://ETL/extract_diversos_ofc/E_RAI_OCORRENCIA_OBJETO_NATUREZA.qvd](qvd)WHERE NOT EXISTS(NAT_OBJ_ID)
+2025-07-09 06:31:16      	12 fields found: NAT_OBJ_ID, OBJETO_ID, DATA_ULTIMA_ATUALIZACAO, NATUREZAID_OBJ, CONSUMACAOENUM_OBJ, NATUREZA_OBJ, GRUPO_OBJ, SPI_NATUREZA_ID_OBJ, TITULO_OBJ, CAPITULO_OBJ, TIPICIDADE_OBJ, LEGISLACAO_OBJ, 
+2025-07-09 06:31:16      2.024.567 lines fetched
+2025-07-09 06:31:16 0445 Store E_RAI_OCORRENCIA_OBJETO_NATUREZA into [lib://ETL/extract_diversos_ofc/E_RAI_OCORRENCIA_OBJETO_NATUREZA.qvd](qvd)
+2025-07-09 06:31:18 0446 Store E_RAI_OCORRENCIA_OBJETO_NATUREZA into [lib://ETLDesktop/extract_diversos_ofc/E_RAI_OCORRENCIA_OBJETO_NATUREZA.qvd](qvd)
+2025-07-09 06:31:23 0447 Drop Table E_RAI_OCORRENCIA_OBJETO_NATUREZA,MAX_DATA_ULTIMA_ATUALIZACAO
+2025-07-09 06:31:23 0448 DisConnect
+2025-07-09 06:31:23 0450 MAX_DATA_ULTIMA_ATUALIZACAO:
+2025-07-09 06:31:23 0451 LOAD
+2025-07-09 06:31:23 0452     MAX(DATA_ULTIMA_ATUALIZACAO) AS MAX_DATA_ULTIMA_ATUALIZACAO
+2025-07-09 06:31:23 0453 FROM [lib://ETL/extract_diversos_ofc/E_RAI_OCORRENCIA_ARMA.qvd] (qvd)
+2025-07-09 06:31:24      	1 fields found: MAX_DATA_ULTIMA_ATUALIZACAO, 
+2025-07-09 06:31:24      1 lines fetched
+2025-07-09 06:31:24 0455 LET vMAX_DATA_ULTIMA_ATUALIZACAO = Timestamp(Peek('MAX_DATA_ULTIMA_ATUALIZACAO', 0, 'MAX_DATA_ULTIMA_ATUALIZACAO'), 'YYYY-MM-DD hh:mm:ss.fff')
+2025-07-09 06:31:24 0457 TRACE MAX_DATA: 2025-07-08 02:48:52.434
+2025-07-09 06:31:24 0457 MAX_DATA: 2025-07-08 02:48:52.434
+2025-07-09 06:31:24 0458 
+2025-07-09 06:31:24 0459 
+2025-07-09 06:31:24 0460 
+2025-07-09 06:31:24 0459 LIB CONNECT TO 'ORACLE - DG TNS'
+2025-07-09 06:31:33      Connected.
+2025-07-09 06:31:33 0461 set StripComments=0
+2025-07-09 06:31:33 0462 E_RAI_OCORRENCIA_ARMA:
+2025-07-09 06:31:33 0463 SQL
+2025-07-09 06:31:33 0464 SELECT
+2025-07-09 06:31:33 0465 
+2025-07-09 06:31:33 0466 ar.id AS arma_id,
+2025-07-09 06:31:33 0467 oc.id AS id_rai,
+2025-07-09 06:31:33 0468 oc.dataultimaatualizacao AS data_ultima_atualizacao,
+2025-07-09 06:31:33 0469 --ARMA
+2025-07-09 06:31:33 0470 ar.tipoarma_nome,
+2025-07-09 06:31:33 0471 ar.marcaarma_nome AS marca_arma,
+2025-07-09 06:31:33 0472 ar.modeloarma_nome AS modelo_arma,
+2025-07-09 06:31:33 0473 ar.especiearma_nome AS especie_arma,
+2025-07-09 06:31:33 0474 ar.calibrearma_nome AS calibre_arma,
+2025-07-09 06:31:33 0475 ma.nome AS medidaadministrativa
+2025-07-09 06:31:33 0476 FROM bu.ocorrencia oc
+2025-07-09 06:31:33 0477 --ENDERECO/AMBIENTE
+2025-07-09 06:31:33 0478 LEFT JOIN bu.endereco ende
+2025-07-09 06:31:33 0479 ON ende.id = oc.endereco_id
+2025-07-09 06:31:33 0480 --ARMA
+2025-07-09 06:31:33 0481 INNER JOIN bu.ocorrenciaarma oa
+2025-07-09 06:31:33 0482       INNER JOIN bu.arma ar
+2025-07-09 06:31:33 0483       ON ar.id = oa.arma_id
+2025-07-09 06:31:33 0484       LEFT JOIN bu.medidaadministrativa ma
+2025-07-09 06:31:33 0485       ON ma.id = oa.medidasadministrativa_id
+2025-07-09 06:31:33 0486 ON oa.ocorrencia_id = oc.id
+2025-07-09 06:31:33 0487 WHERE
+2025-07-09 06:31:33 0488 ende.estado_sigla = 'GO'
+2025-07-09 06:31:33 0489 AND oc.statusocorrencia = 'OCORRENCIA'
+2025-07-09 06:31:33 0490 --FILTRO
+2025-07-09 06:31:33 0491 AND oc.dataultimaatualizacao >= TO_TIMESTAMP('2025-07-08 02:48:52.434', 'YYYY-MM-DD HH24:MI:SS.FF3')
+2025-07-09 06:31:35      	9 fields found: ARMA_ID, ID_RAI, DATA_ULTIMA_ATUALIZACAO, TIPOARMA_NOME, MARCA_ARMA, MODELO_ARMA, ESPECIE_ARMA, CALIBRE_ARMA, MEDIDAADMINISTRATIVA, 
+2025-07-09 06:31:35      94 lines fetched
+2025-07-09 06:31:35 0494 LOAD * FROM [lib://ETL/extract_diversos_ofc/E_RAI_OCORRENCIA_ARMA.qvd](qvd)WHERE NOT EXISTS(ARMA_ID)
+2025-07-09 06:31:35      	9 fields found: ARMA_ID, ID_RAI, DATA_ULTIMA_ATUALIZACAO, TIPOARMA_NOME, MARCA_ARMA, MODELO_ARMA, ESPECIE_ARMA, CALIBRE_ARMA, MEDIDAADMINISTRATIVA, 
+2025-07-09 06:31:35      116.636 lines fetched
+2025-07-09 06:31:35 0496 Store E_RAI_OCORRENCIA_ARMA into [lib://ETL/extract_diversos_ofc/E_RAI_OCORRENCIA_ARMA.qvd](qvd)
+2025-07-09 06:31:35 0497 Store E_RAI_OCORRENCIA_ARMA into [lib://ETLDesktop/extract_diversos_ofc/E_RAI_OCORRENCIA_ARMA.qvd](qvd)
+2025-07-09 06:31:35 0498 Drop Table E_RAI_OCORRENCIA_ARMA,MAX_DATA_ULTIMA_ATUALIZACAO
+2025-07-09 06:31:35 0499 DisConnect
+2025-07-09 06:31:35 0501 MAX_DATA_ULTIMA_ATUALIZACAO:
+2025-07-09 06:31:35 0502 LOAD
+2025-07-09 06:31:35 0503     MAX(DATA_ULTIMA_ATUALIZACAO) AS MAX_DATA_ULTIMA_ATUALIZACAO
+2025-07-09 06:31:35 0504 FROM [lib://ETL/extract_diversos_ofc/E_RAI_OCORRENCIA_ARMA_NATUREZA.qvd] (qvd)
+2025-07-09 06:31:43      	1 fields found: MAX_DATA_ULTIMA_ATUALIZACAO, 
+2025-07-09 06:31:43      1 lines fetched
+2025-07-09 06:31:43 0506 LET vMAX_DATA_ULTIMA_ATUALIZACAO = Timestamp(Peek('MAX_DATA_ULTIMA_ATUALIZACAO', 0, 'MAX_DATA_ULTIMA_ATUALIZACAO'), 'YYYY-MM-DD hh:mm:ss.fff')
+2025-07-09 06:31:43 0508 TRACE MAX_DATA: 2025-07-08 02:48:52.434
+2025-07-09 06:31:43 0508 MAX_DATA: 2025-07-08 02:48:52.434
+2025-07-09 06:31:43 0509 
+2025-07-09 06:31:43 0510 
+2025-07-09 06:31:43 0511 
+2025-07-09 06:31:43 0510 LIB CONNECT TO 'ORACLE - DG TNS'
+2025-07-09 06:31:57      Connected.
+2025-07-09 06:31:57 0512 set StripComments=0
+2025-07-09 06:31:57 0513 E_RAI_OCORRENCIA_ARMA_NATUREZA:
+2025-07-09 06:31:57 0514 SQL
+2025-07-09 06:31:57 0515 SELECT
+2025-07-09 06:31:57 0516 
+2025-07-09 06:31:57 0517 oco_ar.ocorrenciaarma_id || '/' || oco_ar.naturezas_id AS nat_ar_id,
+2025-07-09 06:31:57 0518 oa.arma_id,
+2025-07-09 06:31:57 0519 oc.dataultimaatualizacao AS data_ultima_atualizacao,
+2025-07-09 06:31:57 0520 nat_ar.naturezaid AS naturezaid_ar,
+2025-07-09 06:31:57 0521 nat_ar.consumacaoenum AS consumacaoenum_ar,
+2025-07-09 06:31:57 0522 nat_tip_ar.natureza AS natureza_ar,
+2025-07-09 06:31:57 0523 nat_tip_ar.grupo AS grupo_ar,
+2025-07-09 06:31:57 0524 nat_tip_ar.spi_natureza_id AS spi_natureza_id_ar,
+2025-07-09 06:31:57 0525 nat_tip_ar.titulo AS titulo_ar,
+2025-07-09 06:31:57 0526 nat_tip_ar.capitulo AS capitulo_ar,
+2025-07-09 06:31:57 0527 nat_tip_ar.tipicidade AS tipicidade_ar,
+2025-07-09 06:31:57 0528 nat_tip_ar.legislacao AS legislacao_ar
+2025-07-09 06:31:57 0529 FROM bu.ocorrencia oc
+2025-07-09 06:31:57 0530 --ENDERECO/AMBIENTE
+2025-07-09 06:31:57 0531 LEFT JOIN bu.endereco ende
+2025-07-09 06:31:57 0532 ON ende.id = oc.endereco_id
+2025-07-09 06:31:57 0533 --ARMA
+2025-07-09 06:31:57 0534 INNER JOIN bu.ocorrenciaarma oa
+2025-07-09 06:31:57 0535       INNER JOIN bu.ocorrencia_arma_natur oco_ar
+2025-07-09 06:31:57 0536             INNER JOIN bu.natureza nat_ar
+2025-07-09 06:31:57 0537           	      INNER JOIN user_transacional.e_natureza_spi_tipificada_mview nat_tip_ar
+2025-07-09 06:31:57 0538     	 	      ON nat_tip_ar.spi_natureza_id = nat_ar.naturezaid
+2025-07-09 06:31:57 0539             ON nat_ar.id = oco_ar.naturezas_id
+2025-07-09 06:31:57 0540       ON oco_ar.ocorrenciaarma_id = oa.id  
+2025-07-09 06:31:57 0541 ON oa.ocorrencia_id = oc.id
+2025-07-09 06:31:57 0542 WHERE
+2025-07-09 06:31:57 0543 ende.estado_sigla = 'GO'
+2025-07-09 06:31:57 0544 AND oc.statusocorrencia = 'OCORRENCIA'
+2025-07-09 06:31:57 0545 --FILTRO
+2025-07-09 06:31:57 0546 AND oc.dataultimaatualizacao >= TO_TIMESTAMP('2025-07-08 02:48:52.434', 'YYYY-MM-DD HH24:MI:SS.FF3')
+2025-07-09 06:31:59      	12 fields found: NAT_AR_ID, ARMA_ID, DATA_ULTIMA_ATUALIZACAO, NATUREZAID_AR, CONSUMACAOENUM_AR, NATUREZA_AR, GRUPO_AR, SPI_NATUREZA_ID_AR, TITULO_AR, CAPITULO_AR, TIPICIDADE_AR, LEGISLACAO_AR, 
+2025-07-09 06:31:59      104 lines fetched
+2025-07-09 06:31:59 0549 LOAD * FROM [lib://ETL/extract_diversos_ofc/E_RAI_OCORRENCIA_ARMA_NATUREZA.qvd](qvd)WHERE NOT EXISTS(NAT_AR_ID)
+2025-07-09 06:31:59      	12 fields found: NAT_AR_ID, ARMA_ID, DATA_ULTIMA_ATUALIZACAO, NATUREZAID_AR, CONSUMACAOENUM_AR, NATUREZA_AR, GRUPO_AR, SPI_NATUREZA_ID_AR, TITULO_AR, CAPITULO_AR, TIPICIDADE_AR, LEGISLACAO_AR, 
+2025-07-09 06:31:59      184.931 lines fetched
+2025-07-09 06:31:59 0551 Store E_RAI_OCORRENCIA_ARMA_NATUREZA into [lib://ETL/extract_diversos_ofc/E_RAI_OCORRENCIA_ARMA_NATUREZA.qvd](qvd)
+2025-07-09 06:31:59 0552 Store E_RAI_OCORRENCIA_ARMA_NATUREZA into [lib://ETLDesktop/extract_diversos_ofc/E_RAI_OCORRENCIA_ARMA_NATUREZA.qvd](qvd)
+2025-07-09 06:32:00 0553 Drop Table E_RAI_OCORRENCIA_ARMA_NATUREZA,MAX_DATA_ULTIMA_ATUALIZACAO
+2025-07-09 06:32:00 0554 DisConnect
+2025-07-09 06:32:00 0556 MAX_DATA_ULTIMA_ATUALIZACAO:
+2025-07-09 06:32:00 0557 LOAD
+2025-07-09 06:32:00 0558     MAX(DATA_ULTIMA_ATUALIZACAO) AS MAX_DATA_ULTIMA_ATUALIZACAO
+2025-07-09 06:32:00 0559 FROM [lib://ETL/extract_diversos_ofc/E_RAI_OCORRENCIA_PESSOA.qvd] (qvd)
+2025-07-09 06:47:30      	1 fields found: MAX_DATA_ULTIMA_ATUALIZACAO, 
+2025-07-09 06:47:30      1 lines fetched
+2025-07-09 06:47:31 0561 LET vMAX_DATA_ULTIMA_ATUALIZACAO = Timestamp(Peek('MAX_DATA_ULTIMA_ATUALIZACAO', 0, 'MAX_DATA_ULTIMA_ATUALIZACAO'), 'YYYY-MM-DD hh:mm:ss.fff')
+2025-07-09 06:47:31 0563 TRACE MAX_DATA: 2025-07-08 04:15:22.672
+2025-07-09 06:47:31 0563 MAX_DATA: 2025-07-08 04:15:22.672
+2025-07-09 06:47:31 0564 
+2025-07-09 06:47:31 0565 
+2025-07-09 06:47:31 0566 
+2025-07-09 06:47:31 0565 LIB CONNECT TO 'ORACLE - DG TNS'
+2025-07-09 06:47:37      Connected.
+2025-07-09 06:47:37 0567 set StripComments=0
+2025-07-09 06:47:37 0568 E_RAI_OCORRENCIA_PESSOA:
+2025-07-09 06:47:37 0569 SQL
+2025-07-09 06:47:37 0570 SELECT
+2025-07-09 06:47:37 0571 
+2025-07-09 06:47:37 0572 --PESSOA
+2025-07-09 06:47:37 0573 ope.id AS ocorrenciapessoa_id,
+2025-07-09 06:47:37 0574 oc.id AS id_rai,
+2025-07-09 06:47:37 0575 oc.dataultimaatualizacao AS data_ultima_atualizacao,
+2025-07-09 06:47:37 0576 pes.id AS pessoa_id,
+2025-07-09 06:47:37 0577 pes.sexo_nome,
+2025-07-09 06:47:37 0578 pes.profissao,
+2025-07-09 06:47:37 0579 pes.agentesegurancapublica AS agente_seguranca_publica,
+2025-07-09 06:47:37 0580 pes.cargosegurancapublica_nome AS cargo_seguranca_publica,
+2025-07-09 06:47:37 0581 pes.nacionalidade,
+2025-07-09 06:47:37 0582 pes.orientacaosexual_nome AS orientacao_sexual,
+2025-07-09 06:47:37 0583 pes.grauinstrucao_nome AS grau_instrucao,
+2025-07-09 06:47:37 0584 pes.naturalidade_municipio_nome,
+2025-07-09 06:47:37 0585 pes.naturalidade_estado_nome,
+2025-07-09 06:47:37 0586 pes.condicaosocial_nome AS condicao_social,
+2025-07-09 06:47:37 0587 pes.corraca_nome AS cor_raca,
+2025-07-09 06:47:37 0588 pes.faixaetaria_nome AS faixa_etaria,
+2025-07-09 06:47:37 0589 pes.datanascimento,
+2025-07-09 06:47:37 0590 pes.identidadegenero_nome,
+2025-07-09 06:47:37 0591 TRUNC(MONTHS_BETWEEN(oc.datafato, pes.datanascimento) / 12) AS idade_no_fato,
+2025-07-09 06:47:37 0592 mot.descricao AS motivacao,
+2025-07-09 06:47:37 0593 --OCORRENCIA_PESSOA
+2025-07-09 06:47:37 0594 ope.tipopessoaenum AS tipo_pessoa,
+2025-07-09 06:47:37 0595 ope.meioempregado_nome AS meio_empregado,
+2025-07-09 06:47:37 0596 ope.meiolocomocao_nome AS meio_locomocao,
+2025-07-09 06:47:37 0597 ope.intervencaopolicial AS intervencao_policial,
+2025-07-09 06:47:37 0598 ope.emservico AS em_servico,
+2025-07-09 06:47:37 0599 ope.obito
+2025-07-09 06:47:37 0600 FROM bu.ocorrencia oc
+2025-07-09 06:47:37 0601 --ENDERECO/AMBIENTE
+2025-07-09 06:47:37 0602 LEFT JOIN bu.endereco ende
+2025-07-09 06:47:37 0603 ON ende.id = oc.endereco_id
+2025-07-09 06:47:37 0604 LEFT JOIN sspj.motivacoes mot
+2025-07-09 06:47:37 0605 ON mot.motivacao = oc.motivacao_id
+2025-07-09 06:47:37 0606 INNER JOIN bu.ocorrenciapessoa ope 
+2025-07-09 06:47:37 0607      LEFT JOIN bu.pessoa pes 
+2025-07-09 06:47:37 0608 	 ON pes.id = ope.pessoa_id
+2025-07-09 06:47:37 0609 ON oc.id = ope.ocorrencia_id 
+2025-07-09 06:47:37 0610 WHERE
+2025-07-09 06:47:37 0611 ende.estado_sigla = 'GO'
+2025-07-09 06:47:37 0612 AND oc.statusocorrencia = 'OCORRENCIA'
+2025-07-09 06:47:37 0613 --FILTRO
+2025-07-09 06:47:37 0614 AND oc.dataultimaatualizacao >= TO_TIMESTAMP('2025-07-08 04:15:22.672', 'YYYY-MM-DD HH24:MI:SS.FF3')
+2025-07-09 06:47:45      	26 fields found: OCORRENCIAPESSOA_ID, ID_RAI, DATA_ULTIMA_ATUALIZACAO, PESSOA_ID, SEXO_NOME, PROFISSAO, AGENTE_SEGURANCA_PUBLICA, CARGO_SEGURANCA_PUBLICA, NACIONALIDADE, ORIENTACAO_SEXUAL, GRAU_INSTRUCAO, NATURALIDADE_MUNICIPIO_NOME, NATURALIDADE_ESTADO_NOME, CONDICAO_SOCIAL, COR_RACA, FAIXA_ETARIA, DATANASCIMENTO, IDENTIDADEGENERO_NOME, IDADE_NO_FATO, MOTIVACAO, TIPO_PESSOA, MEIO_EMPREGADO, MEIO_LOCOMOCAO, INTERVENCAO_POLICIAL, EM_SERVICO, OBITO, 
+2025-07-09 06:47:45      24.689 lines fetched
+2025-07-09 06:47:45 0617 LOAD * FROM [lib://ETL/extract_diversos_ofc/E_RAI_OCORRENCIA_PESSOA.qvd](qvd)WHERE NOT EXISTS(OCORRENCIAPESSOA_ID)
+2025-07-09 06:51:19      	26 fields found: OCORRENCIAPESSOA_ID, ID_RAI, DATA_ULTIMA_ATUALIZACAO, PESSOA_ID, SEXO_NOME, PROFISSAO, AGENTE_SEGURANCA_PUBLICA, CARGO_SEGURANCA_PUBLICA, NACIONALIDADE, ORIENTACAO_SEXUAL, GRAU_INSTRUCAO, NATURALIDADE_MUNICIPIO_NOME, NATURALIDADE_ESTADO_NOME, CONDICAO_SOCIAL, COR_RACA, FAIXA_ETARIA, DATANASCIMENTO, IDENTIDADEGENERO_NOME, IDADE_NO_FATO, MOTIVACAO, TIPO_PESSOA, MEIO_EMPREGADO, MEIO_LOCOMOCAO, INTERVENCAO_POLICIAL, EM_SERVICO, OBITO, 
+2025-07-09 06:51:19      54.212.121 lines fetched
+2025-07-09 06:51:19 0619 Store E_RAI_OCORRENCIA_PESSOA into [lib://ETL/extract_diversos_ofc/E_RAI_OCORRENCIA_PESSOA.qvd](qvd)
+2025-07-09 06:52:18 0620 Store E_RAI_OCORRENCIA_PESSOA into [lib://ETLDesktop/extract_diversos_ofc/E_RAI_OCORRENCIA_PESSOA.qvd](qvd)
+2025-07-09 06:55:19 0621 Drop Table E_RAI_OCORRENCIA_PESSOA,MAX_DATA_ULTIMA_ATUALIZACAO
+2025-07-09 06:55:19 0622 DisConnect
+2025-07-09 06:55:19 0624 MAX_DATA_ULTIMA_ATUALIZACAO:
+2025-07-09 06:55:19 0625 LOAD
+2025-07-09 06:55:19 0626     MAX(DATA_ULTIMA_ATUALIZACAO) AS MAX_DATA_ULTIMA_ATUALIZACAO
+2025-07-09 06:55:19 0627 FROM [lib://ETL/extract_diversos_ofc/E_RAI_OCORRENCIA_PESSOA_NATUREZA.qvd] (qvd)
+2025-07-09 07:09:59      	1 fields found: MAX_DATA_ULTIMA_ATUALIZACAO, 
+2025-07-09 07:09:59      1 lines fetched
+2025-07-09 07:10:00 0629 LET vMAX_DATA_ULTIMA_ATUALIZACAO = Timestamp(Peek('MAX_DATA_ULTIMA_ATUALIZACAO', 0, 'MAX_DATA_ULTIMA_ATUALIZACAO'), 'YYYY-MM-DD hh:mm:ss.fff')
+2025-07-09 07:10:00 0631 TRACE MAX_DATA: 2025-07-08 04:20:48.404
+2025-07-09 07:10:00 0631 MAX_DATA: 2025-07-08 04:20:48.404
+2025-07-09 07:10:00 0632 
+2025-07-09 07:10:00 0633 
+2025-07-09 07:10:00 0634 
+2025-07-09 07:10:00 0633 LIB CONNECT TO 'ORACLE - DG TNS'
+2025-07-09 07:10:06      Connected.
+2025-07-09 07:10:06 0635 set StripComments=0
+2025-07-09 07:10:06 0636 E_RAI_OCORRENCIA_PESSOA_NATUREZA:
+2025-07-09 07:10:06 0637 SQL
+2025-07-09 07:10:06 0638 SELECT
+2025-07-09 07:10:06 0639 
+2025-07-09 07:10:06 0640 opn.id AS nat_pes_id,
+2025-07-09 07:10:06 0641 ope.pessoa_id AS pessoa_id,
+2025-07-09 07:10:06 0642 oc.dataultimaatualizacao AS data_ultima_atualizacao,
+2025-07-09 07:10:06 0643 nat_pes.naturezaid AS naturezaid_pes,
+2025-07-09 07:10:06 0644 nat_pes.consumacaoenum AS consumacaoenum_pes,
+2025-07-09 07:10:06 0645 nat_tip_pes.natureza AS natureza_pes,
+2025-07-09 07:10:06 0646 nat_tip_pes.grupo AS grupo_pes,
+2025-07-09 07:10:06 0647 nat_tip_pes.spi_natureza_id AS spi_natureza_id_pes,
+2025-07-09 07:10:06 0648 nat_tip_pes.titulo AS titulo_pes,
+2025-07-09 07:10:06 0649 nat_tip_pes.capitulo AS capitulo_pes,
+2025-07-09 07:10:06 0650 nat_tip_pes.tipicidade AS tipicidade_pes,
+2025-07-09 07:10:06 0651 nat_tip_pes.legislacao AS legislacao_pes
+2025-07-09 07:10:06 0652 FROM bu.ocorrencia oc
+2025-07-09 07:10:06 0653 --ENDERECO/AMBIENTE
+2025-07-09 07:10:06 0654 LEFT JOIN bu.endereco ende
+2025-07-09 07:10:06 0655 ON ende.id = oc.endereco_id
+2025-07-09 07:10:06 0656 --PESSOA
+2025-07-09 07:10:06 0657 INNER JOIN bu.ocorrenciapessoa ope 
+2025-07-09 07:10:06 0658 	 INNER JOIN bu.ocorrencia_pessoa_natur opn
+2025-07-09 07:10:06 0659 	 	   INNER JOIN bu.natureza nat_pes
+2025-07-09 07:10:06 0660 	 	  	     INNER JOIN user_transacional.e_natureza_spi_tipificada_mview nat_tip_pes
+2025-07-09 07:10:06 0661     	 	     ON nat_tip_pes.spi_natureza_id = nat_pes.naturezaid
+2025-07-09 07:10:06 0662     	   ON nat_pes.id = opn.natureza_id  
+2025-07-09 07:10:06 0663 	 ON opn.ocorrenciapessoa_id = ope.id
+2025-07-09 07:10:06 0664 ON oc.id = ope.ocorrencia_id 
+2025-07-09 07:10:06 0665 WHERE
+2025-07-09 07:10:06 0666 ende.estado_sigla = 'GO'
+2025-07-09 07:10:06 0667 AND oc.statusocorrencia = 'OCORRENCIA'
+2025-07-09 07:10:06 0668 --FILTRO
+2025-07-09 07:10:06 0669 AND oc.dataultimaatualizacao >= TO_TIMESTAMP('2025-07-08 04:20:48.404', 'YYYY-MM-DD HH24:MI:SS.FF3')
+2025-07-09 07:10:14      	12 fields found: NAT_PES_ID, PESSOA_ID, DATA_ULTIMA_ATUALIZACAO, NATUREZAID_PES, CONSUMACAOENUM_PES, NATUREZA_PES, GRUPO_PES, SPI_NATUREZA_ID_PES, TITULO_PES, CAPITULO_PES, TIPICIDADE_PES, LEGISLACAO_PES, 
+2025-07-09 07:10:14      42.407 lines fetched
+2025-07-09 07:10:14 0673 LOAD * FROM [lib://ETL/extract_diversos_ofc/E_RAI_OCORRENCIA_PESSOA_NATUREZA.qvd](qvd)WHERE NOT EXISTS(NAT_PES_ID)
+2025-07-09 07:13:19      	12 fields found: NAT_PES_ID, PESSOA_ID, DATA_ULTIMA_ATUALIZACAO, NATUREZAID_PES, CONSUMACAOENUM_PES, NATUREZA_PES, GRUPO_PES, SPI_NATUREZA_ID_PES, TITULO_PES, CAPITULO_PES, TIPICIDADE_PES, LEGISLACAO_PES, 
+2025-07-09 07:13:19      86.123.083 lines fetched
+2025-07-09 07:13:19 0675 Store E_RAI_OCORRENCIA_PESSOA_NATUREZA into [lib://ETL/extract_diversos_ofc/E_RAI_OCORRENCIA_PESSOA_NATUREZA.qvd](qvd)
+2025-07-09 07:13:51 0676 Store E_RAI_OCORRENCIA_PESSOA_NATUREZA into [lib://ETLDesktop/extract_diversos_ofc/E_RAI_OCORRENCIA_PESSOA_NATUREZA.qvd](qvd)
+2025-07-09 07:16:01 0677 Drop Table E_RAI_OCORRENCIA_PESSOA_NATUREZA,MAX_DATA_ULTIMA_ATUALIZACAO
+2025-07-09 07:16:02 0678 DisConnect
+2025-07-09 07:16:02 0680 MAX_DATA_ULTIMA_ATUALIZACAO:
+2025-07-09 07:16:02 0681 LOAD
+2025-07-09 07:16:02 0682     MAX(DATA_ULTIMA_ATUALIZACAO) AS MAX_DATA_ULTIMA_ATUALIZACAO
+2025-07-09 07:16:02 0683 FROM [lib://ETL/extract_diversos_ofc/E_RAI_OCORRENCIA_QUALIFICACAO.qvd] (qvd)
+2025-07-09 07:25:36      	1 fields found: MAX_DATA_ULTIMA_ATUALIZACAO, 
+2025-07-09 07:25:36      1 lines fetched
+2025-07-09 07:25:38 0685 LET vMAX_DATA_ULTIMA_ATUALIZACAO = Timestamp(Peek('MAX_DATA_ULTIMA_ATUALIZACAO', 0, 'MAX_DATA_ULTIMA_ATUALIZACAO'), 'YYYY-MM-DD hh:mm:ss.fff')
+2025-07-09 07:25:38 0687 TRACE MAX_DATA: 2025-07-08 04:27:16.370
+2025-07-09 07:25:38 0687 MAX_DATA: 2025-07-08 04:27:16.370
+2025-07-09 07:25:38 0688 
+2025-07-09 07:25:38 0689 
+2025-07-09 07:25:38 0690 
+2025-07-09 07:25:38 0689 LIB CONNECT TO 'ORACLE - DG TNS'
+2025-07-09 07:25:38      Connected.
+2025-07-09 07:25:38 0691 set StripComments=0
+2025-07-09 07:25:38 0692 E_RAI_OCORRENCIA_QUALIFICACAO:
+2025-07-09 07:25:38 0693 SQL
+2025-07-09 07:25:38 0694 SELECT
+2025-07-09 07:25:38 0695 
+2025-07-09 07:25:38 0696 qua.id AS qualificacao_id,
+2025-07-09 07:25:38 0697 oc.id AS id_rai,
+2025-07-09 07:25:38 0698 ope.pessoa_id,
+2025-07-09 07:25:38 0699 oc.dataultimaatualizacao AS data_ultima_atualizacao,
+2025-07-09 07:25:38 0700 qua.nome AS qualificacao,
+2025-07-09 07:25:38 0701 qcap.nome AS qualificacao_categoria
+2025-07-09 07:25:38 0702 FROM bu.ocorrencia oc
+2025-07-09 07:25:38 0703 --ENDERECO/AMBIENTE
+2025-07-09 07:25:38 0704 LEFT JOIN bu.endereco ende
+2025-07-09 07:25:38 0705 ON ende.id = oc.endereco_id
+2025-07-09 07:25:38 0706 INNER JOIN bu.ocorrenciapessoa ope 
+2025-07-09 07:25:38 0707 	  LEFT JOIN bu.ocorrencia_pessoa_natur opn
+2025-07-09 07:25:38 0708 		   LEFT JOIN bu.ocorrencia_pessoa_natur_qual opnq
+2025-07-09 07:25:38 0709 			    LEFT JOIN bu.qualificacao qua
+2025-07-09 07:25:38 0710 				     INNER JOIN spi.qalificacao qa
+2025-07-09 07:25:38 0711 						   INNER JOIN spi.qualificacao_categorias qcap
+2025-07-09 07:25:38 0712 						   ON qcap.qualificacao_categoria = qa.qualificacao_categoria
+2025-07-09 07:25:38 0713 				     ON qa.codigo_qualificacao = qua.qualificacaoid
+2025-07-09 07:25:38 0714 			    ON qua.id = opnq.qualificacoes_id
+2025-07-09 07:25:38 0715 		   ON opnq.ocorrenciapessoanatureza_id = opn.id 
+2025-07-09 07:25:38 0716 	  ON opn.ocorrenciapessoa_id = ope.id
+2025-07-09 07:25:38 0717 ON oc.id = ope.ocorrencia_id 
+2025-07-09 07:25:38 0718 WHERE
+2025-07-09 07:25:38 0719 ende.estado_sigla = 'GO'
+2025-07-09 07:25:38 0720 AND oc.statusocorrencia = 'OCORRENCIA'
+2025-07-09 07:25:38 0721 --FILTRO
+2025-07-09 07:25:38 0722 AND oc.dataultimaatualizacao >= TO_TIMESTAMP('2025-07-08 04:27:16.370', 'YYYY-MM-DD HH24:MI:SS.FF3')
+2025-07-09 07:25:42      	6 fields found: QUALIFICACAO_ID, ID_RAI, PESSOA_ID, DATA_ULTIMA_ATUALIZACAO, QUALIFICACAO, QUALIFICACAO_CATEGORIA, 
+2025-07-09 07:25:42      44.704 lines fetched
+2025-07-09 07:25:42 0725 LOAD * FROM [lib://ETL/extract_diversos_ofc/E_RAI_OCORRENCIA_QUALIFICACAO.qvd](qvd)WHERE NOT EXISTS(QUALIFICACAO_ID)
+2025-07-09 07:27:29      	6 fields found: QUALIFICACAO_ID, ID_RAI, PESSOA_ID, DATA_ULTIMA_ATUALIZACAO, QUALIFICACAO, QUALIFICACAO_CATEGORIA, 
+2025-07-09 07:27:29      90.294.854 lines fetched
+2025-07-09 07:27:29 0727 Store E_RAI_OCORRENCIA_QUALIFICACAO into [lib://ETL/extract_diversos_ofc/E_RAI_OCORRENCIA_QUALIFICACAO.qvd](qvd)
+2025-07-09 07:27:43      Error: Cannot open file: 'lib://ETL/extract_diversos_ofc/E_RAI_OCORRENCIA_QUALIFICACAO.qvd' (Native Path: \\estatistica\Repositorio\ETL\extract_diversos_ofc\E_RAI_OCORRENCIA_QUALIFICACAO.qvd
+2025-07-09 07:27:43      System error: Failed to open file in write mode for file: \\estatistica\Repositorio\ETL\extract_diversos_ofc\E_RAI_OCORRENCIA_QUALIFICACAO.qvd)
+2025-07-09 07:27:43      Execution Failed
+2025-07-09 07:27:43      Execution finished.
