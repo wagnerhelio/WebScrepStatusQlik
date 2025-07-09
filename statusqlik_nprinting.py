@@ -169,16 +169,7 @@ def coletar_status_nprinting():
     resumos = {}
     os.makedirs("errorlogs_nprinting", exist_ok=True)
     os.makedirs("tasks_nprinting", exist_ok=True)
-    # Limpa PDFs antigos antes de gerar o novo para cada tipo
-    for sufixo in ["relatorios"]:
-        arquivos = [f for f in os.listdir("tasks_nprinting") if f.endswith(".pdf") and f"_{sufixo}_" in f]
-        if len(arquivos) > 1:
-            arquivos.sort(key=lambda n: os.path.getctime(os.path.join("tasks_nprinting", n)), reverse=True)
-            for arq in arquivos[1:]:
-                try:
-                    os.remove(os.path.join("tasks_nprinting", arq))
-                except Exception as e:
-                    print(f"Erro ao remover {arq}: {e}")
+    # Removida a limpeza de PDFs antigos, pois agora sobrescreve o arquivo do dia
     for nprinting in NPRINTINGs:
         nome_sufixo = nprinting["nome"]
         url_login = nprinting["url_login"]
@@ -266,7 +257,7 @@ def coletar_status_nprinting():
             resumo_str = f"Resumo das tarefas QMC '{nome_sufixo}'\n" + "\n".join(resumo_linhas)
             resumos[nome_sufixo] = resumo_str
             registros = [tarefa for tarefas in tarefas_por_status.values() for tarefa in tarefas]
-            nome_arquivo = f"status_nprinting_{nome_sufixo}_{hoje.strftime('%Y-%m-%d_%H-%M-%S')}.pdf"
+            nome_arquivo = f"status_nprinting_{nome_sufixo}_{hoje.strftime('%Y-%m-%d')}.pdf"
             caminho_pdf = os.path.join("tasks_nprinting", nome_arquivo)
             env = Environment(loader=FileSystemLoader("."))
             template = env.get_template("template_nprinting.html")

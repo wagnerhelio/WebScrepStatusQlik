@@ -218,3 +218,39 @@ Script de automação Selenium para coletar status das tarefas do Qlik NPrinting
 ### send_statusqlik_evolution.py
 Envia os resumos, relatórios e logs coletados via Evolution API (WhatsApp), tanto para número individual quanto para grupo.
 
+## Fluxo Atual de Geração, Envio e Limpeza de Arquivos
+
+### 1. Geração dos Arquivos de Status
+- A cada hora cheia, o agendador executa o script `statusqlik_qmc.py`, que gera dois arquivos PDF de status das tarefas QMC:
+  - `tasks_qmc/status_qlik_estatistica_YYYY-MM-DD.pdf`
+  - `tasks_qmc/status_qlik_paineis_YYYY-MM-DD.pdf`
+- O script `statusqlik_nprinting.py` gera o arquivo PDF de status das tarefas NPrinting:
+  - `tasks_nprinting/status_nprinting_relatorios_YYYY-MM-DD.pdf`
+- Os arquivos são sobrescritos a cada execução, mantendo apenas o arquivo do dia para cada tipo.
+
+### 2. Envio dos Arquivos e Resumos
+- Todos os dias às 08:00, o script `send_statusqlik_evolution.py` é executado.
+- Ele:
+  1. Gera um resumo concatenado das tarefas do dia (QMC e NPrinting) e envia via WhatsApp (API Evolution) para um número e um grupo configurados.
+  2. Envia os arquivos PDF de status do dia para os mesmos destinos.
+  3. Envia logs de erro das pastas `errorlogs` e `errorlogs_nprinting`.
+  4. Envia relatórios da pasta compartilhada, se houver.
+
+### 3. Limpeza das Pastas
+- Após o envio, todos os arquivos das pastas monitoradas (`errorlogs`, `errorlogs_nprinting`, `tasks_nprinting`, `tasks_qmc`, pasta compartilhada) são removidos.
+- Assim, a cada ciclo, apenas os arquivos do dia são mantidos até o próximo envio.
+
+### 4. Observações Importantes
+- O sistema não acumula arquivos por horário: sempre sobrescreve o arquivo do dia.
+- Se algum envio falhar, o arquivo pode ser perdido, pois a limpeza é feita após o envio. Recomenda-se monitorar os logs para identificar falhas.
+- Variáveis de ambiente são obrigatórias para o funcionamento correto. Verifique o arquivo `.env`.
+
+### 5. Agendamento
+- O agendamento é feito via `scheduler_statusqlik.py`:
+  - A cada hora: geração dos status QMC.
+  - Todo dia às 08:00: envio dos resumos, PDFs e logs.
+
+---
+
+Se precisar de mais detalhes sobre cada etapa ou sobre configuração, consulte os scripts ou peça exemplos específicos.
+

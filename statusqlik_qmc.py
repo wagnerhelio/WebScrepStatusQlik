@@ -219,16 +219,7 @@ def coletar_status_qmc():
     resumos = {}
     os.makedirs("errorlogs", exist_ok=True)
     os.makedirs("tasks_qmc", exist_ok=True)
-    # Limpa PDFs antigos antes de gerar o novo para cada tipo
-    for sufixo in ["estatistica", "paineis"]:
-        arquivos = [f for f in os.listdir("tasks_qmc") if f.endswith(".pdf") and f"_{sufixo}_" in f]
-        if len(arquivos) > 1:
-            arquivos.sort(key=lambda n: os.path.getctime(os.path.join("tasks_qmc", n)), reverse=True)
-            for arq in arquivos[1:]:
-                try:
-                    os.remove(os.path.join("tasks_qmc", arq))
-                except Exception as e:
-                    print(f"Erro ao remover {arq}: {e}")
+    # Removida a limpeza de PDFs antigos, pois agora sobrescreve o arquivo do dia
     for qmc in QMCs:
         nome_sufixo = qmc["nome"]
         url_login = qmc["url_login"]
@@ -355,8 +346,7 @@ def coletar_status_qmc():
             resumos[nome_sufixo] = resumo_str
             # Geração de PDF ao final
             registros = [tarefa for tarefas in tarefas_por_status.values() for tarefa in tarefas]
-            nome_arquivo_base = f"status_qlik_{nome_sufixo}_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
-            nome_arquivo = nome_arquivo_base + ".pdf"
+            nome_arquivo = f"status_qlik_{nome_sufixo}_{hoje.strftime('%Y-%m-%d')}.pdf"
             caminho_pdf = os.path.join("tasks_qmc", nome_arquivo)
             env = Environment(loader=FileSystemLoader("."))
             template = env.get_template("template.html")
@@ -366,7 +356,7 @@ def coletar_status_qmc():
             )
             with open(caminho_pdf, "wb") as saida_pdf:
                 pisa.CreatePDF(html_renderizado, dest=saida_pdf)
-            print(f"\n✅ PDF gerado com xhtml2pdf: {caminho_pdf}")
+            print(f"\n 705 PDF gerado com xhtml2pdf: {caminho_pdf}")
         finally:
             driver.quit()
     return resumos
