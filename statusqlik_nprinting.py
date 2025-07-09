@@ -169,6 +169,16 @@ def coletar_status_nprinting():
     resumos = {}
     os.makedirs("errorlogs_nprinting", exist_ok=True)
     os.makedirs("tasks_nprinting", exist_ok=True)
+    # Limpa PDFs antigos antes de gerar o novo para cada tipo
+    for sufixo in ["relatorios"]:
+        arquivos = [f for f in os.listdir("tasks_nprinting") if f.endswith(".pdf") and f"_{sufixo}_" in f]
+        if len(arquivos) > 1:
+            arquivos.sort(key=lambda n: os.path.getctime(os.path.join("tasks_nprinting", n)), reverse=True)
+            for arq in arquivos[1:]:
+                try:
+                    os.remove(os.path.join("tasks_nprinting", arq))
+                except Exception as e:
+                    print(f"Erro ao remover {arq}: {e}")
     for nprinting in NPRINTINGs:
         nome_sufixo = nprinting["nome"]
         url_login = nprinting["url_login"]

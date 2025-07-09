@@ -219,6 +219,16 @@ def coletar_status_qmc():
     resumos = {}
     os.makedirs("errorlogs", exist_ok=True)
     os.makedirs("tasks_qmc", exist_ok=True)
+    # Limpa PDFs antigos antes de gerar o novo para cada tipo
+    for sufixo in ["estatistica", "paineis"]:
+        arquivos = [f for f in os.listdir("tasks_qmc") if f.endswith(".pdf") and f"_{sufixo}_" in f]
+        if len(arquivos) > 1:
+            arquivos.sort(key=lambda n: os.path.getctime(os.path.join("tasks_qmc", n)), reverse=True)
+            for arq in arquivos[1:]:
+                try:
+                    os.remove(os.path.join("tasks_qmc", arq))
+                except Exception as e:
+                    print(f"Erro ao remover {arq}: {e}")
     for qmc in QMCs:
         nome_sufixo = qmc["nome"]
         url_login = qmc["url_login"]
