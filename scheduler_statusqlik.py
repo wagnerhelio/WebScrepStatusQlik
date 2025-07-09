@@ -56,11 +56,12 @@ def run_statusqlik_nprinting():
 
 def run_send_statusqlik_evolution():
     print(f"[{datetime.now()}] Enviando resumo e arquivos...")
-    subprocess.run([python_exec, "send_statusqlik_evolution.py"])
+    # Limpa as pastas ANTES do envio, mantendo só o mais recente de cada tipo
     limpar_pasta_mais_recente("tasks_qmc")
     limpar_pasta_mais_recente("tasks_nprinting")
     limpar_errorlogs("errorlogs")
     limpar_errorlogs("errorlogs_nprinting")
+    subprocess.run([python_exec, "send_statusqlik_evolution.py"])
 
 # Agendamento
 schedule.every().hour.at(":00").do(run_statusqlik_qmc)
