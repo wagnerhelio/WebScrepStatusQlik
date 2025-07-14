@@ -1,0 +1,129 @@
+﻿2025-07-13 12:00:36      Execution started.
+2025-07-13 12:00:36      Qlik Sense Server Version     12.334.4
+2025-07-13 12:00:36      CPU Target                    x64
+2025-07-13 12:00:36      Operating System              Windows Server 2012 Standard  (64 bit edition)
+2025-07-13 12:00:36      Wow64 mode                    Not using Wow64
+2025-07-13 12:00:36      Language                      0416 português Portuguese
+2025-07-13 12:00:36      Country                       BRA Brasil Brazil
+2025-07-13 12:00:36      MDAC Version                  6.2.9200.16384
+2025-07-13 12:00:36      MDAC Full Install Version     6.2.9200.16384
+2025-07-13 12:00:36      PreferredCompression          2
+2025-07-13 12:00:36      EnableParallelReload          1
+2025-07-13 12:00:36      ParallelizeQvdLoads           1
+2025-07-13 12:00:36      AutoSaveAfterReload           0
+2025-07-13 12:00:36      BackupBeforeReload            0
+2025-07-13 12:00:36      EnableFlushLog                0
+2025-07-13 12:00:36      UserLogfileCharset            65001
+2025-07-13 12:00:36      OdbcLoginTimeout              -1
+2025-07-13 12:00:36      OdbcConnectionTimeout         -1
+2025-07-13 12:00:36      LongestPossibleLine           1048576
+2025-07-13 12:00:36      MaxCoreMask                   15
+2025-07-13 12:00:36      WebFileTimeout                0
+2025-07-13 12:00:36      WebFileUserAgent              Mozilla/5.0
+2025-07-13 12:00:36      DontUseInternetCache          1
+2025-07-13 12:00:36      ScriptWantsDbWrite            false
+2025-07-13 12:00:36      ScriptWantsExe                false
+2025-07-13 12:00:36      ICU_FOR_CHARACTER_CLASSIFICATION true
+2025-07-13 12:00:36      ICU_FOR_CODE_PAGES            true
+2025-07-13 12:00:36      ICU_FOR_COLLATION             true
+2025-07-13 12:00:36      ICU_FOR_LOCALE_INFO           true
+2025-07-13 12:00:36      ICU_FOR_SUPPORT_INFO          true
+2025-07-13 12:00:36      ICU_FOR_TIME_ZONE_INFO        true
+2025-07-13 12:00:36      LogFile CodePage Used:        65001
+2025-07-13 12:00:36      UseMemoryFillPattern          1
+2025-07-13 12:00:36      ScriptMode                    Standard (limits system access)
+2025-07-13 12:00:36      SequentialThreadCount         14
+2025-07-13 12:00:36      NumberOfCores (effective)     4
+2025-07-13 12:00:36      ReloadCodebase                Bnf
+2025-07-13 12:00:36      Reload ID                     ffd80bac-f0be-4e12-9257-9e492fc939a0
+2025-07-13 12:00:36      Reload Executed By            UserDirectory=INTERNAL; UserId=sa_scheduler
+2025-07-13 12:00:36      Process Executing             Qlik Sense Server
+2025-07-13 12:00:36      Process ID                    4404
+2025-07-13 12:00:36      Grpc version                  5.0.0
+2025-07-13 12:00:36      Protobuf version              3.4.0
+2025-07-13 12:00:36 0002 SET ThousandSep='.'
+2025-07-13 12:00:36 0003 SET DecimalSep=','
+2025-07-13 12:00:36 0004 SET MoneyThousandSep='.'
+2025-07-13 12:00:36 0005 SET MoneyDecimalSep=','
+2025-07-13 12:00:36 0006 SET MoneyFormat='R$#.##0,00;-R$#.##0,00'
+2025-07-13 12:00:36 0007 SET TimeFormat='hh:mm:ss'
+2025-07-13 12:00:36 0008 SET DateFormat='DD/MM/YYYY'
+2025-07-13 12:00:36 0009 SET TimestampFormat='DD/MM/YYYY hh:mm:ss[.fff]'
+2025-07-13 12:00:36 0010 SET FirstWeekDay=6
+2025-07-13 12:00:36 0011 SET BrokenWeeks=1
+2025-07-13 12:00:36 0012 SET ReferenceDay=0
+2025-07-13 12:00:36 0013 SET FirstMonthOfYear=1
+2025-07-13 12:00:36 0014 SET CollationLocale='pt-BR'
+2025-07-13 12:00:36 0015 SET CreateSearchIndexOnReload=1
+2025-07-13 12:00:36 0016 SET MonthNames='jan;fev;mar;abr;mai;jun;jul;ago;set;out;nov;dez'
+2025-07-13 12:00:36 0017 SET LongMonthNames='janeiro;fevereiro;março;abril;maio;junho;julho;agosto;setembro;outubro;novembro;dezembro'
+2025-07-13 12:00:36 0018 SET DayNames='seg;ter;qua;qui;sex;sáb;dom'
+2025-07-13 12:00:36 0019 SET LongDayNames='segunda-feira;terça-feira;quarta-feira;quinta-feira;sexta-feira;sábado;domingo'
+2025-07-13 12:00:36 0020 SET NumericalAbbreviation='3:k;6:M;9:G;12:T;15:P;18:E;21:Z;24:Y;-3:m;-6:μ;-9:n;-12:p;-15:f;-18:a;-21:z;-24:y'
+2025-07-13 12:00:36 0027 LIB CONNECT TO 'ORACLE - DG TNS'
+2025-07-13 12:00:38      Connected.
+2025-07-13 12:00:38 0028 SET StripComments=0
+2025-07-13 12:00:38 0029 E_IPEI:
+2025-07-13 12:00:38 0030 SQL
+2025-07-13 12:00:38 0031 SELECT 
+2025-07-13 12:00:38 0032 
+2025-07-13 12:00:38 0033 r.id as id_recompensa,
+2025-07-13 12:00:38 0034 r.rai,
+2025-07-13 12:00:38 0035 r.tiporecompensaenum,
+2025-07-13 12:00:38 0036 r.statusrecompensaenum,
+2025-07-13 12:00:38 0037 r.datavoltastatus,
+2025-07-13 12:00:38 0038 r.datareprovada,
+2025-07-13 12:00:38 0039 r.dataregistro,
+2025-07-13 12:00:38 0040 r.datafato,
+2025-07-13 12:00:38 0041 r.dataaprovada,
+2025-07-13 12:00:38 0042 r.cpfvoltastatus,
+2025-07-13 12:00:38 0043 r.cpfcriador,
+2025-07-13 12:00:38 0044 r.cpfaprovador,
+2025-07-13 12:00:38 0045 r.motivoreprovacao,
+2025-07-13 12:00:38 0046 r.obs,
+2025-07-13 12:00:38 0047 a.tipo,
+2025-07-13 12:00:38 0048 a.portador,
+2025-07-13 12:00:38 0049 a.numero,
+2025-07-13 12:00:38 0050 a.medidaadministrativa,
+2025-07-13 12:00:38 0051 a.marca,
+2025-07-13 12:00:38 0052 a.id as id_arma,
+2025-07-13 12:00:38 0053 a.especie,
+2025-07-13 12:00:38 0054 a.armaid,
+2025-07-13 12:00:38 0055 man.tipomandado,
+2025-07-13 12:00:38 0056 man.rgorgaoexpedidor,
+2025-07-13 12:00:38 0057 man.rgnumero,
+2025-07-13 12:00:38 0058 man.nome AS mandado_nome,
+2025-07-13 12:00:38 0059 man.mandadoid,
+2025-07-13 12:00:38 0060 man.id as mandado_id,
+2025-07-13 12:00:38 0061 man.cpf AS cpf_mandado,
+2025-07-13 12:00:38 0062 pol.valor,
+2025-07-13 12:00:38 0063 pol.servidorid,
+2025-07-13 12:00:38 0064 pol.nome policial_nome,
+2025-07-13 12:00:38 0065 pol.id as policial_id,
+2025-07-13 12:00:38 0066 pol.folha,
+2025-07-13 12:00:38 0067 pol.cpf AS cpf_policial,
+2025-07-13 12:00:38 0068 recman.recompensa_id,
+2025-07-13 12:00:38 0069 recman.mandados_id,
+2025-07-13 12:00:38 0070 ra.armas_id
+2025-07-13 12:00:38 0071 FROM recompensa.recompensa r 
+2025-07-13 12:00:38 0072 LEFT JOIN recompensa.recompensa_arma ra
+2025-07-13 12:00:38 0073 	  ON ra.recompensa_id = r.ID
+2025-07-13 12:00:38 0074 	  LEFT JOIN recompensa.arma a
+2025-07-13 12:00:38 0075 	  	   ON a.ID = ra.armas_id
+2025-07-13 12:00:38 0076 LEFT JOIN recompensa.recompensa_mandado rm
+2025-07-13 12:00:38 0077 	  ON rm.recompensa_id  = r.ID
+2025-07-13 12:00:38 0078 	  LEFT JOIN recompensa.mandado man
+2025-07-13 12:00:38 0079 		   ON man.ID  = rm.mandados_id
+2025-07-13 12:00:38 0080 LEFT JOIN recompensa.recompensa_policial recpol
+2025-07-13 12:00:38 0081 	 ON recpol.recompensa_id = r.id		   
+2025-07-13 12:00:38 0082 	 LEFT JOIN recompensa.policial pol
+2025-07-13 12:00:38 0083 	 	  ON recpol.policiais_id = pol.id
+2025-07-13 12:00:38 0084 LEFT JOIN recompensa.recompensa_mandado recman
+2025-07-13 12:00:38 0085 	 ON recman.recompensa_id = r.ID
+2025-07-13 12:01:00      	38 fields found: ID_RECOMPENSA, RAI, TIPORECOMPENSAENUM, STATUSRECOMPENSAENUM, DATAVOLTASTATUS, DATAREPROVADA, DATAREGISTRO, DATAFATO, DATAAPROVADA, CPFVOLTASTATUS, CPFCRIADOR, CPFAPROVADOR, MOTIVOREPROVACAO, OBS, TIPO, PORTADOR, NUMERO, MEDIDAADMINISTRATIVA, MARCA, ID_ARMA, ESPECIE, ARMAID, TIPOMANDADO, RGORGAOEXPEDIDOR, RGNUMERO, MANDADO_NOME, MANDADOID, MANDADO_ID, CPF_MANDADO, VALOR, SERVIDORID, POLICIAL_NOME, POLICIAL_ID, FOLHA, CPF_POLICIAL, RECOMPENSA_ID, MANDADOS_ID, ARMAS_ID, 
+2025-07-13 12:01:00      Error: QVX_UNEXPECTED_END_OF_DATA: ERROR [HY000] ORA-03113: end-of-file on communication channel
+2025-07-13 12:01:00      Process ID: 30047
+2025-07-13 12:01:00      Session ID: 5884 Serial number: 22851
+2025-07-13 12:01:00      
+2025-07-13 12:01:00      Execution Failed
+2025-07-13 12:01:00      Execution finished.

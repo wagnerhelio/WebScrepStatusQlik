@@ -1,0 +1,80 @@
+﻿20250713T063633.315-0300      Execution started.
+20250713T063633.315-0300      Qlik Sense Server Version     12.1140.2
+20250713T063633.315-0300      CPU Target                    x64
+20250713T063633.315-0300      Operating System              Windows Server 2012 Standard  (64 bit edition)
+20250713T063633.315-0300      Wow64 mode                    Not using Wow64
+20250713T063633.315-0300      Language                      0416 português Portuguese
+20250713T063633.316-0300      Country                       BRA Brasil Brazil
+20250713T063633.316-0300      MDAC Version                  6.2.9200.16384
+20250713T063633.316-0300      MDAC Full Install Version     6.2.9200.16384
+20250713T063633.316-0300      PreferredCompression          2
+20250713T063633.316-0300      EnableParallelReload          1
+20250713T063633.316-0300      AutoSaveAfterReload           0
+20250713T063633.316-0300      BackupBeforeReload            0
+20250713T063633.316-0300      EnableFlushLog                0
+20250713T063633.316-0300      UserLogfileCharset            65001
+20250713T063633.316-0300      OdbcLoginTimeout              -1
+20250713T063633.316-0300      OdbcConnectionTimeout         -1
+20250713T063633.316-0300      ConnectorSettingsFile         
+20250713T063633.316-0300      LongestPossibleLine           1048576
+20250713T063633.316-0300      MaxCoreMask                   15
+20250713T063633.316-0300      WebFileTimeout                0
+20250713T063633.316-0300      WebFileUserAgent              Mozilla/5.0
+20250713T063633.316-0300      DontUseInternetCache          1
+20250713T063633.316-0300      ReloadInstrTraceLevel         0
+20250713T063633.316-0300      ConcatCalcTermLen             2147483646
+20250713T063633.316-0300      ScriptWantsDbWrite            false
+20250713T063633.316-0300      ScriptWantsExe                false
+20250713T063633.316-0300      LogFile CodePage Used:        65001
+20250713T063633.316-0300      UseMemoryFillPattern          1
+20250713T063633.316-0300      ScriptMode                    Standard (limits system access)
+20250713T063633.316-0300      SequentialThreadCount         14
+20250713T063633.316-0300      NumberOfCores (effective)     4
+20250713T063633.316-0300      ReloadCodebase                Bnf
+20250713T063633.599-0300      Reload ID                     ebc7100f-a58b-40ef-8cd3-79c80447415f
+20250713T063633.599-0300      Reload Executed By            UserDirectory=INTERNAL; UserId=sa_scheduler
+20250713T063633.599-0300      Process Executing             Qlik Sense Server
+20250713T063633.599-0300      Process ID                    5496
+20250713T063633.599-0300      Grpc version                  15.0.0
+20250713T063633.599-0300      Protobuf version              3.15.6
+20250713T063633.599-0300      Effective strict level        0
+20250713T063633.611-0300 0002 SET ThousandSep='.'
+20250713T063633.611-0300 0003 SET DecimalSep=','
+20250713T063633.611-0300 0004 SET MoneyThousandSep='.'
+20250713T063633.611-0300 0005 SET MoneyDecimalSep=','
+20250713T063633.612-0300 0006 SET MoneyFormat='R$#.##0,00;-R$#.##0,00'
+20250713T063633.612-0300 0007 SET TimeFormat='h:mm:ss TT'
+20250713T063633.612-0300 0008 SET DateFormat='DD/MM/YYYY'
+20250713T063633.612-0300 0009 SET TimestampFormat='DD/MM/YYYY h:mm:ss[.fff] TT'
+20250713T063633.612-0300 0010 SET FirstWeekDay=6
+20250713T063633.612-0300 0011 SET BrokenWeeks=1
+20250713T063633.612-0300 0012 SET ReferenceDay=0
+20250713T063633.612-0300 0013 SET FirstMonthOfYear=1
+20250713T063633.612-0300 0014 SET CollationLocale='pt-BR'
+20250713T063633.612-0300 0015 SET CreateSearchIndexOnReload=1
+20250713T063633.612-0300 0016 SET MonthNames='Jan;Fev;Mar;Abr;Mai;Jun;Jul;Ago;Set;Out;Nov;Dez'
+20250713T063633.612-0300 0017 SET LongMonthNames='Janeiro;Fevereiro;Março;Abril;Maio;Junho;Julho;Agosto;Setembro;Outubro;Novembro;Dezembro'
+20250713T063633.612-0300 0018 SET DayNames='Seg;Ter;Quar;Qui;Sex;Sáb;Dom'
+20250713T063633.612-0300 0019 SET LongDayNames='Segunda;Terça;Quarta;Quinta;Sexta;Sábado;Domingo'
+20250713T063633.612-0300 0020 SET NumericalAbbreviation='3:k;6:M;9:G;12:T;15:P;18:E;21:Z;24:Y;-3:m;-6:μ;-9:n;-12:p;-15:f;-18:a;-21:z;-24:y'
+20250713T063633.613-0300 0022 E_CALENDARIO:
+20250713T063633.613-0300 0023 LOAD
+20250713T063633.613-0300 0024     DATE(DATA, 'DD/MM/YYYY') AS DATA,
+20250713T063633.613-0300 0025     Floor(DATA) AS DATA_NUM,
+20250713T063633.613-0300 0026     DIAMES_DATA,
+20250713T063633.613-0300 0027     ANO,
+20250713T063633.613-0300 0028     MES,
+20250713T063633.613-0300 0029     MES_NUM,
+20250713T063633.613-0300 0030     ANOMES,
+20250713T063633.613-0300 0031     MES_ANO
+20250713T063633.613-0300 0032 FROM [lib://ETL/extract_diversos_ofc/E_CALENDARIO.qvd](qvd)
+20250713T063633.674-0300      	8 fields found: DATA, DATA_NUM, DIAMES_DATA, ANO, MES, MES_NUM, ANOMES, MES_ANO, 
+20250713T063633.806-0300      3.482 lines fetched
+20250713T063633.807-0300 0034 LOAD
+20250713T063633.807-0300 0035     @1
+20250713T063633.807-0300 0036 FROM [lib://ETLDesktopGOIAS/TESTE.txt]
+20250713T063633.807-0300 0037 (txt, utf8, no labels, delimiter is '\t', msq)
+20250713T063633.850-0300      Error: Cannot open file: 'lib://ETLDesktopGOIAS/TESTE.txt' (Native Path: \\10.242.251.28\SSPForcas$\SSP_FORCAS_BI\TESTE.txt
+20250713T063633.850-0300      System error: Filesystem::FindImpl FindFirst call)
+20250713T063633.868-0300      Execution Failed
+20250713T063633.871-0300      Execution finished.
