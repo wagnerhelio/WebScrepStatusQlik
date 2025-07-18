@@ -66,7 +66,24 @@ SELECT
   COUNT(DISTINCT CASE WHEN EXTRACT(MONTH FROM oc.datafato) = EXTRACT(MONTH FROM SYSDATE) AND EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM SYSDATE) THEN pes.id END) AS homicidios_mes,
   COUNT(DISTINCT CASE WHEN EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM SYSDATE) THEN pes.id END) AS homicidios_ano
 FROM bu.ocorrencia oc
-LEFT JOIN bu.endereco ende ON ende.id = oc.endereco_id
+LEFT JOIN bu.endereco ende
+INNER JOIN sspj.bairros bai
+      LEFT JOIN (SELECT cod_bairro, LISTAGG(eor.sigla, ', ') AS siglas FROM sicad.circunscricao circ INNER JOIN sicad.estrutura_organizacional_real eor ON eor.cod_estrutura_organizacional = circ.cod_estrutura_organizacional GROUP BY cod_bairro) area
+      ON area.cod_bairro = bai.bairro
+      LEFT JOIN sspj.aisps ais
+      LEFT JOIN sspj.risps ris
+      ON ris.risp = ais.risp
+ON ais.aisp = bai.aisp
+LEFT JOIN sspj.cidades cid
+     LEFT JOIN sspj.cidades_ibge cib
+          ON cib.codigo_sspj = cid.cidade
+          LEFT JOIN sspj.microrregioes mic
+               LEFT JOIN sspj.mesorregioes mes
+               ON mes.mesorregiao = mic.mesorregiao
+          ON mic.microrregiao = cid.microrregiao
+     ON cid.cidade = bai.cidade
+ON bai.bairro = ende.bairro_id
+ON ende.id = oc.endereco_id
 LEFT JOIN bu.ocorrenciapessoa ope ON oc.id = ope.ocorrencia_id
 LEFT JOIN bu.pessoa pes ON pes.id = ope.pessoa_id
 LEFT JOIN bu.ocorrencia_pessoa_natur opn ON opn.ocorrenciapessoa_id = ope.id
@@ -77,7 +94,7 @@ LEFT JOIN bu.qualificacao qua ON qua.id = opnq.qualificacoes_id
 INNER JOIN spi.qalificacao qa ON qa.codigo_qualificacao = qua.qualificacaoid
 INNER JOIN spi.qualificacao_categorias qcap ON qcap.qualificacao_categoria = qa.qualificacao_categoria
 WHERE ende.estado_sigla = 'GO'
-  AND EXTRACT(YEAR FROM oc.datafato) > '2015'
+  AND EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM SYSDATE)
   AND oc.statusocorrencia = 'OCORRENCIA'
   AND (UPPER(nat_tip_pes.GRUPO) = 'HOMICÍDIO' OR nat_pes.naturezaid IN ('500001', '500002', '500003', '500004', '500005', '500006', '500007', '500011', '400711', '400712', '400001', '400002', '501199', '501200', '501201', '501202', '501203', '501204', '501220', '501136', '501137', '501138', '501139', '501140', '501141', '501288', '520269', '520323', '521062', '522242', '522243', '522262', '523006', '523007', '523008', '523009', '523010', '523011', '522745'))
   AND nat_pes.consumacaoenum = 'CONSUMADO'
@@ -93,7 +110,24 @@ SELECT
   COUNT(DISTINCT CASE WHEN EXTRACT(MONTH FROM oc.datafato) = EXTRACT(MONTH FROM SYSDATE) AND EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM SYSDATE) THEN pes.id END) AS feminicidios_mes,
   COUNT(DISTINCT CASE WHEN EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM SYSDATE) THEN pes.id END) AS feminicidios_ano
 FROM bu.ocorrencia oc
-LEFT JOIN bu.endereco ende ON ende.id = oc.endereco_id
+LEFT JOIN bu.endereco ende
+INNER JOIN sspj.bairros bai
+      LEFT JOIN (SELECT cod_bairro, LISTAGG(eor.sigla, ', ') AS siglas FROM sicad.circunscricao circ INNER JOIN sicad.estrutura_organizacional_real eor ON eor.cod_estrutura_organizacional = circ.cod_estrutura_organizacional GROUP BY cod_bairro) area
+      ON area.cod_bairro = bai.bairro
+      LEFT JOIN sspj.aisps ais
+      LEFT JOIN sspj.risps ris
+      ON ris.risp = ais.risp
+ON ais.aisp = bai.aisp
+LEFT JOIN sspj.cidades cid
+     LEFT JOIN sspj.cidades_ibge cib
+          ON cib.codigo_sspj = cid.cidade
+          LEFT JOIN sspj.microrregioes mic
+               LEFT JOIN sspj.mesorregioes mes
+               ON mes.mesorregiao = mic.mesorregiao
+          ON mic.microrregiao = cid.microrregiao
+     ON cid.cidade = bai.cidade
+ON bai.bairro = ende.bairro_id
+ON ende.id = oc.endereco_id
 LEFT JOIN bu.ocorrenciapessoa ope ON oc.id = ope.ocorrencia_id
 LEFT JOIN bu.pessoa pes ON pes.id = ope.pessoa_id
 LEFT JOIN bu.ocorrencia_pessoa_natur opn ON opn.ocorrenciapessoa_id = ope.id
@@ -104,7 +138,7 @@ LEFT JOIN bu.qualificacao qua ON qua.id = opnq.qualificacoes_id
 INNER JOIN spi.qalificacao qa ON qa.codigo_qualificacao = qua.qualificacaoid
 INNER JOIN spi.qualificacao_categorias qcap ON qcap.qualificacao_categoria = qa.qualificacao_categoria
 WHERE ende.estado_sigla = 'GO'
-  AND EXTRACT(YEAR FROM oc.datafato) > '2015'
+  AND EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM SYSDATE)
   AND oc.statusocorrencia = 'OCORRENCIA'
   AND (UPPER(nat_tip_pes.GRUPO) = 'FEMINICÍDIO' OR nat_pes.naturezaid IN ('501138', '501139', '501199', '501201', '501204', '520269', '520323','523011','523006'))
   AND nat_pes.consumacaoenum = 'CONSUMADO'
@@ -119,72 +153,66 @@ SELECT
   oc.id AS id_rai,
   TO_CHAR(TRUNC(oc.datafato), 'DD/MM/YYYY') AS datafato,
   COUNT(DISTINCT pes.id) AS total,
-  CASE
-    WHEN pes.sexo_nome = 'FEMININO' THEN 'F'
-    WHEN pes.sexo_nome = 'MASCULINO' THEN 'M'
-    ELSE 'NF'
-  END AS sexo
+  COUNT(CASE WHEN pes.sexo_nome = 'FEMININO' THEN 1 END) AS F,
+  COUNT(CASE WHEN pes.sexo_nome = 'MASCULINO' THEN 1 END) AS M,
+  COUNT(CASE WHEN pes.sexo_nome IS NULL OR pes.sexo_nome NOT IN ('FEMININO', 'MASCULINO') THEN 1 END) AS NF
 FROM bu.ocorrencia oc
 LEFT JOIN bu.endereco ende
-     INNER JOIN sspj.bairros bai
-           LEFT JOIN (SELECT cod_bairro, LISTAGG(eor.sigla, ', ') AS siglas FROM sicad.circunscricao circ INNER JOIN sicad.estrutura_organizacional_real eor ON eor.cod_estrutura_organizacional = circ.cod_estrutura_organizacional GROUP BY cod_bairro) area
-           ON area.cod_bairro = bai.bairro
-           LEFT JOIN sspj.aisps ais
-                LEFT JOIN sspj.risps ris
-                ON ris.risp = ais.risp
-           ON ais.aisp = bai.aisp
-           LEFT JOIN sspj.cidades cid
-                LEFT JOIN sspj.cidades_ibge cib
-                ON cib.codigo_sspj = cid.cidade
-                LEFT JOIN sspj.microrregioes mic
-                      LEFT JOIN sspj.mesorregioes mes
-                      ON mes.mesorregiao = mic.mesorregiao
-                ON mic.microrregiao = cid.microrregiao
-           ON cid.cidade = bai.cidade
-     ON bai.bairro = ende.bairro_id
+INNER JOIN sspj.bairros bai
+      LEFT JOIN (
+        SELECT cod_bairro, LISTAGG(eor.sigla, ', ') AS siglas
+        FROM sicad.circunscricao circ
+        INNER JOIN sicad.estrutura_organizacional_real eor
+          ON eor.cod_estrutura_organizacional = circ.cod_estrutura_organizacional
+        GROUP BY cod_bairro
+      ) area ON area.cod_bairro = bai.bairro
+      LEFT JOIN sspj.aisps ais
+      LEFT JOIN sspj.risps ris ON ris.risp = ais.risp
+ON ais.aisp = bai.aisp
+LEFT JOIN sspj.cidades cid
+     LEFT JOIN sspj.cidades_ibge cib ON cib.codigo_sspj = cid.cidade
+          LEFT JOIN sspj.microrregioes mic
+               LEFT JOIN sspj.mesorregioes mes ON mes.mesorregiao = mic.mesorregiao
+          ON mic.microrregiao = cid.microrregiao
+     ON cid.cidade = bai.cidade
+ON bai.bairro = ende.bairro_id
 ON ende.id = oc.endereco_id
-LEFT JOIN bu.ocorrenciapessoa ope 
-     LEFT JOIN bu.pessoa pes 
-     ON pes.id = ope.pessoa_id
-     LEFT JOIN bu.ocorrencia_pessoa_natur opn
-          LEFT JOIN bu.natureza nat_pes
-               INNER JOIN user_transacional.e_natureza_spi_tipificada_mview nat_tip_pes
-               ON nat_tip_pes.spi_natureza_id = nat_pes.naturezaid
-          ON nat_pes.id = opn.natureza_id  
-          LEFT JOIN bu.ocorrencia_pessoa_natur_qual opnq
-               LEFT JOIN bu.qualificacao qua
-                     INNER JOIN spi.qalificacao qa
-                           INNER JOIN spi.qualificacao_categorias qcap
-                           ON qcap.qualificacao_categoria = qa.qualificacao_categoria
-                     ON qa.codigo_qualificacao = qua.qualificacaoid
-               ON qua.id = opnq.qualificacoes_id
-          ON opnq.ocorrenciapessoanatureza_id = opn.id 
-     ON opn.ocorrenciapessoa_id = ope.id
-ON oc.id = ope.ocorrencia_id 
-WHERE
-ende.estado_sigla = 'GO'
-AND TRUNC(oc.datafato) = TRUNC(SYSDATE - 1)
-AND oc.statusocorrencia = 'OCORRENCIA'
-AND (UPPER(nat_tip_pes.GRUPO) = 'HOMICÍDIO' OR nat_pes.naturezaid IN ('500001', '500002', '500003', '500004', '500005', '500006', '500007', '500011', '400711', '400712', '400001', '400002', '501199', '501200', '501201', '501202', '501203', '501204', '501220', '501136', '501137', '501138', '501139', '501140', '501141', '501288', '520269', '520323', '521062', '522242', '522243', '522262', '523006', '523007', '523008', '523009', '523010', '523011', '522745'))
-AND nat_pes.consumacaoenum = 'CONSUMADO'
-AND ope.tipopessoaenum = 'FISICA' 
-AND qcap.nome = 'VÍTIMA'
+LEFT JOIN bu.ocorrenciapessoa ope ON oc.id = ope.ocorrencia_id
+LEFT JOIN bu.pessoa pes ON pes.id = ope.pessoa_id
+LEFT JOIN bu.ocorrencia_pessoa_natur opn ON opn.ocorrenciapessoa_id = ope.id
+LEFT JOIN bu.natureza nat_pes ON nat_pes.id = opn.natureza_id
+INNER JOIN user_transacional.e_natureza_spi_tipificada_mview nat_tip_pes ON nat_tip_pes.spi_natureza_id = nat_pes.naturezaid
+LEFT JOIN bu.ocorrencia_pessoa_natur_qual opnq ON opnq.ocorrenciapessoanatureza_id = opn.id
+LEFT JOIN bu.qualificacao qua ON qua.id = opnq.qualificacoes_id
+INNER JOIN spi.qalificacao qa ON qa.codigo_qualificacao = qua.qualificacaoid
+INNER JOIN spi.qualificacao_categorias qcap ON qcap.qualificacao_categoria = qa.qualificacao_categoria
+WHERE ende.estado_sigla = 'GO'
+  AND TRUNC(oc.datafato) = TRUNC(SYSDATE-1)
+  AND oc.statusocorrencia = 'OCORRENCIA'
+  AND (
+    UPPER(nat_tip_pes.GRUPO) = 'HOMICÍDIO' OR nat_pes.naturezaid IN (
+      '500001', '500002', '500003', '500004', '500005', '500006', '500007', '500011',
+      '400711', '400712', '400001', '400002', '501199', '501200', '501201', '501202',
+      '501203', '501204', '501220', '501136', '501137', '501138', '501139', '501140',
+      '501141', '501288', '520269', '520323', '521062', '522242', '522243', '522262',
+      '523006', '523007', '523008', '523009', '523010', '523011', '522745'
+    )
+  )
+  AND nat_pes.consumacaoenum = 'CONSUMADO'
+  AND ope.tipopessoaenum = 'FISICA'
+  AND qcap.nome = 'VÍTIMA'
 GROUP BY
-  cid.nome, oc.id,oc.datafato, 
-  CASE
-    WHEN pes.sexo_nome = 'FEMININO' THEN 'F'
-    WHEN pes.sexo_nome = 'MASCULINO' THEN 'M'
-    ELSE 'NF'
-  END
-ORDER BY municipio_nome, id_rai,oc.datafato
+  cid.nome, oc.id, oc.datafato
+ORDER BY
+  municipio_nome, id_rai, oc.datafato
 '''
 
 # Query de homicídio comparativo dois anos (gráfico)
 query_homicidio_comparativo_dois_anos = '''
-SELECT DISTINCT
+SELECT
   *
 FROM (
-SELECT
+SELECT DISTINCT
   pes.id AS pessoa_id,
   EXTRACT(MONTH FROM oc.datafato) AS mes_fato,
   EXTRACT(YEAR FROM oc.datafato) AS ano_fato
@@ -208,13 +236,12 @@ LEFT JOIN bu.ocorrenciapessoa ope
     ON opnq.ocorrenciapessoanatureza_id = opn.id 
   ON opn.ocorrenciapessoa_id = ope.id
 ON oc.id = ope.ocorrencia_id 
-WHERE
-ende.estado_sigla = 'GO'
+WHERE ende.estado_sigla = 'GO'
 AND (EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM ADD_MONTHS(SYSDATE, -12)) OR (EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM SYSDATE)AND TRUNC(oc.datafato) <= TRUNC(SYSDATE - 1)))
 AND oc.statusocorrencia = 'OCORRENCIA'
 AND (UPPER(nat_tip_pes.GRUPO) = 'HOMICÍDIO' OR nat_pes.naturezaid IN ('500001', '500002', '500003', '500004', '500005', '500006', '500007', '500011', '400711', '400712', '400001', '400002', '501199', '501200', '501201', '501202', '501203', '501204', '501220', '501136', '501137', '501138', '501139', '501140', '501141', '501288', '520269', '520323', '521062', '522242', '522243', '522262', '523006', '523007', '523008', '523009', '523010', '523011', '522745'))
 AND nat_pes.consumacaoenum = 'CONSUMADO'
-AND ope.tipopessoaenum = 'FISICA' 
+AND ope.tipopessoaenum = 'FISICA'
 AND qcap.nome = 'VÍTIMA'
 ) PIVOT (
   COUNT(pessoa_id)
@@ -224,10 +251,10 @@ ORDER BY
   ano_fato 
 '''
 query_homicidio_comparativo_todos_anos ='''
-SELECT DISTINCT
+SELECT 
   *
 FROM (
-SELECT
+SELECT DISTINCT
 --  oc.id AS id_rai,
   pes.id AS pessoa_id,
   EXTRACT(MONTH FROM oc.datafato) AS mes_fato,
@@ -257,7 +284,7 @@ LEFT JOIN bu.ocorrenciapessoa ope
 ON oc.id = ope.ocorrencia_id 
 WHERE
 ende.estado_sigla = 'GO'
-AND TRUNC(oc.datafato) BETWEEN TO_DATE('01/01/2015', 'DD/MM/YYYY') AND TRUNC(SYSDATE - 1)
+AND TRUNC(oc.datafato) BETWEEN TO_DATE('01/01/2016', 'DD/MM/YYYY') AND TRUNC(SYSDATE - 1)
 --AND oc.datafato >= TRUNC(SYSDATE - 1)
 AND oc.statusocorrencia = 'OCORRENCIA'
 --FILTRO
@@ -273,12 +300,82 @@ ORDER BY
   ano_fato
 '''
 
+query_regioes_observatorio ='''
+SELECT
+CASE
+    WHEN cid.uf <> 'GO' THEN NULL
+    WHEN cid.cidade = 25300 THEN 'GOIÂNIA'
+    WHEN cid.microrregiao = 520012 THEN 'ENTORNO DO DF'
+    ELSE 'INTERIOR'
+END AS regiao_observatorio,
+COUNT(DISTINCT CASE WHEN oc.datafato >= TRUNC(ADD_MONTHS(SYSDATE, -12), 'MM') AND oc.datafato <  TRUNC(ADD_MONTHS(SYSDATE, -11), 'MM') THEN pes.id END) AS mes_anterior_fechado,
+COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN ADD_MONTHS(TRUNC(SYSDATE, 'MM'), -12) AND ADD_MONTHS(TRUNC(SYSDATE), -12) THEN pes.id END) AS periodo_ano_anterior,
+COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN TRUNC(SYSDATE, 'MM') AND TRUNC(SYSDATE)THEN pes.id END) AS periodo_ano_atual,
+ROUND((COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN TRUNC(SYSDATE, 'MM') AND TRUNC(SYSDATE) THEN pes.id END) - COUNT(DISTINCT CASE  WHEN oc.datafato BETWEEN ADD_MONTHS(TRUNC(SYSDATE, 'MM'), -12) AND ADD_MONTHS(TRUNC(SYSDATE), -12) THEN pes.id END)) * 100.0 / NULLIF(COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN ADD_MONTHS(TRUNC(SYSDATE, 'MM'), -12) AND ADD_MONTHS(TRUNC(SYSDATE), -12) THEN pes.id END), 0), 2) AS variacao_percentual,
+COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN TRUNC(ADD_MONTHS(SYSDATE, -12), 'YYYY') AND ADD_MONTHS(TRUNC(SYSDATE), -12) THEN pes.id END) AS acumulado_ano_anterior,
+COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN TRUNC(SYSDATE, 'YYYY') AND TRUNC(SYSDATE) THEN pes.id END) AS acumulado_ano_atual,
+ROUND(( COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN TRUNC(SYSDATE, 'YYYY') AND TRUNC(SYSDATE) THEN pes.id END) - COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN TRUNC(ADD_MONTHS(SYSDATE, -12), 'YYYY') AND ADD_MONTHS(TRUNC(SYSDATE), -12) THEN pes.id END)) * 100.0 / NULLIF(COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN TRUNC(ADD_MONTHS(SYSDATE, -12), 'YYYY') AND ADD_MONTHS(TRUNC(SYSDATE), -12)THEN pes.id END), 0), 2) AS variacao_acumulado_percentual,
+SUM(cib.populacao) AS populacao_total
+FROM bu.ocorrencia oc
+LEFT JOIN bu.endereco ende
+INNER JOIN sspj.bairros bai
+      LEFT JOIN (
+        SELECT cod_bairro, LISTAGG(eor.sigla, ', ') AS siglas
+        FROM sicad.circunscricao circ
+        INNER JOIN sicad.estrutura_organizacional_real eor
+          ON eor.cod_estrutura_organizacional = circ.cod_estrutura_organizacional
+        GROUP BY cod_bairro
+      ) area ON area.cod_bairro = bai.bairro
+      LEFT JOIN sspj.aisps ais
+      LEFT JOIN sspj.risps ris ON ris.risp = ais.risp
+ON ais.aisp = bai.aisp
+LEFT JOIN sspj.cidades cid
+     LEFT JOIN sspj.cidades_ibge cib ON cib.codigo_sspj = cid.cidade
+          LEFT JOIN sspj.microrregioes mic
+               LEFT JOIN sspj.mesorregioes mes ON mes.mesorregiao = mic.mesorregiao
+          ON mic.microrregiao = cid.microrregiao
+     ON cid.cidade = bai.cidade
+ON bai.bairro = ende.bairro_id
+ON ende.id = oc.endereco_id
+LEFT JOIN bu.ocorrenciapessoa ope ON oc.id = ope.ocorrencia_id
+LEFT JOIN bu.pessoa pes ON pes.id = ope.pessoa_id
+LEFT JOIN bu.ocorrencia_pessoa_natur opn ON opn.ocorrenciapessoa_id = ope.id
+LEFT JOIN bu.natureza nat_pes ON nat_pes.id = opn.natureza_id
+INNER JOIN user_transacional.e_natureza_spi_tipificada_mview nat_tip_pes ON nat_tip_pes.spi_natureza_id = nat_pes.naturezaid
+LEFT JOIN bu.ocorrencia_pessoa_natur_qual opnq ON opnq.ocorrenciapessoanatureza_id = opn.id
+LEFT JOIN bu.qualificacao qua ON qua.id = opnq.qualificacoes_id
+INNER JOIN spi.qalificacao qa ON qa.codigo_qualificacao = qua.qualificacaoid
+INNER JOIN spi.qualificacao_categorias qcap ON qcap.qualificacao_categoria = qa.qualificacao_categoria
+WHERE ende.estado_sigla = 'GO'
+AND (EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM ADD_MONTHS(SYSDATE, -12)) OR (EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM SYSDATE)AND TRUNC(oc.datafato) <= TRUNC(SYSDATE - 1)))
+AND oc.statusocorrencia = 'OCORRENCIA'
+AND (
+    UPPER(nat_tip_pes.GRUPO) = 'HOMICÍDIO' OR nat_pes.naturezaid IN (
+      '500001', '500002', '500003', '500004', '500005', '500006', '500007', '500011',
+      '400711', '400712', '400001', '400002', '501199', '501200', '501201', '501202',
+      '501203', '501204', '501220', '501136', '501137', '501138', '501139', '501140',
+      '501141', '501288', '520269', '520323', '521062', '522242', '522243', '522262',
+      '523006', '523007', '523008', '523009', '523010', '523011', '522745'
+    )
+  )
+AND nat_pes.consumacaoenum = 'CONSUMADO'
+AND ope.tipopessoaenum = 'FISICA'
+AND qcap.nome = 'VÍTIMA'
+GROUP BY
+CASE
+	WHEN cid.uf <> 'GO' THEN NULL
+	WHEN cid.cidade = 25300 THEN 'GOIÂNIA'
+	WHEN cid.microrregiao = 520012 THEN 'ENTORNO DO DF'
+ELSE 'INTERIOR'
+END
+'''
 queries = [
     ("Homicídio", query_homicidio),
     ("Feminicídio", query_feminicidio),
     ("Município", query_municipio),
     ("Homicídio Ultimos 2 Anos", query_homicidio_comparativo_dois_anos),
-    ("Homicídio Todos os Anos", query_homicidio_comparativo_todos_anos)
+    ("Homicídio Todos os Anos", query_homicidio_comparativo_todos_anos),
+    ("Regioes Observatorio", query_regioes_observatorio)
 ]
 resultados = {}
 tempos_execucao = {}
@@ -286,7 +383,7 @@ tempos_execucao = {}
 for nome, query in tqdm(queries, desc="Executando consultas"):
     start = time.time()
     cursor.execute(query)
-    if nome in ["Município", "Homicídio Ultimos 2 Anos","Homicídio Todos os Anos"]:
+    if nome in ["Município", "Homicídio Ultimos 2 Anos","Homicídio Todos os Anos","Regioes Observatorio"]:
         columns = [str(col[0]) for col in cursor.description]
         rows = [list(row) for row in cursor.fetchall()]
         resultados[nome] = (columns, rows)
@@ -399,23 +496,23 @@ titulo = f'Homicídios - Dia Anterior por Município : {ontem_data}'
 pdf.cell(0, 10, titulo, ln=1, align='L')
 
 # Cabeçalho da tabela de município
-col_widths_municipio = [70, 35, 30, 25, 30]  # Ajuste para totalizar ~190 (A4)
-pdf.set_font('Arial', 'B', 10)
+col_widths_municipio = [38, 22, 22, 12, 12, 12, 12]  # 7 colunas: municipio_nome, id_rai, datafato, total, F, M, NF
+pdf.set_font('Arial', 'B', 8)
 pdf.set_fill_color(230, 230, 230)
 pdf.set_draw_color(0, 0, 0)  # Preto para borda
 pdf.set_text_color(0, 0, 0)  # Preto para texto
 for i, col in enumerate(columns_municipio):
-    pdf.cell(col_widths_municipio[i], 8, str(col).upper(), 1, 0, 'C', fill=True)
+    pdf.cell(col_widths_municipio[i], 6, str(col).upper(), 1, 0, 'C', fill=True)
 pdf.ln()
 
 # Dados da tabela de município
-pdf.set_font('Arial', '', 10)
+pdf.set_font('Arial', '', 8)
 pdf.set_text_color(0, 0, 0)  # Preto para texto
 def safe_str(item):
     return str(item) if item is not None else ''
 for row in rows_municipio:
     for i, item in enumerate(row):
-        pdf.cell(col_widths_municipio[i], 8, safe_str(item), 1, 0, 'C')
+        pdf.cell(col_widths_municipio[i], 6, safe_str(item), 1, 0, 'C')
     pdf.ln()
 
 # --- GRAFICO DE HOMICÍDIOS UTIMOS 2 ANOS ---
@@ -459,12 +556,11 @@ pdf.image('grafico_homicidios.png', x=5, w=200)
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 
-# Após o gráfico, inserir a tabela de meses/anos:
 # --- TABELA DE HOMICÍDIOS POR MESES/ANOS (CONSULTA DE 13 COLUNAS) ---
 columns_meses_anos, rows_meses_anos = resultados["Homicídio Todos os Anos"]
 
 # Espaço antes da tabela
-pdf.ln(5)
+pdf.ln(4)
 
 # Título da tabela
 pdf.set_font('Arial', 'B', 10)
@@ -491,14 +587,46 @@ for row in rows_meses_anos:
         pdf.cell(col_widths_meses_anos[i], 6, safe_str(item), 1, 0, 'C')
     pdf.ln()
 
-# --- ATRIBUIÇÃO DOS TEMPOS DE EXECUÇÃO PARA O RODAPÉ ---
-# --- Antes de salvar, defina os tempos: ---
-pdf.tempo_homicidio = f'{tempos_execucao["Homicídio"]:.2f}'
-pdf.tempo_feminicidio = f'{tempos_execucao["Feminicídio"]:.2f}'
-pdf.tempo_municipio = f'{tempos_execucao["Município"]:.2f}'
-pdf.tempo_homicidio_comparativo_dois_anos = f'{tempos_execucao["Homicídio Ultimos 2 Anos"]:.2f}'
-pdf.tempo_homicidio_comparativo_todos_anos = f'{tempos_execucao["Homicídio Todos os Anos"]:.2f}'
+# --- TABELA DE REGIAO OBSERVATORIO ---
+columns_regiao_observatorio, rows_regiao_observatorio = resultados["Regioes Observatorio"]
 
+# Espaço antes da tabela
+pdf.ln(4)
+
+# Título da tabela
+pdf.set_font('Arial', 'B', 10)
+pdf.set_text_color(0, 0, 0)  # Preto
+titulo_regiao_observatorio = f'HOMICIDIOS POR REGIÕES - Comparativo Dia Anterior e Acumulado até : {ontem_data}'
+pdf.cell(0, 8, titulo_regiao_observatorio, ln=1, align='L')
+
+# Cabeçalho da tabela de regiões observatório
+col_widths_regiao_observatorio = [24, 20, 20, 20, 20, 20, 20, 20, 20]  # 9 colunas
+pdf.set_font('Arial', 'B', 8)
+pdf.set_fill_color(230, 230, 230)
+pdf.set_draw_color(0, 0, 0)  # Preto para borda
+pdf.set_text_color(0, 0, 0)  # Preto para texto
+for i, col in enumerate(columns_regiao_observatorio):
+    pdf.cell(col_widths_regiao_observatorio[i], 6, str(col).upper(), 1, 0, 'C', fill=True)
+pdf.ln()
+
+# Dados da tabela de regiões observatório
+pdf.set_font('Arial', '', 8)
+pdf.set_text_color(0, 0, 0)  # Preto para texto
+for row in rows_regiao_observatorio:
+    for i, item in enumerate(row):
+        pdf.cell(col_widths_regiao_observatorio[i], 6, safe_str(item), 1, 0, 'C')
+    pdf.ln()
+
+# --- ATRIBUIÇÃO DOS TEMPOS DE EXECUÇÃO PARA O RODAPÉ ---
+tempo_execucao_resumo = (
+    f'Homicídio: {tempos_execucao["Homicídio"]:.2f} | '
+    f'Feminicídio: {tempos_execucao["Feminicídio"]:.2f} | '
+    f'Município: {tempos_execucao["Município"]:.2f} | '
+    f'Homicídio 2 Anos: {tempos_execucao["Homicídio Ultimos 2 Anos"]:.2f} | '
+    f'Homicídio Todos os Anos: {tempos_execucao["Homicídio Todos os Anos"]:.2f} | '
+    f'Regiões Observatorio: {tempos_execucao["Regioes Observatorio"]:.2f}'
+)
+pdf.cell(0, 8, tempo_execucao_resumo, ln=1, align='L')
 # --- SALVANDO O PDF ---
 # --- Antes de salvar, defina os tempos: ---
 pdf.output('task/relatorio_homicidios.pdf')
