@@ -400,7 +400,10 @@ feminicidios_hoje, feminicidios_ontem, feminicidios_mes, feminicidios_ano = resu
 from datetime import datetime, timedelta
 hoje = datetime.now()
 ontem = hoje - timedelta(days=1)
-mes_atual = hoje.strftime('%b/%Y')
+mes_atual = hoje.strftime('%b').capitalize()  # Ex: 'Jul'
+ano_atual = hoje.year
+dia_ontem = ontem.day
+ano_anterior = ano_atual - 1
 
 # --- INÍCIO DA GERAÇÃO DO PDF ---
 pdf = PDFComRodape()
@@ -588,6 +591,19 @@ for row in rows_meses_anos:
     pdf.ln()
 
 # --- TABELA DE REGIAO OBSERVATORIO ---
+columns_regiao_observatorio_atualizada = [
+    "REGIÃO",
+    f"{mes_atual}/{ano_anterior} (fechado)",
+    f"{mes_atual}/{ano_anterior} (até dia {dia_ontem})",
+    f"{mes_atual}/{ano_atual} (até dia {dia_ontem})",
+    "%",
+    f"Acumulado Jan a {mes_atual} {ano_anterior} (até dia {dia_ontem})",
+    f"Acumulado Jan a {mes_atual} {ano_atual} (até dia {dia_ontem})",
+    "%",
+    "Índice por 100K hab."
+]
+
+col_widths_regiao_observatorio = [24, 20, 20, 20, 12, 24, 24, 12, 20]  # Ajuste para 9 colunas
 columns_regiao_observatorio, rows_regiao_observatorio = resultados["Regioes Observatorio"]
 
 # Espaço antes da tabela
@@ -600,12 +616,12 @@ titulo_regiao_observatorio = f'HOMICIDIOS POR REGIÕES - Comparativo Dia Anterio
 pdf.cell(0, 8, titulo_regiao_observatorio, ln=1, align='L')
 
 # Cabeçalho da tabela de regiões observatório
-col_widths_regiao_observatorio = [24, 20, 20, 20, 20, 20, 20, 20, 20]  # 9 colunas
+col_widths_regiao_observatorio = [24, 20, 20, 20, 12, 24, 24, 12, 20]  # Ajuste para 9 colunas
 pdf.set_font('Arial', 'B', 8)
 pdf.set_fill_color(230, 230, 230)
 pdf.set_draw_color(0, 0, 0)  # Preto para borda
 pdf.set_text_color(0, 0, 0)  # Preto para texto
-for i, col in enumerate(columns_regiao_observatorio):
+for i, col in enumerate(columns_regiao_observatorio_atualizada):
     pdf.cell(col_widths_regiao_observatorio[i], 6, str(col).upper(), 1, 0, 'C', fill=True)
 pdf.ln()
 
@@ -614,7 +630,20 @@ pdf.set_font('Arial', '', 8)
 pdf.set_text_color(0, 0, 0)  # Preto para texto
 for row in rows_regiao_observatorio:
     for i, item in enumerate(row):
-        pdf.cell(col_widths_regiao_observatorio[i], 6, safe_str(item), 1, 0, 'C')
+        # Coloração e formatação para as colunas de %
+        if i in [4, 7]:  # Índices das colunas de %
+            valor = float(item) if item is not None else 0
+            texto = f"{valor:.2f}%"
+            if valor > 0:
+                pdf.set_text_color(220, 20, 60)  # vermelho
+            elif valor < 0:
+                pdf.set_text_color(0, 128, 0)    # verde
+            else:
+                pdf.set_text_color(0, 0, 0)      # preto
+            pdf.cell(col_widths_regiao_observatorio[i], 6, texto, 1, 0, 'C')
+            pdf.set_text_color(0, 0, 0)  # reset
+        else:
+            pdf.cell(col_widths_regiao_observatorio[i], 6, safe_str(item), 1, 0, 'C')
     pdf.ln()
 
 # --- ATRIBUIÇÃO DOS TEMPOS DE EXECUÇÃO PARA O RODAPÉ ---
