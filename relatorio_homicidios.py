@@ -369,13 +369,65 @@ CASE
 ELSE 'INTERIOR'
 END
 '''
+
+query_homicidios_comparativo_dia ='''
+SELECT
+  TO_CHAR(oc.datafato, 'DD') || '/' || INITCAP(TO_CHAR(oc.datafato, 'Mon', 'NLS_DATE_LANGUAGE=PORTUGUESE')) AS data,
+  EXTRACT(YEAR FROM oc.datafato) AS ano,
+  COUNT(DISTINCT pes.id) AS homicidios
+FROM bu.ocorrencia oc
+LEFT JOIN bu.endereco ende
+INNER JOIN sspj.bairros bai
+      LEFT JOIN (SELECT cod_bairro, LISTAGG(eor.sigla, ', ') AS siglas FROM sicad.circunscricao circ INNER JOIN sicad.estrutura_organizacional_real eor ON eor.cod_estrutura_organizacional = circ.cod_estrutura_organizacional GROUP BY cod_bairro) area
+      ON area.cod_bairro = bai.bairro
+      LEFT JOIN sspj.aisps ais
+      LEFT JOIN sspj.risps ris
+      ON ris.risp = ais.risp
+ON ais.aisp = bai.aisp
+LEFT JOIN sspj.cidades cid
+     LEFT JOIN sspj.cidades_ibge cib
+          ON cib.codigo_sspj = cid.cidade
+          LEFT JOIN sspj.microrregioes mic
+               LEFT JOIN sspj.mesorregioes mes
+               ON mes.mesorregiao = mic.mesorregiao
+          ON mic.microrregiao = cid.microrregiao
+     ON cid.cidade = bai.cidade
+ON bai.bairro = ende.bairro_id
+ON ende.id = oc.endereco_id
+LEFT JOIN bu.ocorrenciapessoa ope ON oc.id = ope.ocorrencia_id
+LEFT JOIN bu.pessoa pes ON pes.id = ope.pessoa_id
+LEFT JOIN bu.ocorrencia_pessoa_natur opn ON opn.ocorrenciapessoa_id = ope.id
+LEFT JOIN bu.natureza nat_pes ON nat_pes.id = opn.natureza_id
+INNER JOIN user_transacional.e_natureza_spi_tipificada_mview nat_tip_pes ON nat_tip_pes.spi_natureza_id = nat_pes.naturezaid
+LEFT JOIN bu.ocorrencia_pessoa_natur_qual opnq ON opnq.ocorrenciapessoanatureza_id = opn.id
+LEFT JOIN bu.qualificacao qua ON qua.id = opnq.qualificacoes_id
+INNER JOIN spi.qalificacao qa ON qa.codigo_qualificacao = qua.qualificacaoid
+INNER JOIN spi.qualificacao_categorias qcap ON qcap.qualificacao_categoria = qa.qualificacao_categoria
+WHERE ende.estado_sigla = 'GO'
+  AND oc.statusocorrencia = 'OCORRENCIA'
+  AND (UPPER(nat_tip_pes.GRUPO) = 'HOMICÍDIO' OR nat_pes.naturezaid IN ('500001', '500002', '500003', '500004', '500005', '500006', '500007', '500011', '400711', '400712', '400001', '400002', '501199', '501200', '501201', '501202', '501203', '501204', '501220', '501136', '501137', '501138', '501139', '501140', '501141', '501288', '520269', '520323', '521062', '522242', '522243', '522262', '523006', '523007', '523008', '523009', '523010', '523011', '522745'))
+  AND nat_pes.consumacaoenum = 'CONSUMADO'
+  AND ope.tipopessoaenum = 'FISICA'
+  AND qcap.nome = 'VÍTIMA'
+  AND EXTRACT(MONTH FROM oc.datafato) = EXTRACT(MONTH FROM SYSDATE)
+  AND EXTRACT(DAY FROM oc.datafato) <= EXTRACT(DAY FROM SYSDATE - 1)
+  AND EXTRACT(YEAR FROM oc.datafato) IN (EXTRACT(YEAR FROM SYSDATE),EXTRACT(YEAR FROM SYSDATE) - 1)
+GROUP BY
+  TO_CHAR(oc.datafato, 'DD'),
+  TO_CHAR(oc.datafato, 'Mon', 'NLS_DATE_LANGUAGE=PORTUGUESE'),
+  EXTRACT(YEAR FROM oc.datafato)
+ORDER BY
+  TO_NUMBER(TO_CHAR(oc.datafato, 'DD')), ano
+'''
+
 queries = [
     ("Homicídio", query_homicidio),
     ("Feminicídio", query_feminicidio),
     ("Município", query_municipio),
     ("Homicídio Ultimos 2 Anos", query_homicidio_comparativo_dois_anos),
     ("Homicídio Todos os Anos", query_homicidio_comparativo_todos_anos),
-    ("Regioes Observatorio", query_regioes_observatorio)
+    ("Regioes Observatorio", query_regioes_observatorio),
+    ("Homicídio Comparativo por Dia",query_homicidios_comparativo_dia)
 ]
 resultados = {}
 tempos_execucao = {}
@@ -383,7 +435,7 @@ tempos_execucao = {}
 for nome, query in tqdm(queries, desc="Executando consultas"):
     start = time.time()
     cursor.execute(query)
-    if nome in ["Município", "Homicídio Ultimos 2 Anos","Homicídio Todos os Anos","Regioes Observatorio"]:
+    if nome in ["Município", "Homicídio Ultimos 2 Anos","Homicídio Todos os Anos","Regioes Observatorio","Homicídio Comparativo por Dia"]:
         columns = [str(col[0]) for col in cursor.description]
         rows = [list(row) for row in cursor.fetchall()]
         resultados[nome] = (columns, rows)
@@ -400,7 +452,7 @@ feminicidios_hoje, feminicidios_ontem, feminicidios_mes, feminicidios_ano = resu
 from datetime import datetime, timedelta
 hoje = datetime.now()
 ontem = hoje - timedelta(days=1)
-mes_atual = hoje.strftime('%b/%Y')
+mes_atual = hoje.strftime('%b').capitalize()  # Ex: 'Jul'
 ano_atual = hoje.year
 dia_ontem = ontem.day
 ano_anterior = ano_atual - 1
@@ -614,15 +666,43 @@ pdf.set_text_color(0, 0, 0)  # Preto
 titulo_regiao_observatorio = f'HOMICIDIOS POR REGIÕES - Comparativo Dia Anterior e Acumulado até : {ontem_data}'
 pdf.cell(0, 8, titulo_regiao_observatorio, ln=1, align='L')
 
-# Cabeçalho da tabela de regiões observatório
 col_widths_regiao_observatorio = [24, 20, 20, 20, 20, 20, 20, 20, 20]  # 9 colunas
+# Cabeçalho da tabela de regiões observatório (ajustado para quebra de linha, altura uniforme)
 pdf.set_font('Arial', 'B', 8)
 pdf.set_fill_color(230, 230, 230)
 pdf.set_draw_color(0, 0, 0)  # Preto para borda
 pdf.set_text_color(0, 0, 0)  # Preto para texto
+
+x_inicio = pdf.get_x()
+y_inicio = pdf.get_y()
+altura_linha = 6
+
+# Calcula a altura máxima necessária para cada célula do cabeçalho
+alturas = []
+linhas_texto = []
 for i, col in enumerate(columns_regiao_observatorio_atualizada):
-    pdf.cell(col_widths_regiao_observatorio[i], 6, str(col).upper(), 1, 0, 'C', fill=True)
-pdf.ln()
+    largura = col_widths_regiao_observatorio[i]
+    # Divide o texto em linhas para a largura da célula
+    linhas = pdf.multi_cell(largura, altura_linha, str(col).upper(), 0, 'C', split_only=True)
+    linhas_texto.append(linhas)
+    alturas.append(len(linhas) * altura_linha)
+altura_max = max(alturas)
+
+# Desenha cada célula do cabeçalho com altura máxima e texto centralizado
+x = x_inicio
+for i, col in enumerate(columns_regiao_observatorio_atualizada):
+    largura = col_widths_regiao_observatorio[i]
+    linhas = linhas_texto[i]
+    n_linhas = len(linhas)
+    y = y_inicio
+    # Centraliza verticalmente o texto
+    y_texto = y + (altura_max - n_linhas * altura_linha) / 2
+    pdf.rect(x, y, largura, altura_max, 'DF')
+    pdf.set_xy(x, y_texto)
+    for linha in linhas:
+        pdf.cell(largura, altura_linha, linha, 0, 2, 'C')
+    x += largura
+pdf.set_xy(x_inicio, y_inicio + altura_max)
 
 # Dados da tabela de regiões observatório
 pdf.set_font('Arial', '', 8)
@@ -645,6 +725,54 @@ for row in rows_regiao_observatorio:
             pdf.cell(col_widths_regiao_observatorio[i], 6, safe_str(item), 1, 0, 'C')
     pdf.ln()
 
+# --- GRAFICO COMPARATIVO POR DIA
+columns_dia, rows_dia = resultados["Homicídio Comparativo por Dia"]
+df_dia = pd.DataFrame(rows_dia, columns=columns_dia)
+
+# Ajusta tipos e nomes
+if not df_dia.empty:
+    df_dia['ANO'] = df_dia['ANO'].astype(int)
+    df_dia['HOMICIDIOS'] = df_dia['HOMICIDIOS'].astype(int)
+
+    # Pivot para barras agrupadas
+    df_pivot = df_dia.pivot(index='DATA', columns='ANO', values='HOMICIDIOS').fillna(0)
+    df_pivot = df_pivot.reindex(sorted(df_pivot.index, key=lambda x: int(x.split('/')[0])))
+
+    plt.figure(figsize=(10, 3.5))
+    anos = sorted(df_pivot.columns)
+    bar_width = 0.4
+    x = range(len(df_pivot.index))
+    cores = ['#3b3b98', '#218c5a']  # Azul e verde
+
+    for i, ano in enumerate(anos):
+        bars = plt.bar([xi + i*bar_width for xi in x], df_pivot[ano], width=bar_width, label=str(ano), color=cores[i % len(cores)])
+        # Adiciona o valor acima de cada barra
+        for bar in bars:
+            height = bar.get_height()
+            if height > 0:
+                plt.text(
+                    bar.get_x() + bar.get_width() / 2,
+                    height + 0.1,
+                    f'{int(height)}',
+                    ha='center',
+                    va='bottom',
+                    fontsize=8
+                )
+
+    plt.xticks([xi + bar_width/2 for xi in x], list(df_pivot.index), rotation=45)
+    plt.ylabel('Homicídios')
+    #plt.title(f'Homicídios - Por Dia no mês atual: {hoje.strftime("%b/%Y")} : {ontem.strftime("%d/%m/%Y")}', loc='left', fontsize=12, fontweight='bold', fontname='Arial')
+    plt.legend(title='', loc='best')
+    plt.tight_layout()
+    plt.savefig('grafico_homicidios_dia.png', dpi=150, bbox_inches='tight')
+    plt.close()
+
+    pdf.ln(3)
+    pdf.set_font('Arial', 'B', 12)
+    pdf.set_text_color(80, 80, 80)
+    pdf.cell(0, 10, f'Homicídios - Por Dia no mês atual: {hoje.strftime("%b/%Y")} : {ontem.strftime("%d/%m/%Y")}', ln=1, align='L')
+    pdf.image('grafico_homicidios_dia.png', x=5, w=200)
+
 # --- ATRIBUIÇÃO DOS TEMPOS DE EXECUÇÃO PARA O RODAPÉ ---
 tempo_execucao_resumo = (
     f'Homicídio: {tempos_execucao["Homicídio"]:.2f} | '
@@ -652,8 +780,10 @@ tempo_execucao_resumo = (
     f'Município: {tempos_execucao["Município"]:.2f} | '
     f'Homicídio 2 Anos: {tempos_execucao["Homicídio Ultimos 2 Anos"]:.2f} | '
     f'Homicídio Todos os Anos: {tempos_execucao["Homicídio Todos os Anos"]:.2f} | '
-    f'Regiões Observatorio: {tempos_execucao["Regioes Observatorio"]:.2f}'
+    f'Regiões Observatorio: {tempos_execucao["Regioes Observatorio"]:.2f} | '
+    f'Homicídio Comparativo por Dia: {tempos_execucao["Homicídio Comparativo por Dia"]:.2f} '
 )
+pdf.set_font('Arial', '', 6)
 pdf.cell(0, 8, tempo_execucao_resumo, ln=1, align='L')
 # --- SALVANDO O PDF ---
 # --- Antes de salvar, defina os tempos: ---
