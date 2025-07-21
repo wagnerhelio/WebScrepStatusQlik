@@ -400,7 +400,7 @@ feminicidios_hoje, feminicidios_ontem, feminicidios_mes, feminicidios_ano = resu
 from datetime import datetime, timedelta
 hoje = datetime.now()
 ontem = hoje - timedelta(days=1)
-mes_atual = hoje.strftime('%b').capitalize()  # Ex: 'Jul'
+mes_atual = hoje.strftime('%b/%Y')
 ano_atual = hoje.year
 dia_ontem = ontem.day
 ano_anterior = ano_atual - 1
@@ -603,7 +603,6 @@ columns_regiao_observatorio_atualizada = [
     "Índice por 100K hab."
 ]
 
-col_widths_regiao_observatorio = [24, 20, 20, 20, 12, 24, 24, 12, 20]  # Ajuste para 9 colunas
 columns_regiao_observatorio, rows_regiao_observatorio = resultados["Regioes Observatorio"]
 
 # Espaço antes da tabela
@@ -616,7 +615,7 @@ titulo_regiao_observatorio = f'HOMICIDIOS POR REGIÕES - Comparativo Dia Anterio
 pdf.cell(0, 8, titulo_regiao_observatorio, ln=1, align='L')
 
 # Cabeçalho da tabela de regiões observatório
-col_widths_regiao_observatorio = [24, 20, 20, 20, 12, 24, 24, 12, 20]  # Ajuste para 9 colunas
+col_widths_regiao_observatorio = [24, 20, 20, 20, 20, 20, 20, 20, 20]  # 9 colunas
 pdf.set_font('Arial', 'B', 8)
 pdf.set_fill_color(230, 230, 230)
 pdf.set_draw_color(0, 0, 0)  # Preto para borda
