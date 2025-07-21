@@ -763,6 +763,7 @@ if not df_dia.empty:
     plt.ylabel('Homicídios')
     #plt.title(f'Homicídios - Por Dia no mês atual: {hoje.strftime("%b/%Y")} : {ontem.strftime("%d/%m/%Y")}', loc='left', fontsize=12, fontweight='bold', fontname='Arial')
     plt.legend(title='', loc='best')
+    plt.yticks([])
     plt.tight_layout()
     plt.savefig('grafico_homicidios_dia.png', dpi=150, bbox_inches='tight')
     plt.close()
@@ -772,7 +773,8 @@ if not df_dia.empty:
     pdf.set_text_color(80, 80, 80)
     pdf.cell(0, 10, f'Homicídios - Por Dia no mês atual: {hoje.strftime("%b/%Y")} : {ontem.strftime("%d/%m/%Y")}', ln=1, align='L')
     pdf.image('grafico_homicidios_dia.png', x=5, w=200)
-
+    pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
+    
 # --- ATRIBUIÇÃO DOS TEMPOS DE EXECUÇÃO PARA O RODAPÉ ---
 tempo_execucao_resumo = (
     f'Homicídio: {tempos_execucao["Homicídio"]:.2f} | '
