@@ -1,14 +1,15 @@
 import os
 import oracledb as cx_Oracle
-from fpdf import FPDF
-# Carregar variáveis do .env (se usar python-dotenv)
-from dotenv import load_dotenv
-load_dotenv()
 import time
-from tqdm import tqdm
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 import seaborn as sns
+from fpdf import FPDF
+from dotenv import load_dotenv
+from tqdm import tqdm
+
+load_dotenv()
 
 class PDFComRodape(FPDF):
     def __init__(self, *args, **kwargs):
@@ -250,6 +251,7 @@ AND qcap.nome = 'VÍTIMA'
 ORDER BY
   ano_fato 
 '''
+
 query_homicidio_comparativo_todos_anos ='''
 SELECT 
   *
@@ -420,14 +422,139 @@ ORDER BY
   TO_NUMBER(TO_CHAR(oc.datafato, 'DD')), ano
 '''
 
+query_homicidios_comparativo_dia_observatorio ='''
+SELECT
+  CASE
+	  WHEN cid.uf <> 'GO' THEN NULL
+	  WHEN cid.cidade = 25300 THEN 'GOIÂNIA'
+	  WHEN cid.microrregiao = 520012 THEN 'ENTORNO DO DF'
+	  ELSE 'INTERIOR'
+  END AS regiao_observatorio,
+  TO_CHAR(oc.datafato, 'DD') || '/' || INITCAP(TO_CHAR(oc.datafato, 'Mon', 'NLS_DATE_LANGUAGE=PORTUGUESE')) AS data,
+  EXTRACT(YEAR FROM oc.datafato) AS ano,
+  COUNT(DISTINCT pes.id) AS homicidios
+FROM bu.ocorrencia oc
+LEFT JOIN bu.endereco ende
+INNER JOIN sspj.bairros bai
+      LEFT JOIN (SELECT cod_bairro, LISTAGG(eor.sigla, ', ') AS siglas FROM sicad.circunscricao circ INNER JOIN sicad.estrutura_organizacional_real eor ON eor.cod_estrutura_organizacional = circ.cod_estrutura_organizacional GROUP BY cod_bairro) area
+      ON area.cod_bairro = bai.bairro
+      LEFT JOIN sspj.aisps ais
+      LEFT JOIN sspj.risps ris
+      ON ris.risp = ais.risp
+ON ais.aisp = bai.aisp
+LEFT JOIN sspj.cidades cid
+     LEFT JOIN sspj.cidades_ibge cib
+          ON cib.codigo_sspj = cid.cidade
+          LEFT JOIN sspj.microrregioes mic
+               LEFT JOIN sspj.mesorregioes mes
+               ON mes.mesorregiao = mic.mesorregiao
+          ON mic.microrregiao = cid.microrregiao
+     ON cid.cidade = bai.cidade
+ON bai.bairro = ende.bairro_id
+ON ende.id = oc.endereco_id
+LEFT JOIN bu.ocorrenciapessoa ope ON oc.id = ope.ocorrencia_id
+LEFT JOIN bu.pessoa pes ON pes.id = ope.pessoa_id
+LEFT JOIN bu.ocorrencia_pessoa_natur opn ON opn.ocorrenciapessoa_id = ope.id
+LEFT JOIN bu.natureza nat_pes ON nat_pes.id = opn.natureza_id
+INNER JOIN user_transacional.e_natureza_spi_tipificada_mview nat_tip_pes ON nat_tip_pes.spi_natureza_id = nat_pes.naturezaid
+LEFT JOIN bu.ocorrencia_pessoa_natur_qual opnq ON opnq.ocorrenciapessoanatureza_id = opn.id
+LEFT JOIN bu.qualificacao qua ON qua.id = opnq.qualificacoes_id
+INNER JOIN spi.qalificacao qa ON qa.codigo_qualificacao = qua.qualificacaoid
+INNER JOIN spi.qualificacao_categorias qcap ON qcap.qualificacao_categoria = qa.qualificacao_categoria
+WHERE ende.estado_sigla = 'GO'
+  AND oc.statusocorrencia = 'OCORRENCIA'
+  AND (UPPER(nat_tip_pes.GRUPO) = 'HOMICÍDIO' OR nat_pes.naturezaid IN ('500001', '500002', '500003', '500004', '500005', '500006', '500007', '500011', '400711', '400712', '400001', '400002', '501199', '501200', '501201', '501202', '501203', '501204', '501220', '501136', '501137', '501138', '501139', '501140', '501141', '501288', '520269', '520323', '521062', '522242', '522243', '522262', '523006', '523007', '523008', '523009', '523010', '523011', '522745'))
+  AND nat_pes.consumacaoenum = 'CONSUMADO'
+  AND ope.tipopessoaenum = 'FISICA'
+  AND qcap.nome = 'VÍTIMA'
+  AND EXTRACT(MONTH FROM oc.datafato) = EXTRACT(MONTH FROM SYSDATE)
+  AND EXTRACT(DAY FROM oc.datafato) <= EXTRACT(DAY FROM SYSDATE - 1)
+  AND EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM SYSDATE)
+GROUP BY
+  CASE
+	  WHEN cid.uf <> 'GO' THEN NULL
+	  WHEN cid.cidade = 25300 THEN 'GOIÂNIA'
+	  WHEN cid.microrregiao = 520012 THEN 'ENTORNO DO DF'
+	  ELSE 'INTERIOR'
+  END,
+  TO_CHAR(oc.datafato, 'DD'),
+  TO_CHAR(oc.datafato, 'Mon', 'NLS_DATE_LANGUAGE=PORTUGUESE'),
+  EXTRACT(YEAR FROM oc.datafato)
+ORDER BY
+  TO_NUMBER(TO_CHAR(oc.datafato, 'DD')), ano
+'''
+
+query_homicidios_comparativo_mes_observatorio ='''
+SELECT
+  CASE
+	  WHEN cid.uf <> 'GO' THEN NULL
+	  WHEN cid.cidade = 25300 THEN 'GOIÂNIA'
+	  WHEN cid.microrregiao = 520012 THEN 'ENTORNO DO DF'
+	  ELSE 'INTERIOR'
+  END AS regiao_observatorio,
+  INITCAP(TO_CHAR(oc.datafato, 'Mon', 'NLS_DATE_LANGUAGE=PORTUGUESE')) AS mes,
+  EXTRACT(MONTH FROM oc.datafato) AS numero_mes,
+  COUNT(DISTINCT pes.id) AS homicidios
+FROM bu.ocorrencia oc
+LEFT JOIN bu.endereco ende
+INNER JOIN sspj.bairros bai
+      LEFT JOIN (SELECT cod_bairro, LISTAGG(eor.sigla, ', ') AS siglas FROM sicad.circunscricao circ INNER JOIN sicad.estrutura_organizacional_real eor ON eor.cod_estrutura_organizacional = circ.cod_estrutura_organizacional GROUP BY cod_bairro) area
+      ON area.cod_bairro = bai.bairro
+      LEFT JOIN sspj.aisps ais
+      LEFT JOIN sspj.risps ris
+      ON ris.risp = ais.risp
+ON ais.aisp = bai.aisp
+LEFT JOIN sspj.cidades cid
+     LEFT JOIN sspj.cidades_ibge cib
+          ON cib.codigo_sspj = cid.cidade
+          LEFT JOIN sspj.microrregioes mic
+               LEFT JOIN sspj.mesorregioes mes
+               ON mes.mesorregiao = mic.mesorregiao
+          ON mic.microrregiao = cid.microrregiao
+     ON cid.cidade = bai.cidade
+ON bai.bairro = ende.bairro_id
+ON ende.id = oc.endereco_id
+LEFT JOIN bu.ocorrenciapessoa ope ON oc.id = ope.ocorrencia_id
+LEFT JOIN bu.pessoa pes ON pes.id = ope.pessoa_id
+LEFT JOIN bu.ocorrencia_pessoa_natur opn ON opn.ocorrenciapessoa_id = ope.id
+LEFT JOIN bu.natureza nat_pes ON nat_pes.id = opn.natureza_id
+INNER JOIN user_transacional.e_natureza_spi_tipificada_mview nat_tip_pes ON nat_tip_pes.spi_natureza_id = nat_pes.naturezaid
+LEFT JOIN bu.ocorrencia_pessoa_natur_qual opnq ON opnq.ocorrenciapessoanatureza_id = opn.id
+LEFT JOIN bu.qualificacao qua ON qua.id = opnq.qualificacoes_id
+INNER JOIN spi.qalificacao qa ON qa.codigo_qualificacao = qua.qualificacaoid
+INNER JOIN spi.qualificacao_categorias qcap ON qcap.qualificacao_categoria = qa.qualificacao_categoria
+WHERE ende.estado_sigla = 'GO'
+  AND oc.statusocorrencia = 'OCORRENCIA'
+  AND (UPPER(nat_tip_pes.GRUPO) = 'HOMICÍDIO' OR nat_pes.naturezaid IN ('500001', '500002', '500003', '500004', '500005', '500006', '500007', '500011', '400711', '400712', '400001', '400002', '501199', '501200', '501201', '501202', '501203', '501204', '501220', '501136', '501137', '501138', '501139', '501140', '501141', '501288', '520269', '520323', '521062', '522242', '522243', '522262', '523006', '523007', '523008', '523009', '523010', '523011', '522745'))
+  AND nat_pes.consumacaoenum = 'CONSUMADO'
+  AND ope.tipopessoaenum = 'FISICA'
+  AND qcap.nome = 'VÍTIMA'
+  AND EXTRACT(DAY FROM oc.datafato) <= EXTRACT(DAY FROM SYSDATE - 1)
+  AND EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM SYSDATE)
+GROUP BY
+  CASE
+	  WHEN cid.uf <> 'GO' THEN NULL
+	  WHEN cid.cidade = 25300 THEN 'GOIÂNIA'
+	  WHEN cid.microrregiao = 520012 THEN 'ENTORNO DO DF'
+	  ELSE 'INTERIOR'
+  END,
+  INITCAP(TO_CHAR(oc.datafato, 'Mon', 'NLS_DATE_LANGUAGE=PORTUGUESE')),
+  EXTRACT(MONTH FROM oc.datafato)
+ORDER BY
+  EXTRACT(MONTH FROM oc.datafato) 
+'''
+
 queries = [
     ("Homicídio", query_homicidio),
     ("Feminicídio", query_feminicidio),
     ("Município", query_municipio),
     ("Homicídio Ultimos 2 Anos", query_homicidio_comparativo_dois_anos),
     ("Homicídio Todos os Anos", query_homicidio_comparativo_todos_anos),
-    ("Regioes Observatorio", query_regioes_observatorio),
-    ("Homicídio Comparativo por Dia",query_homicidios_comparativo_dia)
+    ("Regioes Observatório", query_regioes_observatorio),
+    ("Homicídio Comparativo por Dia",query_homicidios_comparativo_dia),
+    ("Homicídio Comparativo por Dia Observatório",query_homicidios_comparativo_dia_observatorio),
+    ("Homicídio Comparativo por Mes Observatório",query_homicidios_comparativo_mes_observatorio)
+
 ]
 resultados = {}
 tempos_execucao = {}
@@ -435,7 +562,7 @@ tempos_execucao = {}
 for nome, query in tqdm(queries, desc="Executando consultas"):
     start = time.time()
     cursor.execute(query)
-    if nome in ["Município", "Homicídio Ultimos 2 Anos","Homicídio Todos os Anos","Regioes Observatorio","Homicídio Comparativo por Dia"]:
+    if nome in ["Município", "Homicídio Ultimos 2 Anos","Homicídio Todos os Anos","Regioes Observatório","Homicídio Comparativo por Dia","Homicídio Comparativo por Dia Observatório","Homicídio Comparativo por Mes Observatório"]:
         columns = [str(col[0]) for col in cursor.description]
         rows = [list(row) for row in cursor.fetchall()]
         resultados[nome] = (columns, rows)
@@ -656,7 +783,7 @@ columns_regiao_observatorio_atualizada = [
     "Índice por 100K hab."
 ]
 
-columns_regiao_observatorio, rows_regiao_observatorio = resultados["Regioes Observatorio"]
+columns_regiao_observatorio, rows_regiao_observatorio = resultados["Regioes Observatório"]
 
 # Espaço antes da tabela
 pdf.ln(4)
@@ -814,6 +941,58 @@ for ano, row in df_tab.iterrows():
         pdf.cell(col_width, 6, str(int(valor)), 1, 0, 'C')
     pdf.ln()
 
+# --- GRAFICO COMPARATIVO POR DIA OBSERVATÓRIO (por REGIAO_OBSERVATORIO)
+columns_dia_obs, rows_dia_obs = resultados["Homicídio Comparativo por Dia Observatório"]
+df_comparativo_dia = pd.DataFrame(rows_dia_obs, columns=columns_dia_obs)
+
+if not df_comparativo_dia.empty:
+    df_comparativo_dia['HOMICIDIOS'] = df_comparativo_dia['HOMICIDIOS'].astype(int)
+
+    # Pivot por DATA e REGIAO_OBSERVATORIO
+    df_pivot = df_comparativo_dia.pivot(index='DATA', columns='REGIAO_OBSERVATORIO', values='HOMICIDIOS').fillna(0)
+    df_pivot = df_pivot.reindex(sorted(df_pivot.index, key=lambda x: int(x.split('/')[0])))
+
+    plt.figure(figsize=(10, 3.5))
+    regioes = sorted(df_pivot.columns)
+    bar_width = 0.25
+    x = range(len(df_pivot.index))
+    cores = ['#e55039', '#3b3b98', '#f6b93b']  # Vermelho, Azul, Amarelo
+
+    for i, regiao in enumerate(regioes):
+        bars = plt.bar([xi + i * bar_width for xi in x], df_pivot[regiao], width=bar_width, label=regiao, color=cores[i % len(cores)])
+        for bar in bars:
+            height = bar.get_height()
+            if height > 0:
+                plt.text(
+                    bar.get_x() + bar.get_width() / 2,
+                    height + 0.1,
+                    f'{int(height)}',
+                    ha='center',
+                    va='bottom',
+                    fontsize=8
+                )
+
+    plt.xticks([xi + bar_width * (len(regioes)/2 - 0.5) for xi in x], list(df_pivot.index), rotation=45)
+    plt.ylabel('Homicídios')
+    plt.legend(title='', loc='best')
+    plt.yticks([])
+    plt.tight_layout()
+
+    plt.savefig('grafico_homicidios_dia_regiao.png', dpi=150, bbox_inches='tight')
+    plt.close()
+
+    pdf.ln(3)
+    pdf.set_font('Arial', 'B', 12)
+    pdf.set_text_color(0, 0, 0)
+    titulo_mes_regiao = f'Homicídios - Por Dia no mês atual: {hoje.strftime("%b/%Y")}'
+    pdf.cell(0, 10, titulo_mes_regiao, ln=1, align='L')
+    pdf.image('grafico_homicidios_dia_regiao.png', x=5, w=200)
+    pdf.set_font('Arial', 'I', 9)
+    pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
+
+# --- GRAFICO COMPARATIVO POR MES OBSERVATÓRIO (por REGIAO_OBSERVATORIO)
+
+# --- TABELA COMPARATIVO POR MES OBSERVATÓRIO (por REGIAO_OBSERVATORIO)
 
 # --- ATRIBUIÇÃO DOS TEMPOS DE EXECUÇÃO PARA O RODAPÉ ---
 tempo_execucao_resumo = (
@@ -822,8 +1001,10 @@ tempo_execucao_resumo = (
     f'Município: {tempos_execucao["Município"]:.2f} | '
     f'Homicídio 2 Anos: {tempos_execucao["Homicídio Ultimos 2 Anos"]:.2f} | '
     f'Homicídio Todos os Anos: {tempos_execucao["Homicídio Todos os Anos"]:.2f} | '
-    f'Regiões Observatorio: {tempos_execucao["Regioes Observatorio"]:.2f} | '
+    f'Regiões Observatório: {tempos_execucao["Regioes Observatório"]:.2f} | '
     f'Homicídio Comparativo por Dia: {tempos_execucao["Homicídio Comparativo por Dia"]:.2f} '
+    f'Homicídio Comparativo por Dia Observatório: {tempos_execucao["Homicídio Comparativo por Dia Observatório"]:.2f} '
+    f'Homicídio Comparativo por Mes Observatório: {tempos_execucao["Homicídio Comparativo por Mes Observatório"]:.2f} '
 )
 pdf.set_font('Arial', '', 6)
 pdf.cell(0, 8, tempo_execucao_resumo, ln=1, align='L')
