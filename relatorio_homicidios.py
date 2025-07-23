@@ -991,7 +991,41 @@ if not df_comparativo_dia.empty:
     pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 
 # --- GRAFICO COMPARATIVO POR MES OBSERVATÓRIO (por REGIAO_OBSERVATORIO)
+columns_mes_obs, rows_mes_obs = resultados["Homicídio Comparativo por Mes Observatório"]
+df_mes = pd.DataFrame(rows_mes_obs, columns=columns_mes_obs)
 
+if not df_mes.empty:
+    # Converte colunas
+    df_mes['HOMICIDIOS'] = df_mes['HOMICIDIOS'].astype(int)
+    df_pivot = df_mes.pivot(index='MES', columns='REGIAO_OBSERVATORIO', values='HOMICIDIOS').fillna(0)
+
+    # Calcula totais
+    df_pivot['TOTAL'] = df_pivot.sum(axis=1)
+    df_pivot = df_pivot.loc[['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul']]  # ordenação garantida
+
+    # Gráfico empilhado
+    plt.figure(figsize=(10, 4.5))
+    bottom = np.zeros(len(df_pivot))
+    cores = {
+        'ENTORNO DO DF': '#3c1361',
+        'GOIÂNIA': '#5e60ce',
+        'INTERIOR': '#4ea8de'
+    }
+
+    for regiao in cores:
+        if regiao in df_pivot.columns:
+            plt.bar(df_pivot.index, df_pivot[regiao], bottom=bottom, label=regiao, color=cores[regiao])
+            bottom += df_pivot[regiao]
+
+    for idx, total in enumerate(df_pivot['TOTAL']):
+        plt.text(idx, total + 1, str(int(total)), ha='center', fontsize=8)
+
+    plt.title(f'Homicídio Comparativo por Mes Observatório: {hoje.year}', fontsize=12, weight='bold')
+    plt.ylabel('Homicídios')
+    plt.legend(title='', loc='upper right')
+    plt.tight_layout()
+    plt.savefig('grafico_homicidios_mes.png', dpi=150)
+    plt.close()
 # --- TABELA COMPARATIVO POR MES OBSERVATÓRIO (por REGIAO_OBSERVATORIO)
 
 # --- ATRIBUIÇÃO DOS TEMPOS DE EXECUÇÃO PARA O RODAPÉ ---
