@@ -547,8 +547,8 @@ ontem_data = (hoje - timedelta(days=1)).strftime('%d/%m/%Y')
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)  # Preto
-titulo = f'Homicídios - Dia Anterior por Município : {ontem_data}'
-pdf.cell(0, 10, titulo, ln=1, align='L')
+titulo_municipio = f'Homicídios - Dia Anterior por Município : {ontem_data}'
+pdf.cell(0, 10, titulo_municipio, ln=1, align='L')
 
 # Cabeçalho da tabela de município
 col_widths_municipio = [38, 22, 22, 12, 12, 12, 12]  # 7 colunas: municipio_nome, id_rai, datafato, total, F, M, NF
@@ -604,8 +604,9 @@ plt.close()
 # Após a tabela:
 pdf.ln(3)  # Espaço maior entre a tabela e o título do gráfico
 pdf.set_font('Arial', 'B', 12)
-pdf.set_text_color(0, 0, 0)
-pdf.cell(0, 10, 'Homicídios - Comparativo ano atual com os últimos dois anos', ln=1, align='L')
+pdf.set_text_color(0, 0, 0)  # Preto
+titulo_comparativo_dois_anos = f'Homicídios - Comparativo ano atual com os últimos dois anos : {ontem_data}'
+pdf.cell(0, 10, titulo_comparativo_dois_anos, ln=1, align='L')
 #pdf.ln()  # Espaço pequeno entre o título e o gráfico
 pdf.image('grafico_homicidios.png', x=5, w=200)
 pdf.set_font('Arial', 'I', 9)
@@ -618,10 +619,10 @@ columns_meses_anos, rows_meses_anos = resultados["Homicídio Todos os Anos"]
 pdf.ln(4)
 
 # Título da tabela
-pdf.set_font('Arial', 'B', 10)
+pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)  # Preto
 titulo_meses_anos = f'Tabela de Homicidios Comparativo por Ano até : {ontem_data}'
-pdf.cell(0, 8, titulo_meses_anos, ln=1, align='L')
+pdf.cell(0, 10, titulo_meses_anos, ln=1, align='L')
 
 # Cabeçalho da tabela de meses/anos
 # Para A4, largura útil ~190mm. Para 13 colunas, use ~14mm cada (ano pode ser 18mm, meses 14mm)
@@ -661,12 +662,12 @@ columns_regiao_observatorio, rows_regiao_observatorio = resultados["Regioes Obse
 pdf.ln(4)
 
 # Título da tabela
-pdf.set_font('Arial', 'B', 10)
+pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)  # Preto
 titulo_regiao_observatorio = f'HOMICIDIOS POR REGIÕES - Comparativo Dia Anterior e Acumulado até : {ontem_data}'
-pdf.cell(0, 8, titulo_regiao_observatorio, ln=1, align='L')
+pdf.cell(0, 10, titulo_regiao_observatorio, ln=1, align='L')
 
-col_widths_regiao_observatorio = [24, 20, 20, 20, 20, 20, 20, 20, 20]  # 9 colunas
+col_widths_regiao_observatorio = [25, 20, 20, 20, 15, 24, 24, 15, 25]  # 9 colunas
 # Cabeçalho da tabela de regiões observatório (ajustado para quebra de linha, altura uniforme)
 pdf.set_font('Arial', 'B', 8)
 pdf.set_fill_color(230, 230, 230)
@@ -770,11 +771,50 @@ if not df_dia.empty:
 
     pdf.ln(3)
     pdf.set_font('Arial', 'B', 12)
-    pdf.set_text_color(80, 80, 80)
-    pdf.cell(0, 10, f'Homicídios - Por Dia no mês atual: {hoje.strftime("%b/%Y")} : {ontem.strftime("%d/%m/%Y")}', ln=1, align='L')
+    pdf.set_text_color(0, 0, 0)  # Preto
+    titulo_mes_atual = f'Homicídios - Por Dia no mês atual: {hoje.strftime("%b/%Y")}'
+    pdf.cell(0, 10, titulo_mes_atual, ln=1, align='L')
     pdf.image('grafico_homicidios_dia.png', x=5, w=200)
+    pdf.set_font('Arial', 'I', 9)
     pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
-    
+
+# --- TABELA COMPARATIVO POR DIA
+
+# Título da tabela
+pdf.set_font('Arial', 'B', 12)
+pdf.set_text_color(0, 0, 0)  # Preto
+titulo_por_dia = f'Homicídios Comparativo por Dia no Mês Atual : {ontem_data}'
+pdf.cell(0, 10, titulo_por_dia, ln=1, align='L')
+
+# Transpõe para: colunas = dias, linhas = anos
+df_tab = df_pivot.T
+
+# Largura total disponível (ajuste conforme sua margem)
+largura_total = 190
+num_colunas = len(df_tab.columns)
+col_width_ano = 12
+col_width = (largura_total - col_width_ano) / num_colunas if num_colunas > 0 else largura_total
+
+# Cabeçalho
+dias = list(df_tab.columns)
+pdf.set_font('Arial', 'B', 7)
+pdf.set_fill_color(230, 230, 230)
+pdf.set_draw_color(0, 0, 0)
+pdf.set_text_color(0, 0, 0)
+pdf.cell(col_width_ano, 6, 'Ano', 1, 0, 'C', fill=True)
+for dia in dias:
+    pdf.cell(col_width, 6, str(dia), 1, 0, 'C', fill=True)
+pdf.ln()
+
+# Linhas de dados (anos)
+pdf.set_font('Arial', '', 7)
+for ano, row in df_tab.iterrows():
+    pdf.cell(col_width_ano, 6, str(ano), 1, 0, 'C')
+    for valor in row:
+        pdf.cell(col_width, 6, str(int(valor)), 1, 0, 'C')
+    pdf.ln()
+
+
 # --- ATRIBUIÇÃO DOS TEMPOS DE EXECUÇÃO PARA O RODAPÉ ---
 tempo_execucao_resumo = (
     f'Homicídio: {tempos_execucao["Homicídio"]:.2f} | '
