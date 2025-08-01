@@ -316,12 +316,12 @@ CASE
     ELSE 'INTERIOR'
 END AS regiao_observatorio,
 COUNT(DISTINCT CASE WHEN oc.datafato >= TRUNC(ADD_MONTHS(SYSDATE, -12), 'MM') AND oc.datafato <  TRUNC(ADD_MONTHS(SYSDATE, -11), 'MM') THEN pes.id END) AS mes_anterior_fechado,
-COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN ADD_MONTHS(TRUNC(SYSDATE, 'MM'), -12) AND ADD_MONTHS(TRUNC(SYSDATE), -12) THEN pes.id END) AS periodo_ano_anterior,
-COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN TRUNC(SYSDATE, 'MM') AND TRUNC(SYSDATE)THEN pes.id END) AS periodo_ano_atual,
-ROUND((COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN TRUNC(SYSDATE, 'MM') AND TRUNC(SYSDATE) THEN pes.id END) - COUNT(DISTINCT CASE  WHEN oc.datafato BETWEEN ADD_MONTHS(TRUNC(SYSDATE, 'MM'), -12) AND ADD_MONTHS(TRUNC(SYSDATE), -12) THEN pes.id END)) * 100.0 / NULLIF(COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN ADD_MONTHS(TRUNC(SYSDATE, 'MM'), -12) AND ADD_MONTHS(TRUNC(SYSDATE), -12) THEN pes.id END), 0), 2) AS variacao_percentual,
+COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN ADD_MONTHS(TRUNC(SYSDATE - 1, 'MM'), -12) AND ADD_MONTHS(TRUNC(SYSDATE - 1 ), -12) THEN pes.id END) AS periodo_ano_anterior,
+COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN TRUNC(SYSDATE - 1 , 'MM') AND TRUNC(SYSDATE -1 )THEN pes.id END) AS periodo_ano_atual,
+ROUND((COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN TRUNC(SYSDATE - 1 , 'MM') AND TRUNC(SYSDATE - 1 ) THEN pes.id END) - COUNT(DISTINCT CASE  WHEN oc.datafato BETWEEN ADD_MONTHS(TRUNC(SYSDATE - 1 , 'MM'), -12) AND ADD_MONTHS(TRUNC(SYSDATE - 1 ), -12) THEN pes.id END)) * 100.0 / NULLIF(COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN ADD_MONTHS(TRUNC(SYSDATE - 1 , 'MM'), -12) AND ADD_MONTHS(TRUNC(SYSDATE - 1 ), -12) THEN pes.id END), 0), 2) AS variacao_percentual,
 COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN TRUNC(ADD_MONTHS(SYSDATE, -12), 'YYYY') AND ADD_MONTHS(TRUNC(SYSDATE), -12) THEN pes.id END) AS acumulado_ano_anterior,
-COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN TRUNC(SYSDATE, 'YYYY') AND TRUNC(SYSDATE) THEN pes.id END) AS acumulado_ano_atual,
-ROUND(( COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN TRUNC(SYSDATE, 'YYYY') AND TRUNC(SYSDATE) THEN pes.id END) - COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN TRUNC(ADD_MONTHS(SYSDATE, -12), 'YYYY') AND ADD_MONTHS(TRUNC(SYSDATE), -12) THEN pes.id END)) * 100.0 / NULLIF(COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN TRUNC(ADD_MONTHS(SYSDATE, -12), 'YYYY') AND ADD_MONTHS(TRUNC(SYSDATE), -12)THEN pes.id END), 0), 2) AS variacao_acumulado_percentual,
+COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN TRUNC(SYSDATE - 1 , 'YYYY') AND TRUNC(SYSDATE - 1 ) THEN pes.id END) AS acumulado_ano_atual,
+ROUND(( COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN TRUNC(SYSDATE - 1 , 'YYYY') AND TRUNC(SYSDATE - 1 ) THEN pes.id END) - COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN TRUNC(ADD_MONTHS(SYSDATE - 1 , -12), 'YYYY') AND ADD_MONTHS(TRUNC(SYSDATE - 1 ), -12) THEN pes.id END)) * 100.0 / NULLIF(COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN TRUNC(ADD_MONTHS(SYSDATE - 1 , -12), 'YYYY') AND ADD_MONTHS(TRUNC(SYSDATE - 1), -12)THEN pes.id END), 0), 2) AS variacao_acumulado_percentual,
 SUM(cib.populacao) AS populacao_total
 FROM bu.ocorrencia oc
 LEFT JOIN bu.endereco ende
@@ -376,7 +376,6 @@ CASE
 ELSE 'INTERIOR'
 END
 '''
-
 query_homicidios_comparativo_dia ='''
 SELECT
   TO_CHAR(oc.datafato, 'DD') || '/' || INITCAP(TO_CHAR(oc.datafato, 'Mon', 'NLS_DATE_LANGUAGE=PORTUGUESE')) AS data,
@@ -880,16 +879,15 @@ pdf.multi_cell(0, 10, titulo_homicidio_regiao, align='L')
 
 col_widths_homicidio_regiao = [22, 22, 22, 22, 12, 26, 26, 12, 24]  # 9 colunas - ajustadas para melhor distribuição
 
-# Cabeçalho da tabela de regiões com quebra de texto
-pdf.set_font('Arial', 'B', 6)  # Reduzido de 8 para 6
+# Cabeçalho da tabela de regiões - implementação robusta
+pdf.set_font('Arial', 'B', 6)
 pdf.set_fill_color(230, 230, 230)
 pdf.set_draw_color(0, 0, 0)
 pdf.set_text_color(0, 0, 0)
 
-# Calcula a altura máxima necessária para os cabeçalhos
-altura_cabecalho = 6  # altura mínima
+# Calcula altura dinâmica para o cabeçalho
+altura_cabecalho = 8
 for col in colunas_homicidio_regiao_atualizada:
-    # Calcula quantas linhas o texto vai ocupar
     texto = str(col).upper()
     largura_coluna = col_widths_homicidio_regiao[colunas_homicidio_regiao_atualizada.index(col)]
     linhas_necessarias = len(pdf.multi_cell(largura_coluna, 3, texto, align='C', split_only=True))
@@ -897,15 +895,43 @@ for col in colunas_homicidio_regiao_atualizada:
     if altura_necessaria > altura_cabecalho:
         altura_cabecalho = altura_necessaria
 
-# Desenha o cabeçalho com quebra de texto
+# Desenha o cabeçalho usando cell para manter alinhamento
+x_inicial = pdf.get_x()
+y_inicial = pdf.get_y()
+
 for i, col in enumerate(colunas_homicidio_regiao_atualizada):
-    pdf.multi_cell(col_widths_homicidio_regiao[i], 3, str(col).upper(), 1, 'C', fill=True)
+    pdf.cell(col_widths_homicidio_regiao[i], altura_cabecalho, '', 1, 0, 'C', fill=True)
+
+# Volta ao início para desenhar o texto
+pdf.set_xy(x_inicial, y_inicial)
+
+# Desenha o texto do cabeçalho com quebra de linha
+for i, col in enumerate(colunas_homicidio_regiao_atualizada):
+    texto = str(col).upper()
+    largura_coluna = col_widths_homicidio_regiao[i]
+    
+    # Calcula posição para centralizar o texto
+    linhas = pdf.multi_cell(largura_coluna, 3, texto, align='C', split_only=True)
+    altura_texto = len(linhas) * 3
+    y_offset = (altura_cabecalho - altura_texto) / 2
+    
+    # Desenha cada linha do texto
+    for j, linha in enumerate(linhas):
+        x_texto = x_inicial + sum(col_widths_homicidio_regiao[:i]) + (largura_coluna - pdf.get_string_width(linha)) / 2
+        y_texto = y_inicial + y_offset + (j * 3)
+        pdf.set_xy(x_texto, y_texto)
+        pdf.cell(pdf.get_string_width(linha), 3, linha, 0, 0, 'L')
+    
     # Move para a próxima coluna
-    pdf.set_xy(pdf.get_x() + col_widths_homicidio_regiao[i], pdf.get_y() - altura_cabecalho)
+    if i < len(colunas_homicidio_regiao_atualizada) - 1:
+        pdf.set_xy(x_inicial + sum(col_widths_homicidio_regiao[:i+1]), y_inicial)
+
+# Ajusta a posição do cursor para continuar com os dados
+pdf.set_xy(10, y_inicial + altura_cabecalho)
 
 # Dados da tabela de regiões
 pdf.set_font('Arial', '', 8)
-pdf.set_text_color(0, 0, 0)  # Preto para texto
+pdf.set_text_color(0, 0, 0)
 
 def safe_str_regiao(item):
     return str(item) if item is not None else ''
@@ -936,10 +962,10 @@ for linha in linhas_homicidio_regiao:
         if i == 4 or i == 7:  # Colunas de porcentagem
             texto, r, g, b = formatar_porcentagem(item)
             pdf.set_text_color(r, g, b)
-            pdf.cell(col_widths_homicidio_regiao[i], altura_cabecalho, texto, 1, 0, 'C')
+            pdf.cell(col_widths_homicidio_regiao[i], 8, texto, 1, 0, 'C')
             pdf.set_text_color(0, 0, 0)  # Volta para preto
         else:
-            pdf.cell(col_widths_homicidio_regiao[i], altura_cabecalho, safe_str_regiao(item), 1, 0, 'C')
+            pdf.cell(col_widths_homicidio_regiao[i], 8, safe_str_regiao(item), 1, 0, 'C')
     pdf.ln()
 
 # Adiciona observação sobre as regiões
