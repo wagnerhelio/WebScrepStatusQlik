@@ -25,9 +25,9 @@ ms-python.vscode-python-envs
 Para usuários Windows:
 Baixe o Build Tools para compilar pacotes Python com dependências nativas:
 https://visualstudio.microsoft.com/visual-cpp-build-tools/
-Clique em “Download Build Tools”.
-Na instalação, selecione “C++ build tools”.
-Marque também a opção “Windows 10 SDK” ou “Windows 11 SDK”, conforme seu sistema.
+Clique em "Download Build Tools".
+Na instalação, selecione "C++ build tools".
+Marque também a opção "Windows 10 SDK" ou "Windows 11 SDK", conforme seu sistema.
 
 ## 🚀 Instalação
 
@@ -98,27 +98,35 @@ Extraia e salve dentro da pasta /chromedriver.
 
 
 ## 🧾 Execução dos Scripts
-🟡 Coletar Status do QMC (HUB E QAP)
+
+### 🟢 Execução Automática Recomendada (Agendador)
+
+Para garantir que todos os scripts rodem sempre no ambiente virtual correto, utilize o agendador principal:
 
 ```bash
-python .\statusqlik_qmc.py 
-``` 
-🔵 Coletar Status do NPrinting
+# Ative o ambiente virtual (se ainda não estiver ativo)
+.\.venv\Scripts\activate  # Windows
+# ou
+source venv/bin/activate   # Linux/macOS
+
+# Execute o agendador principal
+python scheduler_statusqlik.py
+```
+
+O `scheduler_statusqlik.py` irá:
+- Rodar o status do QMC de hora em hora.
+- Enviar o resumo e os arquivos automaticamente às 08:00.
+- Exibir no terminal a hora da próxima checagem e envio.
+
+### 🟡 Execução Manual dos Scripts
+
+Você pode executar cada script individualmente, se desejar:
+
 ```bash
-python .\statusqlik_nprinting.py 
-``` 
-🟢 Enviar logs via WhatsApp (número único)
-```bash
-python .\sendnumber_statusqlik_evolution.py 
-``` 
-🟢 Enviar logs via WhatsApp para grupos(grupo)
-```bash
-python .\sendgroup_statusqlik_evolution.py 
-``` 
-🟢 Enviar para múltiplos destinos (grupo e lista)
-```bash
-python .\send_statusqlik_evolution.py 
-``` 
+python statusqlik_qmc.py           # Coleta status do QMC (HUB e QAP)
+python statusqlik_nprinting.py     # Coleta status do NPrinting
+python send_statusqlik_evolution.py # Envia logs e resumos via Evolution API (WhatsApp)
+```
 
 ## 📤 Integração com Evolution API
 Siga o guia oficial da Evolution API - Introdução e configure:
@@ -144,7 +152,7 @@ WEBSCREPSTATUSQLIK/
 ├── .gitignore
 ├── README.md                   # Este arquivo
 ├── requirements.txt            # Dependências do projeto
-├── scheduler_statusqlik.py     # Agendador de execução automática
+├── scheduler_statusqlik.py     # Agendador principal
 ├── send_statusqlik_evolution.py
 ├── sendgroup_statusqlik_evolution.py
 ├── sendnumber_statusqlik_evolution.py
@@ -191,4 +199,58 @@ Com a condição de manter os créditos ao(s) autor(es) original(is).
 - pdfkit / WeasyPrint – Geração de PDF a partir de HTML.
 
 - Inspiração na comunidade de desenvolvedores do GitHub, Stack Overflow e fóruns técnicos diversos.
+
+## 📝 O que faz cada arquivo principal?
+
+### scheduler_statusqlik.py
+Agendador principal do projeto. Garante que todos os scripts sejam executados usando o mesmo Python do ambiente virtual. Exibe no terminal a próxima execução de cada tarefa.
+- **Funções:**
+  - `run_statusqlik_qmc()`: Executa a coleta de status do QMC.
+  - `run_send_statusqlik_evolution()`: Executa o envio de relatórios e logs via Evolution API.
+  - `get_next_run_time()`: Mostra a próxima execução agendada de cada tarefa.
+
+### statusqlik_qmc.py
+Script de automação Selenium para coletar status das tarefas do Qlik Sense QMC (HUB e QAP), baixar logs de erro, reiniciar tarefas com falha e gerar relatórios em PDF e TXT.
+
+### statusqlik_nprinting.py
+Script de automação Selenium para coletar status das tarefas do Qlik NPrinting, baixar logs de erro e gerar relatórios em PDF e TXT.
+
+### send_statusqlik_evolution.py
+Envia os resumos, relatórios e logs coletados via Evolution API (WhatsApp), tanto para número individual quanto para grupo.
+
+## Fluxo Atual de Geração, Envio e Limpeza de Arquivos
+
+### 1. Geração dos Arquivos de Status
+- A cada hora cheia, o agendador executa o script `statusqlik_qmc.py`, que gera dois arquivos PDF de status das tarefas QMC:
+  - `tasks_qmc/status_qlik_estatistica_YYYY-MM-DD.pdf`
+  - `tasks_qmc/status_qlik_paineis_YYYY-MM-DD.pdf`
+- O script `statusqlik_nprinting.py` gera o arquivo PDF de status das tarefas NPrinting:
+  - `tasks_nprinting/status_nprinting_relatorios_YYYY-MM-DD.pdf`
+- Os arquivos são sobrescritos a cada execução, mantendo apenas o arquivo do dia para cada tipo.
+
+### 2. Envio dos Arquivos e Resumos
+- Todos os dias às 08:00, o script `send_statusqlik_evolution.py` é executado.
+- Ele:
+  1. Gera um resumo concatenado das tarefas do dia (QMC e NPrinting) e envia via WhatsApp (API Evolution) para um número e um grupo configurados.
+  2. Envia os arquivos PDF de status do dia para os mesmos destinos.
+  3. Envia logs de erro das pastas `errorlogs` e `errorlogs_nprinting`.
+  4. Envia relatórios da pasta compartilhada, se houver.
+
+### 3. Limpeza das Pastas
+- Após o envio, todos os arquivos das pastas monitoradas (`errorlogs`, `errorlogs_nprinting`, `tasks_nprinting`, `tasks_qmc`, pasta compartilhada) são removidos.
+- Assim, a cada ciclo, apenas os arquivos do dia são mantidos até o próximo envio.
+
+### 4. Observações Importantes
+- O sistema não acumula arquivos por horário: sempre sobrescreve o arquivo do dia.
+- Se algum envio falhar, o arquivo pode ser perdido, pois a limpeza é feita após o envio. Recomenda-se monitorar os logs para identificar falhas.
+- Variáveis de ambiente são obrigatórias para o funcionamento correto. Verifique o arquivo `.env`.
+
+### 5. Agendamento
+- O agendamento é feito via `scheduler_statusqlik.py`:
+  - A cada hora: geração dos status QMC.
+  - Todo dia às 08:00: envio dos resumos, PDFs e logs.
+
+---
+
+Se precisar de mais detalhes sobre cada etapa ou sobre configuração, consulte os scripts ou peça exemplos específicos.
 
