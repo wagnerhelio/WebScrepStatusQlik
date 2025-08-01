@@ -736,7 +736,7 @@ pdf.cell(0, 15, str(homicidios_mes), ln=1, align='C')
 columns_homicidio_municipio, rows_homicidio_municipio = resultados["Homicídio Município"]
 
 # Espaço antes da tabela
-pdf.ln(3)
+pdf.ln(4)
 
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
@@ -825,7 +825,7 @@ colunas_homicidio_todos_anos, linhas_homicidio_todos_anos = resultados["Homicíd
 df_homicidio_todos_anos = pd.DataFrame(linhas_homicidio_todos_anos, columns=colunas_homicidio_todos_anos)
 
 # Espaço antes da tabela
-pdf.ln(3)
+pdf.ln(4)
 
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
@@ -875,21 +875,33 @@ pdf.ln(4)
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)  # Preto
-titulo_homicidio_regiao = f'HOMICÍDIOS POR REGIÕES - Comparativo Dia Anterior e Acumulado : {ontem_data}'
+titulo_homicidio_regiao = f'HOMICÍDIOS POR REGIÕES - Comparativo Dia Anterior e Acumulado :'
 pdf.multi_cell(0, 10, titulo_homicidio_regiao, align='L')
 
-col_widths_homicidio_regiao = [25, 20, 20, 20, 15, 24, 24, 15, 25]  # 9 colunas
+col_widths_homicidio_regiao = [22, 22, 22, 22, 12, 26, 26, 12, 24]  # 9 colunas - ajustadas para melhor distribuição
 
-# Cabeçalho da tabela de regiões
-pdf.set_font('Arial', 'B', 8)
+# Cabeçalho da tabela de regiões com quebra de texto
+pdf.set_font('Arial', 'B', 6)  # Reduzido de 8 para 6
 pdf.set_fill_color(230, 230, 230)
 pdf.set_draw_color(0, 0, 0)
 pdf.set_text_color(0, 0, 0)
 
-# Desenha o cabeçalho
+# Calcula a altura máxima necessária para os cabeçalhos
+altura_cabecalho = 6  # altura mínima
+for col in colunas_homicidio_regiao_atualizada:
+    # Calcula quantas linhas o texto vai ocupar
+    texto = str(col).upper()
+    largura_coluna = col_widths_homicidio_regiao[colunas_homicidio_regiao_atualizada.index(col)]
+    linhas_necessarias = len(pdf.multi_cell(largura_coluna, 3, texto, align='C', split_only=True))
+    altura_necessaria = linhas_necessarias * 3
+    if altura_necessaria > altura_cabecalho:
+        altura_cabecalho = altura_necessaria
+
+# Desenha o cabeçalho com quebra de texto
 for i, col in enumerate(colunas_homicidio_regiao_atualizada):
-    pdf.cell(col_widths_homicidio_regiao[i], 6, str(col).upper(), 1, 0, 'C', fill=True)
-pdf.ln()
+    pdf.multi_cell(col_widths_homicidio_regiao[i], 3, str(col).upper(), 1, 'C', fill=True)
+    # Move para a próxima coluna
+    pdf.set_xy(pdf.get_x() + col_widths_homicidio_regiao[i], pdf.get_y() - altura_cabecalho)
 
 # Dados da tabela de regiões
 pdf.set_font('Arial', '', 8)
@@ -924,17 +936,18 @@ for linha in linhas_homicidio_regiao:
         if i == 4 or i == 7:  # Colunas de porcentagem
             texto, r, g, b = formatar_porcentagem(item)
             pdf.set_text_color(r, g, b)
-            pdf.cell(col_widths_homicidio_regiao[i], 6, texto, 1, 0, 'C')
+            pdf.cell(col_widths_homicidio_regiao[i], altura_cabecalho, texto, 1, 0, 'C')
             pdf.set_text_color(0, 0, 0)  # Volta para preto
         else:
-            pdf.cell(col_widths_homicidio_regiao[i], 6, safe_str_regiao(item), 1, 0, 'C')
+            pdf.cell(col_widths_homicidio_regiao[i], altura_cabecalho, safe_str_regiao(item), 1, 0, 'C')
     pdf.ln()
 
 # Adiciona observação sobre as regiões
-pdf.ln(2)
-pdf.set_font('Arial', 'I', 8)
-pdf.set_text_color(100, 100, 100)
-pdf.multi_cell(0, 4, 'Obs.: Entorno do DF inclui: ABADIÂNIA, ALEXÂNIA, APARECIDA DE LOYOLA (CORUMBA DE GOIÁS), BOM JESUS (PIRENÓPOLIS), CABECEIRAS, CAMPOS LINDOS (CRISTALINA), CAPELA DO RIO DO PEIXE (PIRENÓPOLIS), CAXAMBU (PIRENÓPOLIS), CIDADE OCIDENTAL, COCALZINHO DE GOIÁS, CORUMBA DE GOIÁS, CRISTALINA, EDILÂNDIA.', align='L')
+pdf.set_font('Arial', 'I', 9)
+pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
+
+# Adiciona espaço adequado após a tabela de regiões
+pdf.ln(4)
 
 # ------------------------------------------------- SALVANDO O PDF -------------------------------------------------
 # --- ATRIBUIÇÃO DOS TEMPOS DE EXECUÇÃO PARA O RODAPÉ ---
