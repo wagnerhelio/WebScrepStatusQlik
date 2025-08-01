@@ -67,7 +67,7 @@ SELECT
   COUNT(DISTINCT CASE WHEN EXTRACT(MONTH FROM oc.datafato) = EXTRACT(MONTH FROM SYSDATE) AND EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM SYSDATE) THEN pes.id END) AS homicidios_mes,
   COUNT(DISTINCT CASE WHEN EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM SYSDATE) THEN pes.id END) AS homicidios_ano,
   COUNT(DISTINCT CASE WHEN TRUNC(oc.datafato) = TRUNC(SYSDATE-1) THEN pes.id END) AS homicidios_ontem,
-  COUNT(DISTINCT CASE WHEN EXTRACT(MONTH FROM oc.datafato) = EXTRACT(MONTH FROM SYSDATE) AND EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM SYSDATE) AND TRUNC(oc.datafato) < TRUNC(SYSDATE) THEN pes.id END) AS homicidios_mes_ontem,
+  COUNT(DISTINCT CASE WHEN TRUNC(oc.datafato) >= TRUNC(ADD_MONTHS(SYSDATE, -1), 'MM') AND TRUNC(oc.datafato) < TRUNC(SYSDATE, 'MM')THEN pes.id END) AS homicidios_mes_ontem,
   COUNT(DISTINCT CASE WHEN EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM SYSDATE) AND TRUNC(oc.datafato) < TRUNC(SYSDATE) THEN pes.id END) AS homicidios_ano_ontem
 FROM bu.ocorrencia oc
 LEFT JOIN bu.endereco ende
@@ -110,9 +110,11 @@ WHERE ende.estado_sigla = 'GO'
 query_feminicidio = '''
 SELECT
   COUNT(DISTINCT CASE WHEN TRUNC(oc.datafato) = TRUNC(SYSDATE) THEN pes.id END) AS feminicidios_hoje,
-  COUNT(DISTINCT CASE WHEN TRUNC(oc.datafato) = TRUNC(SYSDATE-1) THEN pes.id END) AS feminicidios_ontem,
   COUNT(DISTINCT CASE WHEN EXTRACT(MONTH FROM oc.datafato) = EXTRACT(MONTH FROM SYSDATE) AND EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM SYSDATE) THEN pes.id END) AS feminicidios_mes,
-  COUNT(DISTINCT CASE WHEN EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM SYSDATE) THEN pes.id END) AS feminicidios_ano
+  COUNT(DISTINCT CASE WHEN EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM SYSDATE) THEN pes.id END) AS feminicidios_ano,
+  COUNT(DISTINCT CASE WHEN TRUNC(oc.datafato) = TRUNC(SYSDATE-1) THEN pes.id END) AS feminicidios_ontem,
+  COUNT(DISTINCT CASE WHEN TRUNC(oc.datafato) >= TRUNC(ADD_MONTHS(SYSDATE, -1), 'MM') AND TRUNC(oc.datafato) < TRUNC(SYSDATE, 'MM')THEN pes.id END) AS feminicidios_mes_ontem,
+  COUNT(DISTINCT CASE WHEN EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM SYSDATE) AND TRUNC(oc.datafato) < TRUNC(SYSDATE) THEN pes.id END) AS feminicidios_ano_ontem
 FROM bu.ocorrencia oc
 LEFT JOIN bu.endereco ende
 INNER JOIN sspj.bairros bai
@@ -633,13 +635,15 @@ for nome, query in tqdm(queries, desc="Executando consultas"):
 
 # Extrai os resultados
 homicidios_hoje,homicidios_mes,homicidios_ano, homicidios_ontem, homicidios_mes_ontem, homicidios_ano_ontem = resultados["Homicídio"]
-feminicidios_hoje, feminicidios_ontem, feminicidios_mes, feminicidios_ano = resultados["Feminicídio"]
+feminicidios_hoje, feminicidios_mes, feminicidios_ano, feminicidios_ontem, feminicidios_mes_ontem, feminicidios_ano_ontem = resultados["Feminicídio"]
 
 
 hoje = datetime.now()
-ontem = hoje - timedelta(days=1)
+dia_atual = hoje.day
 mes_atual = hoje.strftime('%b').capitalize()  # Ex: 'Jul'
 ano_atual = hoje.year
+ontem = hoje - timedelta(days=1)
+mes_ontem = ontem.strftime('%b').capitalize()  # Ex: 'Jul'
 dia_ontem = ontem.day
 ano_anterior = ano_atual - 1
 
@@ -681,11 +685,11 @@ def escreve_linha_valor_indicador(texto, valor):
 # Indicadores principais
 escreve_linha_valor_indicador(f'Homicídios em {ontem.strftime("%d/%m/%Y")}', homicidios_ontem)
 linha_y += linha_h
-escreve_linha_valor_indicador(f'Homicídios no mês {mes_atual}', homicidios_mes_ontem)
+escreve_linha_valor_indicador(f'Homicídios no mês {mes_ontem}', homicidios_mes_ontem)
 linha_y += linha_h
 escreve_linha_valor_indicador(f'Homicídios no ano {ano_atual}', homicidios_ano_ontem)
 linha_y += linha_h
-escreve_linha_valor_indicador(f'Feminicídios no mês {mes_atual}', feminicidios_mes)
+escreve_linha_valor_indicador(f'Feminicídios no mês {mes_ontem}', feminicidios_mes_ontem)
 linha_y += linha_h
 escreve_linha_valor_indicador(f'Feminicídios no ano {ano_atual}', feminicidios_ano)
 linha_y += linha_h
