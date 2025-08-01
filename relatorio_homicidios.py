@@ -307,7 +307,7 @@ ORDER BY
   ano_fato
 '''
 
-query_homicidio_regioes_observatorio ='''
+query_homicidio_regioes ='''
 SELECT
 CASE
     WHEN cid.uf <> 'GO' THEN NULL
@@ -356,7 +356,15 @@ INNER JOIN spi.qualificacao_categorias qcap ON qcap.qualificacao_categoria = qa.
 WHERE ende.estado_sigla = 'GO'
 AND (EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM ADD_MONTHS(SYSDATE, -12)) OR (EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM SYSDATE)AND TRUNC(oc.datafato) <= TRUNC(SYSDATE - 1)))
 AND oc.statusocorrencia = 'OCORRENCIA'
-AND (UPPER(nat_tip_pes.GRUPO) = 'HOMICÍDIO' OR nat_pes.naturezaid IN ('500001', '500002', '500003', '500004', '500005', '500006', '500007', '500011', '400711', '400712', '400001', '400002', '501199', '501200', '501201', '501202', '501203', '501204', '501220', '501136', '501137', '501138', '501139', '501140', '501141', '501288', '520269', '520323', '521062', '522242', '522243', '522262', '523006', '523007', '523008', '523009', '523010', '523011', '522745'))
+AND (
+    UPPER(nat_tip_pes.GRUPO) = 'HOMICÍDIO' OR nat_pes.naturezaid IN (
+      '500001', '500002', '500003', '500004', '500005', '500006', '500007', '500011',
+      '400711', '400712', '400001', '400002', '501199', '501200', '501201', '501202',
+      '501203', '501204', '501220', '501136', '501137', '501138', '501139', '501140',
+      '501141', '501288', '520269', '520323', '521062', '522242', '522243', '522262',
+      '523006', '523007', '523008', '523009', '523010', '523011', '522745'
+    )
+  )
 AND nat_pes.consumacaoenum = 'CONSUMADO'
 AND ope.tipopessoaenum = 'FISICA'
 AND qcap.nome = 'VÍTIMA'
@@ -606,7 +614,7 @@ queries = [
     ("Homicídio Município", query_homicidios_municipio),
     ("Homicídio Ultimos 2 Anos", query_homicidio_comparativo_dois_anos),
     ("Homicídio Todos os Anos", query_homicidio_comparativo_todos_anos),
-    ("Homicídio Regiões Observatório", query_homicidio_regioes_observatorio),
+    ("Homicídio Regiões", query_homicidio_regioes),
     ("Homicídio Comparativo por Dia", query_homicidios_comparativo_dia),
     ("Homicídio Comparativo por Dia Observatório", query_homicidios_comparativo_dia_observatorio),
     ("Homicídio Comparativo por Mes Observatório", query_homicidios_comparativo_mes_observatorio),
@@ -623,7 +631,7 @@ for nome, query in tqdm(queries, desc="Executando consultas"):
     except Exception as e:
         print(f"Erro ao executar a query '{nome}': {e}")
         raise
-    if nome in ["Homicídio Município", "Homicídio Ultimos 2 Anos","Homicídio Todos os Anos","Homicídio Regiões Observatório","Homicídio Comparativo por Dia","Homicídio Comparativo por Dia Observatório","Homicídio Comparativo por Mes Observatório"]:
+    if nome in ["Homicídio Município", "Homicídio Ultimos 2 Anos","Homicídio Todos os Anos","Homicídio Regiões","Homicídio Comparativo por Dia","Homicídio Comparativo por Dia Observatório","Homicídio Comparativo por Mes Observatório"]:
         columns = [str(col[0]) for col in cursor.description]
         rows = [list(row) for row in cursor.fetchall()]
         resultados[nome] = (columns, rows)
@@ -772,22 +780,32 @@ pdf.cell(0, 10, titulo_homicidio_2anos, ln=1, align='L')
 
 # Cria o DataFrame
 df_homicidio_2anos = pd.DataFrame(linhas_homicidio_2anos, columns=colunas_homicidio_2anos)
-mes_corrente = datetime.now().month
-meses_abreviados = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ']
+
+# Obtém as colunas de meses diretamente do DataFrame (excluindo ANO_FATO)
+colunas_meses = [col for col in df_homicidio_2anos.columns if col != 'ANO_FATO']
 
 plt.figure(figsize=(10, 3.0))
 for _, linha in df_homicidio_2anos.iterrows():
     ano = int(linha['ANO_FATO'])
+    
+    # Para o ano atual, usa apenas os meses até o mês de ontem
     if ano == datetime.now().year:
-        meses_plot = meses_abreviados[:mes_corrente]
-        valores = [int(linha[m]) if linha[m] is not None else 0 for m in meses_plot]
+        # Obtém o mês de ontem como número (1-12)
+        mes_ontem_num = (hoje - timedelta(days=1)).month
+        # Seleciona apenas os meses até o mês de ontem
+        meses_plot = colunas_meses[:mes_ontem_num]
     else:
-        meses_plot = meses_abreviados
-        valores = [int(linha[m]) if linha[m] is not None else 0 for m in meses_plot]
+        # Para anos anteriores, usa todos os meses
+        meses_plot = colunas_meses
+    
+    # Extrai os valores diretamente da linha do DataFrame
+    valores = [int(linha[m]) if linha[m] is not None else 0 for m in meses_plot]
+    
     sns.lineplot(x=meses_plot, y=valores, marker='o', label=ano)
     for i, v in enumerate(valores):
         if v > 0:
             plt.text(i, v, str(v), ha='center', va='bottom', fontsize=8, bbox=dict(facecolor='white', alpha=0.8, edgecolor='none'))
+
 plt.legend(title='ANO', bbox_to_anchor=(1.00, 1), loc='upper left', fontsize=8, title_fontsize=9)
 plt.ylabel('Homicídios')
 plt.yticks([])
@@ -837,7 +855,10 @@ for linha in linhas_homicidio_todos_anos:
 
 # ------------------------------------------------- TABELA DE REGIAO - COMPARATIVO MENSAL E ACUMULADO -------------------------------------------------
 # Tabela de homicídios por região
-columns_homicidio_regiao_atualizada = [
+colunas_homicidio_regiao, linhas_homicidio_regiao = resultados["Homicídio Regiões"]
+df_homicidio_regiao = pd.DataFrame(linhas_homicidio_regiao, columns=colunas_homicidio_regiao)
+
+colunas_homicidio_regiao_atualizada = [
     "REGIÃO",
     f"{mes_atual}/{ano_anterior} (fechado)",
     f"{mes_atual}/{ano_anterior} (até dia {dia_ontem})",
@@ -848,319 +869,72 @@ columns_homicidio_regiao_atualizada = [
     "%",
     "Índice por 100K hab."
 ]
-
-columns_homicidio_regiao, rows_homicidio_regiao = resultados["Homicídio Regiões Observatório"]
-
 # Espaço antes da tabela
 pdf.ln(4)
 
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)  # Preto
-titulo_homicidio_regiao = f'HOMICIDIOS POR REGIÕES - Comparativo Dia Anterior e Acumulado até : {ontem_data}'
-pdf.cell(0, 10, titulo_homicidio_regiao, ln=1, align='L')
+titulo_homicidio_regiao = f'HOMICÍDIOS POR REGIÕES - Comparativo Dia Anterior e Acumulado : {ontem_data}'
+pdf.multi_cell(0, 10, titulo_homicidio_regiao, align='L')
 
-columns_homicidio_regiao_atualizada = [25, 20, 20, 20, 15, 24, 24, 15, 25]  # 9 colunas
-# Cabeçalho da tabela de regiões observatório (ajustado para quebra de linha, altura uniforme)
+col_widths_homicidio_regiao = [25, 20, 20, 20, 15, 24, 24, 15, 25]  # 9 colunas
+
+# Cabeçalho da tabela de regiões
 pdf.set_font('Arial', 'B', 8)
-pdf.set_fill_color(230, 230, 230)
-pdf.set_draw_color(0, 0, 0)  # Preto para borda
-pdf.set_text_color(0, 0, 0)  # Preto para texto
-
-x_inicio = pdf.get_x()
-y_inicio = pdf.get_y()
-altura_linha = 6
-
-# Calcula a altura máxima necessária para cada célula do cabeçalho
-alturas = []
-linhas_texto = []
-for i, col in enumerate(columns_homicidio_regiao):
-    largura = columns_homicidio_regiao_atualizada[i]
-    # Divide o texto em linhas para a largura da célula
-    linhas = pdf.multi_cell(largura, altura_linha, str(col).upper(), 0, 'C', split_only=True)
-    linhas_texto.append(linhas)
-    alturas.append(len(linhas) * altura_linha)
-altura_max = max(alturas)
-
-# Desenha cada célula do cabeçalho com altura máxima e texto centralizado
-x = x_inicio
-for i, col in enumerate(columns_homicidio_regiao):
-    largura = columns_homicidio_regiao_atualizada[i]
-    linhas = linhas_texto[i]
-    n_linhas = len(linhas)
-    y = y_inicio
-    # Centraliza verticalmente o texto
-    y_texto = y + (altura_max - n_linhas * altura_linha) / 2
-    pdf.rect(x, y, largura, altura_max, 'DF')
-    pdf.set_xy(x, y_texto)
-    for linha in linhas:
-        pdf.cell(largura, altura_linha, linha, 0, 2, 'C')
-    x += largura
-pdf.set_xy(x_inicio, y_inicio + altura_max)
-
-# Dados da tabela de regiões observatório
-pdf.set_font('Arial', '', 8)
-pdf.set_text_color(0, 0, 0)  # Preto para texto
-for row in rows_homicidio_regiao:
-    for i, item in enumerate(row):
-        # Coloração e formatação para as colunas de %
-        if i in [4, 7]:  # Índices das colunas de %
-            valor = float(item) if item is not None else 0
-            texto = f"{valor:.2f}%"
-            if valor > 0:
-                pdf.set_text_color(220, 20, 60)  # vermelho
-            elif valor < 0:
-                pdf.set_text_color(0, 128, 0)    # verde
-            else:
-                pdf.set_text_color(0, 0, 0)      # preto
-            pdf.cell(columns_homicidio_regiao_atualizada[i], 6, texto, 1, 0, 'C')
-            pdf.set_text_color(0, 0, 0)  # reset
-        else:
-            pdf.cell(columns_homicidio_regiao_atualizada[i], 6, safe_str(item), 1, 0, 'C')
-    pdf.ln()
-
-# ------------------------------------------------- GRAFICO COMPARATIVO POR DIA DO MÊS ATUAL COM ANO ANTERIOR-------------------------------------------------
-# Grafico de homicídios por dia no mês atual com ano anterior
-columns_homicidio_dia_comparativo, rows_homicidio_dia_comparativo = resultados["Homicídio Comparativo por Dia"]
-
-# Espaço antes da data frame do grafico
-pdf.ln(4)
-
-# Título da tabela
-pdf.set_font('Arial', 'B', 12)
-pdf.set_text_color(0, 0, 0)  # Preto
-titulo_homicidio_dia = f'Homicídios - Comparativo por dia no mês atual com ano anterior: {hoje.strftime("%b/%Y")}'
-pdf.cell(0, 10, titulo_homicidio_dia, ln=1, align='L')
-
-df_homicidio_dia_comparativo = pd.DataFrame(rows_homicidio_dia_comparativo, columns=columns_homicidio_dia_comparativo)
-
-# Ajusta tipos e nomes
-if not df_homicidio_dia_comparativo.empty:
-    df_homicidio_dia_comparativo['ANO'] = df_homicidio_dia_comparativo['ANO'].astype(int)
-    df_homicidio_dia_comparativo['HOMICIDIOS'] = df_homicidio_dia_comparativo['HOMICIDIOS'].astype(int)
-
-    # Pivot para barras agrupadas
-    df_pivot = df_homicidio_dia_comparativo.pivot(index='DATA', columns='ANO', values='HOMICIDIOS').fillna(0)
-    df_pivot = df_pivot.reindex(sorted(df_pivot.index, key=lambda x: int(x.split('/')[0])))
-
-    plt.figure(figsize=(10, 3.5))
-    anos = sorted(df_pivot.columns)
-    bar_width = 0.4
-    x = range(len(df_pivot.index))
-
-    for i, ano in enumerate(anos):
-        bars = plt.bar([xi + i*bar_width for xi in x], df_pivot[ano], width=bar_width, label=str(ano))
-        # Adiciona o valor acima de cada barra
-        for bar in bars:
-            height = bar.get_height()
-            if height > 0:
-                plt.text(
-                    bar.get_x() + bar.get_width() / 2,
-                    height + 0.1,
-                    f'{int(height)}',
-                    ha='center',
-                    va='bottom',
-                    fontsize=8
-                )
-
-    plt.legend(title='', bbox_to_anchor=(1.05, 1), loc='upper left')
-    plt.ylabel('Homicídios')
-    plt.yticks([])
-    plt.xlabel('')
-    plt.tight_layout()
-    plt.xticks([xi + bar_width/2 for xi in x], list(df_pivot.index), rotation=45)
-    plt.savefig('grafico_homicidios_dia_comparativo.png', dpi=150, bbox_inches='tight')
-    plt.close()
-
-# Adiciona o DataFrame ao PDF
-    pdf.image('grafico_homicidios_dia_comparativo.png', x=5, w=200)
-    pdf.set_font('Arial', 'I', 9)
-    pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
-
-# ------------------------------------------------- TABELA COMPARATIVO POR DIA DO MÊS ATUAL -------------------------------------------------
-# Tabela de homicídios por dia no mês atual
-columns_homicidio_dia, rows_homicidio_dia = resultados["Homicídio Comparativo por Dia"]
-
-# Espaço antes da tabela
-pdf.ln(4)
-# Título da tabela
-pdf.set_font('Arial', 'B', 12)
-pdf.set_text_color(0, 0, 0)  # Preto
-titulo_homicidio_dia = f'Homicídios Comparativo por Dia no Mês Atual até: {ontem_data}'
-pdf.cell(0, 10, titulo_homicidio_dia, ln=1, align='L')
-
-# Transpõe para: colunas = dias, linhas = anos
-df_homicidio_dia = df_pivot.T
-
-# Largura total disponível (ajuste conforme sua margem)
-largura_total = 190
-num_colunas = len(df_homicidio_dia.columns)
-col_width_ano = 12
-col_width = (largura_total - col_width_ano) / num_colunas if num_colunas > 0 else largura_total
-
-# Cabeçalho
-dias = list(df_homicidio_dia.columns)
-pdf.set_font('Arial', 'B', 7)
 pdf.set_fill_color(230, 230, 230)
 pdf.set_draw_color(0, 0, 0)
 pdf.set_text_color(0, 0, 0)
-pdf.cell(col_width_ano, 6, 'Ano', 1, 0, 'C', fill=True)
-for dia in dias:
-    pdf.cell(col_width, 6, str(dia), 1, 0, 'C', fill=True)
+
+# Desenha o cabeçalho
+for i, col in enumerate(colunas_homicidio_regiao_atualizada):
+    pdf.cell(col_widths_homicidio_regiao[i], 6, str(col).upper(), 1, 0, 'C', fill=True)
 pdf.ln()
 
-# Linhas de dados (anos)
-pdf.set_font('Arial', '', 7)
+# Dados da tabela de regiões
+pdf.set_font('Arial', '', 8)
 pdf.set_text_color(0, 0, 0)  # Preto para texto
-for ano, row in df_homicidio_dia.iterrows():
-    pdf.cell(col_width_ano, 6, str(ano), 1, 0, 'C')
-    for valor in row:
-        pdf.cell(col_width, 6, str(int(valor)), 1, 0, 'C')
+
+def safe_str_regiao(item):
+    return str(item) if item is not None else ''
+
+def formatar_porcentagem(valor):
+    """Formata porcentagem com cores: verde para negativo, vermelho para positivo"""
+    if valor is None or valor == '':
+        return '', 0, 0, 0  # preto
+    
+    try:
+        # Remove % se existir e converte para float
+        valor_str = str(valor).replace('%', '').strip()
+        valor_float = float(valor_str)
+        
+        if valor_float < 0:
+            return f"{valor_float:.2f}%", 0, 128, 0  # verde
+        elif valor_float > 0:
+            return f"{valor_float:.2f}%", 255, 0, 0  # vermelho
+        else:
+            return f"{valor_float:.2f}%", 0, 0, 0  # preto
+    except:
+        return str(valor), 0, 0, 0  # preto
+
+# Processa e exibe os dados da tabela
+for linha in linhas_homicidio_regiao:
+    for i, item in enumerate(linha):
+        # Verifica se é uma coluna de porcentagem (colunas 4 e 7)
+        if i == 4 or i == 7:  # Colunas de porcentagem
+            texto, r, g, b = formatar_porcentagem(item)
+            pdf.set_text_color(r, g, b)
+            pdf.cell(col_widths_homicidio_regiao[i], 6, texto, 1, 0, 'C')
+            pdf.set_text_color(0, 0, 0)  # Volta para preto
+        else:
+            pdf.cell(col_widths_homicidio_regiao[i], 6, safe_str_regiao(item), 1, 0, 'C')
     pdf.ln()
 
-# ------------------------------------------------- GRAFICO COMPARATIVO POR DIA DO MÊS ATUAL POR REGIAO -------------------------------------------------
-# Grafico de homicídios por dia no mês atual por região
-columns_homicidio_dia_regiao, rows_homicidio_dia_regiao = resultados["Homicídio Comparativo por Dia Observatório"]
-
-# Espaço antes da data frame do grafico
-pdf.ln(4)
-
-# Título da tabela
-pdf.set_font('Arial', 'B', 12)
-pdf.set_text_color(0, 0, 0)
-titulo_homicidio_dia_regiao = f'Homicídios - Por Dia no mês atual por Região: {hoje.strftime("%b/%Y")}'
-pdf.cell(0, 10, titulo_homicidio_dia_regiao, ln=1, align='L')
-
-df_homicidio_dia_regiao = pd.DataFrame(rows_homicidio_dia_regiao, columns=columns_homicidio_dia_regiao)
-
-if not df_homicidio_dia_regiao.empty:
-    df_homicidio_dia_regiao['HOMICIDIOS'] = df_homicidio_dia_regiao['HOMICIDIOS'].astype(int)
-
-    # Pivot por DATA e REGIAO_OBSERVATORIO
-    df_pivot = df_homicidio_dia_regiao.pivot(index='DATA', columns='REGIAO_OBSERVATORIO', values='HOMICIDIOS').fillna(0)
-    df_pivot = df_pivot.reindex(sorted(df_pivot.index, key=lambda x: int(x.split('/')[0])))
-
-    plt.figure(figsize=(10, 3.5))
-    regioes = sorted(df_pivot.columns)
-    bar_width = 0.25
-    x = range(len(df_pivot.index))
-
-    # Lista para armazenar as cores das barras
-    cores_barras = []
-    
-    for i, regiao in enumerate(regioes):
-        bars = plt.bar([xi + i * bar_width for xi in x], df_pivot[regiao], width=bar_width, label=regiao)
-        
-        # Captura a cor da primeira barra de cada região (todas terão a mesma cor)
-        if bars:
-            cores_barras.append(bars[0].get_facecolor())
-        
-        for bar in bars:
-            height = bar.get_height()
-            if height > 0:
-                plt.text(
-                    bar.get_x() + bar.get_width() / 2,
-                    height + 0.1,
-                    f'{int(height)}',
-                    ha='center',
-                    va='bottom',
-                    fontsize=8
-                )
-    
-    # Adiciona linhas de conexão entre barras da mesma região em dias sequenciais
-    for i, regiao in enumerate(regioes):
-        valores = df_pivot[regiao].values
-        x_pos = [xi + i * bar_width for xi in x]
-        
-        # Conecta pontos sequenciais da mesma região
-        for j in range(len(valores) - 1):
-            if valores[j] > 0 and valores[j+1] > 0:  # Só conecta se ambos os valores são > 0
-                # Usa a cor da barra correspondente (ou uma versão mais escura)
-                cor_barra = cores_barras[i] if i < len(cores_barras) else '#666666'
-                plt.plot([x_pos[j], x_pos[j+1]], [valores[j], valores[j+1]], 
-                        color=cor_barra, linewidth=2, alpha=0.8)
-    
-    plt.legend(title='', bbox_to_anchor=(1.05, 1), loc='upper left')
-    plt.ylabel('Homicídios')
-    plt.yticks([])
-    plt.xlabel('')
-    plt.tight_layout()
-    plt.xticks([xi + bar_width * (len(regioes)/2 - 0.5) for xi in x], list(df_pivot.index), rotation=45)
-    plt.savefig('grafico_homicidios_dia_regiao.png', dpi=150, bbox_inches='tight')
-    plt.close()
-
-    # Adiciona o DataFrame ao PDF
-    pdf.image('grafico_homicidios_dia_regiao.png', x=5, w=200)
-    pdf.set_font('Arial', 'I', 9)
-    pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
-
-# ------------------------------------------------- GRAFICO COMPARATIVO POR MES DO ANO ATUAL POR REGIAO -------------------------------------------------
-# Grafico de homicídios por mes no mês atual por região
-columns_homicidio_mes_regiao, rows_homicidio_mes_regiao = resultados["Homicídio Comparativo por Mes Observatório"]
-
-# Espaço antes da data frame do grafico
-pdf.ln(4)
-
-# Título da Data Frame do Grafico
-pdf.set_font('Arial', 'B', 12)
-pdf.set_text_color(0, 0, 0)  # Preto
-titulo_homicidio_mes_regiao = f'Homicídios - Por Mes no mês atual por Região: {hoje.strftime("%b/%Y")}'
-pdf.cell(0, 10, titulo_homicidio_mes_regiao, ln=1, align='L')
-
-df_homicidio_mes_regiao = pd.DataFrame(rows_homicidio_mes_regiao, columns=columns_homicidio_mes_regiao)
-
-# Geração do gráfico de barras empilhadas com linha de conexão
-if not df_homicidio_mes_regiao.empty:
-    # Ajusta tipos de dados
-    df_homicidio_mes_regiao['HOMICIDIOS'] = df_homicidio_mes_regiao['HOMICIDIOS'].astype(int)
-    df_homicidio_mes_regiao['NUMERO_MES'] = df_homicidio_mes_regiao['NUMERO_MES'].astype(int)
-    
-    # Pivot para barras empilhadas
-    df_pivot = df_homicidio_mes_regiao.pivot(index='MES', columns='REGIAO_OBSERVATORIO', values='HOMICIDIOS').fillna(0)
-    
-    # Ordena por número do mês
-    df_pivot = df_pivot.reindex(sorted(df_pivot.index, key=lambda x: {
-        'Jan': 1, 'Fev': 2, 'Mar': 3, 'Abr': 4, 'Mai': 5, 'Jun': 6,
-        'Jul': 7, 'Ago': 8, 'Set': 9, 'Out': 10, 'Nov': 11, 'Dez': 12
-    }[x]))
-    
-    # Cria o gráfico
-    plt.figure(figsize=(10, 3.5))
-    
-    # Gráfico de barras empilhadas (deixa o Seaborn definir as cores automaticamente)
-    ax = df_pivot.plot(kind='bar', stacked=True, width=0.7)
-    
-    # Adiciona valores nas barras
-    for i, (mes, row) in enumerate(df_pivot.iterrows()):
-        total = row.sum()
-        # Valor total no topo da barra
-        plt.text(i, total + 0.5, f'{int(total)}', ha='center', va='bottom', fontsize=9, fontweight='bold')
-        
-        # Valores individuais nas seções de cada região
-        acumulado = 0
-        for j, (regiao, valor) in enumerate(row.items()):
-            if valor > 0:
-                plt.text(i, acumulado + valor/2, f'{int(valor)}', ha='center', va='center', 
-                        fontsize=8, color='white', fontweight='bold')
-            acumulado += valor
-    
-    # Configurações do gráfico
-    plt.title(f'Homicídios - Mês a mês no ano atual: {datetime.now().year}', fontsize=12, fontweight='bold', pad=20)
-    plt.ylabel('Homicídios', fontsize=10)
-    plt.xlabel('')
-    plt.legend(title='', bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=9)
-    plt.xticks(rotation=0)
-    plt.grid(axis='y', alpha=0.3)
-    plt.tight_layout()
-    
-    # Salva o gráfico
-    plt.savefig('grafico_homicidios_mes_regiao.png', dpi=150, bbox_inches='tight')
-    plt.close()
-    
-    # Adiciona o gráfico ao PDF
-    pdf.image('grafico_homicidios_mes_regiao.png', x=5, w=200)
-    pdf.set_font('Arial', 'I', 9)
-    pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
+# Adiciona observação sobre as regiões
+pdf.ln(2)
+pdf.set_font('Arial', 'I', 8)
+pdf.set_text_color(100, 100, 100)
+pdf.multi_cell(0, 4, 'Obs.: Entorno do DF inclui: ABADIÂNIA, ALEXÂNIA, APARECIDA DE LOYOLA (CORUMBA DE GOIÁS), BOM JESUS (PIRENÓPOLIS), CABECEIRAS, CAMPOS LINDOS (CRISTALINA), CAPELA DO RIO DO PEIXE (PIRENÓPOLIS), CAXAMBU (PIRENÓPOLIS), CIDADE OCIDENTAL, COCALZINHO DE GOIÁS, CORUMBA DE GOIÁS, CRISTALINA, EDILÂNDIA.', align='L')
 
 # ------------------------------------------------- SALVANDO O PDF -------------------------------------------------
 # --- ATRIBUIÇÃO DOS TEMPOS DE EXECUÇÃO PARA O RODAPÉ ---
@@ -1170,7 +944,7 @@ tempo_execucao_resumo = (
     f'Homicídio Município: {tempos_execucao["Homicídio Município"]:.2f} | '
     f'Homicídio 2 Anos: {tempos_execucao["Homicídio Ultimos 2 Anos"]:.2f} | '
     f'Homicídio Todos os Anos: {tempos_execucao["Homicídio Todos os Anos"]:.2f} | '
-    f'Homicídio Regiões Observatório: {tempos_execucao["Homicídio Regiões Observatório"]:.2f} | '
+    f'Homicídio Regiões: {tempos_execucao["Homicídio Regiões"]:.2f} | '
     f'Homicídio Comparativo por Dia: {tempos_execucao["Homicídio Comparativo por Dia"]:.2f} '
     f'Homicídio Comparativo por Dia Observatório: {tempos_execucao["Homicídio Comparativo por Dia Observatório"]:.2f} '
     f'Homicídio Comparativo por Mes Observatório: {tempos_execucao["Homicídio Comparativo por Mes Observatório"]:.2f} '
