@@ -658,7 +658,7 @@ pdf.image('img/LogoRelatorio.jpg', x=10, y=8, w=190)
 pdf.ln(25)
 
 # --- CONTEXTO: CAIXA DE TEXTO COM INDICADORES ---
-# --- Desenha a caixa para o texto ---
+# Gera a caixa com os principais indicadores de homicídios e feminicídios
 caixa_x = 10
 caixa_y = pdf.get_y() + 5
 caixa_w = 110
@@ -682,19 +682,15 @@ def escreve_linha_valor(texto, valor):
     pdf.set_font('Arial', 'B', 10)
     pdf.cell(pdf.get_string_width(str(valor)), linha_h, str(valor), ln=1)
 
-# Linha 1
+# Indicadores principais
 escreve_linha_valor(f'Homicídios em {ontem.strftime("%d/%m/%Y")}', homicidios_ontem)
 linha_y += linha_h
-# Linha 2
 escreve_linha_valor(f'Homicídios no mês {mes_ontem}', homicidios_mes_ontem)
 linha_y += linha_h
-# Linha 3
 escreve_linha_valor(f'Homicídios no ano {ano_atual}', homicidios_ano_ontem)
 linha_y += linha_h
-# Linha 4
 escreve_linha_valor(f'Feminicídios no mês {mes_ontem}', feminicidios_mes_ontem)
 linha_y += linha_h
-# Linha 5
 escreve_linha_valor(f'Feminicídios no ano {ano_atual}', feminicidios_ano)
 linha_y += linha_h
 
@@ -704,6 +700,8 @@ pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, linha_h, 'Obs.: No número de Homicídios estão contabilizados os Feminicídios.', ln=1)
 
 # --- KPIs À DIREITA ---
+# Exibe os KPIs de homicídios do dia e do mês à direita da caixa de indicadores
+
 kpi_x = caixa_x + caixa_w + 10
 kpi_y = caixa_y  # alinhado com a caixa
 pdf.set_xy(kpi_x, kpi_y)
@@ -726,7 +724,9 @@ pdf.set_text_color(30, 80, 160)
 pdf.set_x(kpi_x)
 pdf.cell(0, 15, str(homicidios_mes), ln=1, align='C')
 
-# --- TABELA DE HOMICÍDIOS POR MUNICÍPIO ---
+# ------------------------------------------------- TABELA DE HOMICÍDIOS POR MUNICÍPIO DIÁRIO-------------------------------------------------
+# Gera a tabela de homicídios por município
+
 columns_homicidio_municipio, rows_homicidio_municipio = resultados["Homicídio Município"]
 
 # Espaço antes da tabela
@@ -758,50 +758,61 @@ for row in rows_homicidio_municipio:
         pdf.cell(col_widths_municipio[i], 6, safe_str(item), 1, 0, 'C')
     pdf.ln()
 
-# --- GRAFICO DE HOMICÍDIOS UTIMOS 2 ANOS ---
-# Pegue os dados do resultado da query
+# ------------------------------------------------- GRAFICO DE HOMICÍDIOS ÚLTIMOS 2 ANOS -------------------------------------------------
+# Gera o gráfico de linhas comparando homicídios mês a mês dos dois últimos anos
 colunas_homicidio_2anos, linhas_homicidio_2anos = resultados["Homicídio Ultimos 2 Anos"]
 
-# Crie o DataFrame
+# Título da grafico
+pdf.set_font('Arial', 'B', 12)
+pdf.set_text_color(0, 0, 0)
+titulo_homicidio_2anos = f'Homicídios - Comparativo ano atual com os últimos dois anos : {ontem_data}'
+pdf.cell(0, 10, titulo_homicidio_2anos, ln=1, align='L')
+
+# Cria o DataFrame
 df_homicidio_2anos = pd.DataFrame(linhas_homicidio_2anos, columns=colunas_homicidio_2anos)
-from datetime import datetime
-mes_corrente = datetime.now().month
-meses = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ']
+
+# Obtém as colunas de meses diretamente do DataFrame (excluindo ANO_FATO)
+colunas_meses = [col for col in df_homicidio_2anos.columns if col != 'ANO_FATO']
 
 plt.figure(figsize=(10, 3.0))
-for _, row in df_homicidio_2anos.iterrows():
-    ano = int(row['ANO_FATO'])
+for _, linha in df_homicidio_2anos.iterrows():
+    ano = int(linha['ANO_FATO'])
+    
+    # Para o ano atual, usa apenas os meses até o mês de ontem
     if ano == datetime.now().year:
-        meses_plot = meses[:mes_corrente]
-        valores = [int(row[m]) if row[m] is not None else 0 for m in meses_plot]
+        # Obtém o mês de ontem como número (1-12)
+        mes_ontem_num = (hoje - timedelta(days=1)).month
+        # Seleciona apenas os meses até o mês de ontem
+        meses_plot = colunas_meses[:mes_ontem_num]
     else:
-        meses_plot = meses
-        valores = [int(row[m]) if row[m] is not None else 0 for m in meses_plot]
+        # Para anos anteriores, usa todos os meses
+        meses_plot = colunas_meses
+    
+    # Extrai os valores diretamente da linha do DataFrame
+    valores = [int(linha[m]) if linha[m] is not None else 0 for m in meses_plot]
+    
     sns.lineplot(x=meses_plot, y=valores, marker='o', label=ano)
     for i, v in enumerate(valores):
         if v > 0:
             plt.text(i, v, str(v), ha='center', va='bottom', fontsize=8, bbox=dict(facecolor='white', alpha=0.8, edgecolor='none'))
+
 plt.legend(title='ANO', bbox_to_anchor=(1.00, 1), loc='upper left', fontsize=8, title_fontsize=9)
-# plt.title('Homicídios - Comparativo ano atual com os últimos dois anos', loc='left',fontsize=12,fontweight='bold',fontname='Arial')
 plt.ylabel('Homicídios')
 plt.yticks([])
 plt.xlabel('')
 plt.tight_layout()
-plt.savefig('grafico_homicidios.png', dpi=150, bbox_inches='tight')
+plt.savefig('grafico_homicidio_2anos.png', dpi=150, bbox_inches='tight')
 plt.close()
-# Após a tabela:
-pdf.ln(3)  # Espaço maior entre a tabela e o título do gráfico
-pdf.set_font('Arial', 'B', 12)
-pdf.set_text_color(0, 0, 0)  # Preto
-titulo_comparativo_dois_anos = f'Homicídios - Comparativo ano atual com os últimos dois anos : {ontem_data}'
-pdf.cell(0, 10, titulo_comparativo_dois_anos, ln=1, align='L')
-#pdf.ln()  # Espaço pequeno entre o título e o gráfico
-pdf.image('grafico_homicidios.png', x=5, w=200)
+
+# Adiciona o DataFrame ao PDF
+pdf.image('grafico_homicidio_2anos.png', x=5, w=200)
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 
-# --- TABELA DE HOMICÍDIOS POR MESES/ANOS (CONSULTA DE 13 COLUNAS) ---
+# ------------------------------------------------- TABELA DE HOMICÍDIOS POR MESES/ANOS  -------------------------------------------------
+# Monta a tabela comparativa de homicídios por mês e ano
 colunas_homicidio_todos_anos, linhas_homicidio_todos_anos = resultados["Homicídio Todos os Anos"]
+df_homicidio_todos_anos = pd.DataFrame(linhas_homicidio_todos_anos, columns=colunas_homicidio_todos_anos)
 
 # Espaço antes da tabela
 pdf.ln(4)
@@ -809,29 +820,30 @@ pdf.ln(4)
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)  # Preto
-titulo_meses_anos = f'Tabela de Homicidios Comparativo por Ano até : {ontem_data}'
-pdf.cell(0, 10, titulo_meses_anos, ln=1, align='L')
+titulo_homicidio_todos_anos = f'Tabela de Homicidios Comparativo por Ano até : {ontem_data}'
+pdf.cell(0, 10, titulo_homicidio_todos_anos, ln=1, align='L')
 
 # Cabeçalho da tabela de meses/anos
-# Para A4, largura útil ~190mm. Para 13 colunas, use ~14mm cada (ano pode ser 18mm, meses 14mm)
-col_widths_meses_anos = [18] + [14]*12
+col_widths_homicidio_todos_anos = [18] + [14]*12
 pdf.set_font('Arial', 'B', 8)
 pdf.set_fill_color(230, 230, 230)
-pdf.set_draw_color(0, 0, 0)  # Preto para borda
-pdf.set_text_color(0, 0, 0)  # Preto para texto
+pdf.set_draw_color(0, 0, 0)  
+pdf.set_text_color(0, 0, 0) 
 for i, col in enumerate(colunas_homicidio_todos_anos):
-    pdf.cell(col_widths_meses_anos[i], 6, str(col).upper(), 1, 0, 'C', fill=True)
+    pdf.cell(col_widths_homicidio_todos_anos[i], 6, str(col).upper(), 1, 0, 'C', fill=True)
 pdf.ln()
 
 # Dados da tabela de meses/anos
 pdf.set_font('Arial', '', 8)
 pdf.set_text_color(0, 0, 0)  # Preto para texto
-for row in linhas_homicidio_todos_anos:
-    for i, item in enumerate(row):
-        pdf.cell(col_widths_meses_anos[i], 6, safe_str(item), 1, 0, 'C')
+def safe_str_homicidio_todos_anos(item):
+    return str(item) if item is not None else ''
+for linha in linhas_homicidio_todos_anos:
+    for i, item in enumerate(linha):
+        pdf.cell(col_widths_homicidio_todos_anos[i], 6, safe_str_homicidio_todos_anos(item), 1, 0, 'C')
     pdf.ln()
 
-# --- TABELA DE REGIAO OBSERVATORIO ---
+# ------------------------------------------------- TABELA DE REGIAO - COMPARATIVO MENSAL E ACUMULADO -------------------------------------------------
 columns_regiao_observatorio_atualizada = [
     "REGIÃO",
     f"{mes_atual}/{ano_anterior} (fechado)",
@@ -1051,9 +1063,8 @@ if not df_comparativo_dia.empty:
     pdf.set_font('Arial', 'I', 9)
     pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 
-# --- GRAFICO COMPARATIVO POR MES OBSERVATÓRIO (por REGIAO_OBSERVATORIO)
 
-# --- TABELA COMPARATIVO POR MES OBSERVATÓRIO (por REGIAO_OBSERVATORIO)
+# ------------------------------------------------- SALVANDO O PDF -------------------------------------------------
 
 # --- ATRIBUIÇÃO DOS TEMPOS DE EXECUÇÃO PARA O RODAPÉ ---
 tempo_execucao_resumo = (
