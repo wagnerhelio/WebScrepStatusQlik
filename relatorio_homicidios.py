@@ -1115,7 +1115,7 @@ if not df_comparativo_mes.empty:
     df_pivot_mes = df_pivot_mes.reindex(sorted(df_pivot_mes.index, key=lambda x: df_comparativo_mes[df_comparativo_mes['MES'] == x]['NUMERO_MES'].iloc[0]))
 
     plt.figure(figsize=(12, 6))
-     
+    
     # Cria o gráfico de barras empilhadas
     ax = df_pivot_mes.plot(kind='bar', stacked=True, width=0.7)
     
@@ -1128,6 +1128,48 @@ if not df_comparativo_mes.empty:
     for i, total in enumerate(totais):
         if total > 0:
             ax.text(i, total + 1, f'{int(total)}', ha='center', va='bottom', fontsize=8)
+    
+    # Adiciona fundo esmairecido por região conectando as barras
+    bar_width = 0.7  # Largura das barras
+    x_positions = np.arange(len(df_pivot_mes.index))
+    
+    # Para cada região, cria áreas esmairecidas
+    for i, regiao in enumerate(df_pivot_mes.columns):
+        # Valores da região específica
+        valores_regiao = df_pivot_mes[regiao].values
+        
+        # Calcula a base para empilhamento (soma das regiões anteriores)
+        base = np.zeros_like(valores_regiao)
+        for j in range(i):
+            valores_anterior = df_pivot_mes[df_pivot_mes.columns[j]].values
+            base += valores_anterior
+        
+        # Obtém a cor da região das barras (padrão seaborn)
+        cor_regiao = ax.containers[i][0].get_facecolor()
+        
+        # Cria áreas esmairecidas entre cada par de barras consecutivas
+        for k in range(len(x_positions) - 1):
+            # Ponta direita da barra atual
+            x1 = x_positions[k] + bar_width/2
+            y1 = base[k] + valores_regiao[k]
+            
+            # Ponta esquerda da próxima barra
+            x2 = x_positions[k+1] - bar_width/2
+            y2 = base[k+1] + valores_regiao[k+1]
+            
+            # Cria pontos suavizados entre os dois pontos
+            x_area = np.linspace(x1, x2, 50)
+            y_area = np.linspace(y1, y2, 50)
+            
+            # Adiciona uma pequena ondulação
+            wave_amplitude = max(valores_regiao) * 0.01 if max(valores_regiao) > 0 else 0.3
+            wave = wave_amplitude * np.sin(np.linspace(0, np.pi, 50))
+            y_area += wave
+            
+            # Desenha apenas a área esmairecida preenchendo todo o espaço entre as barras
+            base_area = np.linspace(base[k], base[k+1], 50)
+            ax.fill_between(x_area, base_area, y_area, color=cor_regiao, alpha=0.25, zorder=1)
+    
     plt.legend(title='REGIÃO', bbox_to_anchor=(1.00, 1), loc='upper left', fontsize=8, title_fontsize=9)
     plt.ylabel('Homicídios')
     plt.yticks([])
