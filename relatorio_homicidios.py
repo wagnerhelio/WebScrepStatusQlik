@@ -1089,6 +1089,59 @@ pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 
 
+# ------------------------------------------------- GRAFICO COMPARATIVO POR MES POR REGIÃO -------------------------------------------------
+# Gera o gráfico comparativo de homicídios por mês por região
+columns_mes_regioes, rows_mes_regioes = resultados["Homicídio Comparativo por Mes Regiões"]
+
+pdf.ln(3)
+
+# Título do grafico
+pdf.set_font('Arial', 'B', 12)
+pdf.set_text_color(0, 0, 0)
+titulo_mes_regiao = f'Homicídios - Mês a mês no ano atual: {hoje.year}'
+pdf.cell(0, 10, titulo_mes_regiao, ln=1, align='L')
+
+# Cria o DataFrame
+df_comparativo_mes = pd.DataFrame(rows_mes_regioes, columns=columns_mes_regioes)
+
+if not df_comparativo_mes.empty:
+    df_comparativo_mes['HOMICIDIOS'] = df_comparativo_mes['HOMICIDIOS'].astype(int)
+    df_comparativo_mes['NUMERO_MES'] = df_comparativo_mes['NUMERO_MES'].astype(int)
+
+    # Pivot por MES e REGIAO_OBSERVATORIO
+    df_pivot_mes = df_comparativo_mes.pivot(index='MES', columns='REGIAO_OBSERVATORIO', values='HOMICIDIOS').fillna(0)
+    
+    # Ordena por número do mês
+    df_pivot_mes = df_pivot_mes.reindex(sorted(df_pivot_mes.index, key=lambda x: df_comparativo_mes[df_comparativo_mes['MES'] == x]['NUMERO_MES'].iloc[0]))
+
+    plt.figure(figsize=(12, 6))
+     
+    # Cria o gráfico de barras empilhadas
+    ax = df_pivot_mes.plot(kind='bar', stacked=True, width=0.7)
+    
+    # Adiciona os valores nas barras
+    for c in ax.containers:
+        ax.bar_label(c, label_type='center', fontsize=8)
+    
+    # Adiciona os totais no topo das barras
+    totais = df_pivot_mes.sum(axis=1)
+    for i, total in enumerate(totais):
+        if total > 0:
+            ax.text(i, total + 1, f'{int(total)}', ha='center', va='bottom', fontsize=8)
+    plt.legend(title='REGIÃO', bbox_to_anchor=(1.00, 1), loc='upper left', fontsize=8, title_fontsize=9)
+    plt.ylabel('Homicídios')
+    plt.yticks([])
+    plt.tight_layout()
+    plt.xlabel('')
+    plt.xticks(rotation=0)     
+    plt.savefig('grafico_homicidios_mes_regiao.png', dpi=150, bbox_inches='tight')
+    plt.close()
+
+# Adiciona o DataFrame ao PDF
+pdf.image('grafico_homicidios_mes_regiao.png', x=5, w=200)
+pdf.set_font('Arial', 'I', 9)
+pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
+
 # ------------------------------------------------- SALVANDO O PDF -------------------------------------------------
 
 # --- ATRIBUIÇÃO DOS TEMPOS DE EXECUÇÃO PARA O RODAPÉ ---
