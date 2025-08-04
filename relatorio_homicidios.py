@@ -488,7 +488,7 @@ ORDER BY
   TO_NUMBER(TO_CHAR(oc.datafato, 'DD')), ano
 '''
 
-query_homicidios_comparativo_mes_observatorio ='''
+query_homicidios_comparativo_regioes_mes ='''
 SELECT
   CASE
 	  WHEN cid.uf <> 'GO' THEN NULL
@@ -616,7 +616,7 @@ queries = [
     ("Homicídio Regiões", query_homicidio_regioes),
     ("Homicídio Comparativo por Dia", query_homicidios_comparativo_dia),
     ("Homicídio Comparativo por Dia Regiões", query_homicidios_comparativo_dia_regioes),
-    ("Homicídio Comparativo por Mes Observatório", query_homicidios_comparativo_mes_observatorio),
+    ("Homicídio Comparativo por Mes Regiões", query_homicidios_comparativo_regioes_mes),
     ("Homicídio Comparativo por Semana Observatório", query_homicidios_comparativo_semana_observatorio)
 ]
 resultados = {}
@@ -625,7 +625,7 @@ tempos_execucao = {}
 for nome, query in tqdm(queries, desc="Executando consultas"):
     start = time.time()
     cursor.execute(query)
-    if nome in ["Homicídio Município", "Homicídio Ultimos 2 Anos","Homicídio Todos os Anos","Homicídio Regiões","Homicídio Comparativo por Dia","Homicídio Comparativo por Dia Observatório","Homicídio Comparativo por Mes Observatório"]:
+    if nome in ["Homicídio Município", "Homicídio Ultimos 2 Anos","Homicídio Todos os Anos","Homicídio Regiões","Homicídio Comparativo por Dia","Homicídio Comparativo por Dia Regiões","Homicídio Comparativo por Mes Regiões"]:
         columns = [str(col[0]) for col in cursor.description]
         rows = [list(row) for row in cursor.fetchall()]
         resultados[nome] = (columns, rows)
@@ -1092,7 +1092,7 @@ tempo_execucao_resumo = (
     f'Homicídio Regiões: {tempos_execucao["Homicídio Regiões"]:.2f} | '
     f'Homicídio Comparativo por Dia: {tempos_execucao["Homicídio Comparativo por Dia"]:.2f} '
     f'Homicídio Comparativo por Dia Regiões: {tempos_execucao["Homicídio Comparativo por Dia Regiões"]:.2f} '
-    f'Homicídio Comparativo por Mes Observatório: {tempos_execucao["Homicídio Comparativo por Mes Observatório"]:.2f} '
+    f'Homicídio Comparativo por Mes Regiões: {tempos_execucao["Homicídio Comparativo por Mes Regiões"]:.2f} '
     f'Homicídio Comparativo por Semana Observatório: {tempos_execucao["Homicídio Comparativo por Semana Observatório"]:.2f} '
 )
 pdf.set_font('Arial', '', 6)
