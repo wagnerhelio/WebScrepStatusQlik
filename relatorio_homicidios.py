@@ -926,7 +926,9 @@ for row in rows_regiao_observatorio:
             pdf.cell(col_widths_regiao_observatorio[i], 6, safe_str(item), 1, 0, 'C')
     pdf.ln()
 
-# --- GRAFICO COMPARATIVO POR DIA
+# ------------------------------------------------- GRAFICO COMPARATIVO POR DIA -------------------------------------------------
+# Gera o gráfico comparativo de homicídios por dia
+
 columns_dia, rows_dia = resultados["Homicídio Comparativo por Dia"]
 df_dia = pd.DataFrame(rows_dia, columns=columns_dia)
 
