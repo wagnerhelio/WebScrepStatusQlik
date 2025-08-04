@@ -426,7 +426,7 @@ ORDER BY
   TO_NUMBER(TO_CHAR(oc.datafato, 'DD')), ano
 '''
 
-query_homicidios_comparativo_dia_regioes ='''
+query_homicidios_comparativo_regioes_dia ='''
 SELECT
   CASE
 	  WHEN cid.uf <> 'GO' THEN NULL
@@ -548,7 +548,7 @@ ORDER BY
   EXTRACT(MONTH FROM oc.datafato) 
 '''
 
-query_homicidios_comparativo_semana_observatorio ='''
+query_homicidios_comparativo_regioes_semana ='''
 SELECT
   CASE
 	  WHEN cid.uf <> 'GO' THEN NULL
@@ -615,9 +615,9 @@ queries = [
     ("Homicídio Todos os Anos", query_homicidio_comparativo_todos_anos),
     ("Homicídio Regiões", query_homicidio_regioes),
     ("Homicídio Comparativo por Dia", query_homicidios_comparativo_dia),
-    ("Homicídio Comparativo por Dia Regiões", query_homicidios_comparativo_dia_regioes),
+    ("Homicídio Comparativo por Dia Regiões", query_homicidios_comparativo_regioes_dia),
     ("Homicídio Comparativo por Mes Regiões", query_homicidios_comparativo_regioes_mes),
-    ("Homicídio Comparativo por Semana Observatório", query_homicidios_comparativo_semana_observatorio)
+    ("Homicídio Comparativo por Semana Regiões", query_homicidios_comparativo_regioes_semana)
 ]
 resultados = {}
 tempos_execucao = {}
@@ -1184,6 +1184,67 @@ pdf.image('grafico_homicidios_mes_regiao.png', x=5, w=200)
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 
+# ------------------------------------------------- TABELA COMPARATIVO POR MES POR REGIÃO -------------------------------------------------
+# Gera tabela com dados do gráfico comparativo de homicídios por mês por região
+pdf.ln(3)
+
+# Título da tabela
+pdf.set_font('Arial', 'B', 12)
+pdf.set_text_color(0, 0, 0)
+titulo_tabela = f'Homicídios - Mês a mês no ano atual: {hoje.year}'
+pdf.cell(0, 10, titulo_tabela, ln=1, align='L')
+
+# Cria a tabela com os dados
+if not df_comparativo_mes.empty:
+    # Pivot para criar a tabela
+    df_tabela = df_comparativo_mes.pivot(index='REGIAO_OBSERVATORIO', columns='MES', values='HOMICIDIOS').fillna(0)
+    
+    # Ordena por número do mês
+    df_tabela = df_tabela.reindex(sorted(df_tabela.columns, key=lambda x: df_comparativo_mes[df_comparativo_mes['MES'] == x]['NUMERO_MES'].iloc[0]), axis=1)
+    
+    # Adiciona linha de totais
+    totais_mes = df_tabela.sum()
+    df_tabela.loc['Totais (n. vítimas)'] = totais_mes
+    
+    # Configurações da tabela - Ajustadas para A4
+    largura_total = 190  # Largura disponível na página A4
+    largura_regiao = 40  # Largura da coluna região
+    largura_disponivel = largura_total - largura_regiao
+    num_meses = len(df_tabela.columns)
+    col_width = largura_disponivel / num_meses if num_meses > 0 else largura_disponivel
+    
+    row_height = 7
+    header_height = 8
+    
+    # Cabeçalho da tabela
+    pdf.set_font('Arial', 'B', 8)
+    pdf.set_fill_color(230, 230, 230)
+    pdf.set_draw_color(0, 0, 0)
+    pdf.set_text_color(0, 0, 0)
+    
+    # Cabeçalho - Região
+    pdf.cell(largura_regiao, header_height, 'Região', 1, 0, 'C', fill=True)
+    
+    # Cabeçalho - Meses
+    for mes in df_tabela.columns:
+        pdf.cell(col_width, header_height, str(mes), 1, 0, 'C', fill=True)
+    pdf.ln()
+    
+    # Linhas de dados
+    pdf.set_font('Arial', '', 7)
+    for regiao in df_tabela.index:
+        # Nome da região
+        pdf.cell(largura_regiao, row_height, str(regiao), 1, 0, 'L')
+        
+        # Valores dos meses
+        for mes in df_tabela.columns:
+            valor = df_tabela.loc[regiao, mes]
+            pdf.cell(col_width, row_height, str(int(valor)), 1, 0, 'C')
+        pdf.ln()
+
+pdf.set_font('Arial', 'I', 9)
+pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
+
 # ------------------------------------------------- SALVANDO O PDF -------------------------------------------------
 
 # --- ATRIBUIÇÃO DOS TEMPOS DE EXECUÇÃO PARA O RODAPÉ ---
@@ -1197,7 +1258,7 @@ tempo_execucao_resumo = (
     f'Homicídio Comparativo por Dia: {tempos_execucao["Homicídio Comparativo por Dia"]:.2f} | '
     f'Homicídio Comparativo por Dia Regiões: {tempos_execucao["Homicídio Comparativo por Dia Regiões"]:.2f} | '
     f'Homicídio Comparativo por Mes Regiões: {tempos_execucao["Homicídio Comparativo por Mes Regiões"]:.2f} | '
-    f'Homicídio Comparativo por Semana Observatório: {tempos_execucao["Homicídio Comparativo por Semana Observatório"]:.2f} '
+    f'Homicídio Comparativo por Semana Regiões: {tempos_execucao["Homicídio Comparativo por Semana Regiões"]:.2f} '
 )
 pdf.set_font('Arial', '', 6)
 pdf.cell(0, 8, tempo_execucao_resumo, ln=1, align='L')
