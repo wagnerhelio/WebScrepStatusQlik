@@ -64,11 +64,11 @@ cursor = conn.cursor()
 query_homicidio = '''
 SELECT
   COUNT(DISTINCT CASE WHEN TRUNC(oc.datafato) = TRUNC(SYSDATE) THEN pes.id END) AS homicidios_hoje,
-  COUNT(DISTINCT CASE WHEN EXTRACT(MONTH FROM oc.datafato) = EXTRACT(MONTH FROM SYSDATE) AND EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM SYSDATE) THEN pes.id END) AS homicidios_mes,
-  COUNT(DISTINCT CASE WHEN EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM SYSDATE) THEN pes.id END) AS homicidios_ano,
-  COUNT(DISTINCT CASE WHEN TRUNC(oc.datafato) = TRUNC(SYSDATE-1) THEN pes.id END) AS homicidios_ontem,
-  COUNT(DISTINCT CASE WHEN TRUNC(oc.datafato) >= TRUNC(ADD_MONTHS(SYSDATE, -1), 'MM') AND TRUNC(oc.datafato) < TRUNC(SYSDATE, 'MM')THEN pes.id END) AS homicidios_mes_ontem,
-  COUNT(DISTINCT CASE WHEN EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM SYSDATE) AND TRUNC(oc.datafato) < TRUNC(SYSDATE) THEN pes.id END) AS homicidios_ano_ontem
+  COUNT(DISTINCT CASE WHEN TRUNC(oc.datafato) = TRUNC(SYSDATE - 1) THEN pes.id END) AS homicidios_ontem,
+  COUNT(DISTINCT CASE WHEN TRUNC(oc.datafato) >= TRUNC(SYSDATE, 'MM') THEN pes.id END) AS homicidios_mes,
+  COUNT(DISTINCT CASE WHEN TRUNC(oc.datafato) >= TRUNC(SYSDATE, 'MM') AND TRUNC(oc.datafato) < TRUNC(SYSDATE) THEN pes.id END) AS homicidios_mes_ontem,
+  COUNT(DISTINCT CASE WHEN TRUNC(oc.datafato) >= TRUNC(SYSDATE, 'YYYY') THEN pes.id END) AS homicidios_ano,
+  COUNT(DISTINCT CASE WHEN TRUNC(oc.datafato) >= TRUNC(SYSDATE, 'YYYY') AND TRUNC(oc.datafato) < TRUNC(SYSDATE) THEN pes.id END) AS homicidios_ano_ontem
 FROM bu.ocorrencia oc
 LEFT JOIN bu.endereco ende
 INNER JOIN sspj.bairros bai
@@ -110,11 +110,11 @@ WHERE ende.estado_sigla = 'GO'
 query_feminicidio = '''
 SELECT
   COUNT(DISTINCT CASE WHEN TRUNC(oc.datafato) = TRUNC(SYSDATE) THEN pes.id END) AS feminicidios_hoje,
-  COUNT(DISTINCT CASE WHEN EXTRACT(MONTH FROM oc.datafato) = EXTRACT(MONTH FROM SYSDATE) AND EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM SYSDATE) THEN pes.id END) AS feminicidios_mes,
-  COUNT(DISTINCT CASE WHEN EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM SYSDATE) THEN pes.id END) AS feminicidios_ano,
-  COUNT(DISTINCT CASE WHEN TRUNC(oc.datafato) = TRUNC(SYSDATE-1) THEN pes.id END) AS feminicidios_ontem,
-  COUNT(DISTINCT CASE WHEN TRUNC(oc.datafato) >= TRUNC(ADD_MONTHS(SYSDATE, -1), 'MM') AND TRUNC(oc.datafato) < TRUNC(SYSDATE, 'MM')THEN pes.id END) AS feminicidios_mes_ontem,
-  COUNT(DISTINCT CASE WHEN EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM SYSDATE) AND TRUNC(oc.datafato) < TRUNC(SYSDATE) THEN pes.id END) AS feminicidios_ano_ontem
+  COUNT(DISTINCT CASE WHEN TRUNC(oc.datafato) = TRUNC(SYSDATE - 1) THEN pes.id END) AS feminicidios_ontem,
+  COUNT(DISTINCT CASE WHEN TRUNC(oc.datafato) >= TRUNC(SYSDATE, 'MM') THEN pes.id END) AS feminicidios_mes,
+  COUNT(DISTINCT CASE WHEN TRUNC(oc.datafato) >= TRUNC(SYSDATE, 'MM') AND TRUNC(oc.datafato) < TRUNC(SYSDATE) THEN pes.id END) AS feminicidios_mes_ontem,
+  COUNT(DISTINCT CASE WHEN TRUNC(oc.datafato) >= TRUNC(SYSDATE, 'YYYY') THEN pes.id END) AS feminicidios_ano,
+  COUNT(DISTINCT CASE WHEN TRUNC(oc.datafato) >= TRUNC(SYSDATE, 'YYYY') AND TRUNC(oc.datafato) < TRUNC(SYSDATE) THEN pes.id END) AS feminicidios_ano_ontem
 FROM bu.ocorrencia oc
 LEFT JOIN bu.endereco ende
 INNER JOIN sspj.bairros bai
@@ -636,8 +636,8 @@ for nome, query in tqdm(queries, desc="Executando consultas"):
     print(f"Tempo de execução da consulta {nome}: {tempos_execucao[nome]:.2f} segundos")
 
 # Extrai os resultados
-homicidios_hoje,homicidios_mes,homicidios_ano, homicidios_ontem, homicidios_mes_ontem, homicidios_ano_ontem = resultados["Homicídio"]
-feminicidios_hoje, feminicidios_mes, feminicidios_ano, feminicidios_ontem, feminicidios_mes_ontem, feminicidios_ano_ontem = resultados["Feminicídio"]
+homicidios_hoje, homicidios_ontem, homicidios_mes, homicidios_mes_ontem,homicidios_ano, homicidios_ano_ontem = resultados["Homicídio"]
+feminicidios_hoje, feminicidios_ontem, feminicidios_mes, feminicidios_mes_ontem, feminicidios_ano, feminicidios_ano_ontem = resultados["Feminicídio"]
 
 hoje = datetime.now()
 dia_atual = hoje.day
@@ -735,7 +735,7 @@ pdf.ln(5)
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)  # Preto
-titulo_municipio = f'Homicídios - Dia Anterior por Município : {ontem_data}'
+titulo_municipio = f'Homicídios - Dia Anterior por Município :'
 pdf.cell(0, 10, titulo_municipio, ln=1, align='L')
 
 # Cabeçalho da tabela de município
@@ -758,6 +758,8 @@ for row in rows_homicidio_municipio:
         pdf.cell(col_widths_municipio[i], 6, safe_str(item), 1, 0, 'C')
     pdf.ln()
 
+pdf.set_font('Arial', 'I', 9)
+pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 # ------------------------------------------------- GRAFICO DE HOMICÍDIOS ÚLTIMOS 2 ANOS -------------------------------------------------
 # Gera o gráfico de linhas comparando homicídios mês a mês dos dois últimos anos
 colunas_homicidio_2anos, linhas_homicidio_2anos = resultados["Homicídio Ultimos 2 Anos"]
@@ -765,7 +767,7 @@ colunas_homicidio_2anos, linhas_homicidio_2anos = resultados["Homicídio Ultimos
 # Título da grafico
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)
-titulo_homicidio_2anos = f'Homicídios - Comparativo ano atual com os últimos dois anos : {ontem_data}'
+titulo_homicidio_2anos = f'Homicídios - Comparativo ano atual com os últimos dois anos :'
 pdf.cell(0, 10, titulo_homicidio_2anos, ln=1, align='L')
 
 # Cria o DataFrame
@@ -815,12 +817,12 @@ colunas_homicidio_todos_anos, linhas_homicidio_todos_anos = resultados["Homicíd
 df_homicidio_todos_anos = pd.DataFrame(linhas_homicidio_todos_anos, columns=colunas_homicidio_todos_anos)
 
 # Espaço antes da tabela
-pdf.ln(4)
+pdf.ln(2)
 
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)  # Preto
-titulo_homicidio_todos_anos = f'Tabela de Homicidios Comparativo por Ano até : {ontem_data}'
+titulo_homicidio_todos_anos = f'Tabela de Homicidios Comparativo por Ano :'
 pdf.cell(0, 10, titulo_homicidio_todos_anos, ln=1, align='L')
 
 # Cabeçalho da tabela de meses/anos
@@ -843,6 +845,9 @@ for linha in linhas_homicidio_todos_anos:
         pdf.cell(col_widths_homicidio_todos_anos[i], 6, safe_str_homicidio_todos_anos(item), 1, 0, 'C')
     pdf.ln()
 
+pdf.set_font('Arial', 'I', 9)
+pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
+
 # ------------------------------------------------- TABELA DE REGIAO - COMPARATIVO MENSAL E ACUMULADO -------------------------------------------------
 columns_regiao_observatorio_atualizada = [
     "REGIÃO",
@@ -864,7 +869,7 @@ pdf.ln(4)
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)  # Preto
-titulo_regiao_observatorio = f'HOMICIDIOS POR REGIÕES - Comparativo Dia Anterior e Acumulado até : {ontem_data}'
+titulo_regiao_observatorio = f'HOMICIDIOS POR REGIÕES - Comparativo Dia Anterior e Acumulado :'
 pdf.cell(0, 10, titulo_regiao_observatorio, ln=1, align='L')
 
 col_widths_regiao_observatorio = [25, 20, 20, 20, 15, 24, 24, 15, 25]  # 9 colunas
@@ -925,6 +930,9 @@ for row in rows_regiao_observatorio:
         else:
             pdf.cell(col_widths_regiao_observatorio[i], 6, safe_str(item), 1, 0, 'C')
     pdf.ln()
+
+pdf.set_font('Arial', 'I', 9)
+pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 
 # ------------------------------------------------- GRAFICO COMPARATIVO POR DIA -------------------------------------------------
 # Gera o gráfico comparativo de homicídios por dia
