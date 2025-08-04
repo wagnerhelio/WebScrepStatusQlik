@@ -1031,7 +1031,7 @@ for ano, row in df_tab.iterrows():
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 
-# --- GRAFICO COMPARATIVO POR DIA REGIÕES (por REGIAO_OBSERVATORIO)
+# ------------------------------------------------- GRAFICO COMPARATIVO POR DIA POR REGIÃO -------------------------------------------------
 # Gera o gráfico comparativo de homicídios por dia por região
 columns_dia_regioes, rows_dia_regioes = resultados["Homicídio Comparativo por Dia Regiões"]
 
@@ -1099,9 +1099,9 @@ tempo_execucao_resumo = (
     f'Homicídio 2 Anos: {tempos_execucao["Homicídio Ultimos 2 Anos"]:.2f} | '
     f'Homicídio Todos os Anos: {tempos_execucao["Homicídio Todos os Anos"]:.2f} | '
     f'Homicídio Regiões: {tempos_execucao["Homicídio Regiões"]:.2f} | '
-    f'Homicídio Comparativo por Dia: {tempos_execucao["Homicídio Comparativo por Dia"]:.2f} '
-    f'Homicídio Comparativo por Dia Regiões: {tempos_execucao["Homicídio Comparativo por Dia Regiões"]:.2f} '
-    f'Homicídio Comparativo por Mes Regiões: {tempos_execucao["Homicídio Comparativo por Mes Regiões"]:.2f} '
+    f'Homicídio Comparativo por Dia: {tempos_execucao["Homicídio Comparativo por Dia"]:.2f} | '
+    f'Homicídio Comparativo por Dia Regiões: {tempos_execucao["Homicídio Comparativo por Dia Regiões"]:.2f} | '
+    f'Homicídio Comparativo por Mes Regiões: {tempos_execucao["Homicídio Comparativo por Mes Regiões"]:.2f} | '
     f'Homicídio Comparativo por Semana Observatório: {tempos_execucao["Homicídio Comparativo por Semana Observatório"]:.2f} '
 )
 pdf.set_font('Arial', '', 6)
