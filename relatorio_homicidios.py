@@ -426,7 +426,7 @@ ORDER BY
   TO_NUMBER(TO_CHAR(oc.datafato, 'DD')), ano
 '''
 
-query_homicidios_comparativo_dia_observatorio ='''
+query_homicidios_comparativo_dia_regioes ='''
 SELECT
   CASE
 	  WHEN cid.uf <> 'GO' THEN NULL
@@ -615,7 +615,7 @@ queries = [
     ("Homicídio Todos os Anos", query_homicidio_comparativo_todos_anos),
     ("Homicídio Regiões", query_homicidio_regioes),
     ("Homicídio Comparativo por Dia", query_homicidios_comparativo_dia),
-    ("Homicídio Comparativo por Dia Observatório", query_homicidios_comparativo_dia_observatorio),
+    ("Homicídio Comparativo por Dia Regiões", query_homicidios_comparativo_dia_regioes),
     ("Homicídio Comparativo por Mes Observatório", query_homicidios_comparativo_mes_observatorio),
     ("Homicídio Comparativo por Semana Observatório", query_homicidios_comparativo_semana_observatorio)
 ]
@@ -730,12 +730,12 @@ pdf.cell(0, 15, str(homicidios_mes), ln=1, align='C')
 columns_homicidio_municipio, rows_homicidio_municipio = resultados["Homicídio Município"]
 
 # Espaço antes da tabela
-pdf.ln(5)
+pdf.ln(3)
 
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)  # Preto
-titulo_municipio = f'Homicídios - Dia Anterior por Município :'
+titulo_municipio = f'Homicídios - dia anterior por município :'
 pdf.cell(0, 10, titulo_municipio, ln=1, align='L')
 
 # Cabeçalho da tabela de município
@@ -817,12 +817,12 @@ colunas_homicidio_todos_anos, linhas_homicidio_todos_anos = resultados["Homicíd
 df_homicidio_todos_anos = pd.DataFrame(linhas_homicidio_todos_anos, columns=colunas_homicidio_todos_anos)
 
 # Espaço antes da tabela
-pdf.ln(2)
+pdf.ln(1)
 
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)  # Preto
-titulo_homicidio_todos_anos = f'Tabela de Homicidios Comparativo por Ano :'
+titulo_homicidio_todos_anos = f'Homicidios comparativo por ano :'
 pdf.cell(0, 10, titulo_homicidio_todos_anos, ln=1, align='L')
 
 # Cabeçalho da tabela de meses/anos
@@ -864,12 +864,12 @@ columns_regiao_observatorio_atualizada = [
 columns_regiao_observatorio, rows_regiao_observatorio = resultados["Homicídio Regiões"]
 
 # Espaço antes da tabela
-pdf.ln(4)
+pdf.ln(1)
 
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)  # Preto
-titulo_regiao_observatorio = f'HOMICIDIOS POR REGIÕES - Comparativo Dia Anterior e Acumulado :'
+titulo_regiao_observatorio = f'Homicídios por regiões - comparativo dia anterior e acumulado :'
 pdf.cell(0, 10, titulo_regiao_observatorio, ln=1, align='L')
 
 col_widths_regiao_observatorio = [25, 20, 20, 20, 15, 24, 24, 15, 25]  # 9 colunas
@@ -953,10 +953,11 @@ if not df_dia.empty:
     anos = sorted(df_pivot.columns)
     bar_width = 0.4
     x = range(len(df_pivot.index))
-    cores = ['#3b3b98', '#218c5a']  # Azul e verde
+    #cores = ['#3b3b98', '#218c5a']  # Azul e verde
 
     for i, ano in enumerate(anos):
-        bars = plt.bar([xi + i*bar_width for xi in x], df_pivot[ano], width=bar_width, label=str(ano), color=cores[i % len(cores)])
+        bars = plt.bar([xi + i*bar_width for xi in x], df_pivot[ano], width=bar_width, label=str(ano))
+        #bars = plt.bar([xi + i*bar_width for xi in x], df_pivot[ano], width=bar_width, label=str(ano), color=cores[i % len(cores)])
         # Adiciona o valor acima de cada barra
         for bar in bars:
             height = bar.get_height()
@@ -973,7 +974,7 @@ if not df_dia.empty:
     plt.xticks([xi + bar_width/2 for xi in x], list(df_pivot.index), rotation=45)
     plt.ylabel('Homicídios')
     #plt.title(f'Homicídios - Por Dia no mês atual: {hoje.strftime("%b/%Y")} : {ontem.strftime("%d/%m/%Y")}', loc='left', fontsize=12, fontweight='bold', fontname='Arial')
-    plt.legend(title='', loc='best')
+    plt.legend(title='ANO', bbox_to_anchor=(1.00, 1), loc='upper left', fontsize=8, title_fontsize=9)
     plt.yticks([])
     plt.tight_layout()
     plt.savefig('grafico_homicidios_dia.png', dpi=150, bbox_inches='tight')
@@ -982,7 +983,7 @@ if not df_dia.empty:
     pdf.ln(3)
     pdf.set_font('Arial', 'B', 12)
     pdf.set_text_color(0, 0, 0)  # Preto
-    titulo_mes_atual = f'Homicídios - Por Dia no mês atual: {hoje.strftime("%b/%Y")}'
+    titulo_mes_atual = f'Homicídios - por dia no mês atual: {hoje.strftime("%b/%Y")}'
     pdf.cell(0, 10, titulo_mes_atual, ln=1, align='L')
     pdf.image('grafico_homicidios_dia.png', x=5, w=200)
     pdf.set_font('Arial', 'I', 9)
@@ -993,7 +994,7 @@ if not df_dia.empty:
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)  # Preto
-titulo_por_dia = f'Homicídios Comparativo por Dia no Mês Atual : {ontem_data}'
+titulo_por_dia = f'Homicídios comparativo por dia no mês atual :'
 pdf.cell(0, 10, titulo_por_dia, ln=1, align='L')
 
 # Transpõe para: colunas = dias, linhas = anos
@@ -1024,8 +1025,11 @@ for ano, row in df_tab.iterrows():
         pdf.cell(col_width, 6, str(int(valor)), 1, 0, 'C')
     pdf.ln()
 
+pdf.set_font('Arial', 'I', 9)
+pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
+
 # --- GRAFICO COMPARATIVO POR DIA OBSERVATÓRIO (por REGIAO_OBSERVATORIO)
-columns_dia_obs, rows_dia_obs = resultados["Homicídio Comparativo por Dia Observatório"]
+columns_dia_obs, rows_dia_obs = resultados["Homicídio Comparativo por Dia Regiões"]
 df_comparativo_dia = pd.DataFrame(rows_dia_obs, columns=columns_dia_obs)
 
 if not df_comparativo_dia.empty:
@@ -1039,10 +1043,11 @@ if not df_comparativo_dia.empty:
     regioes = sorted(df_pivot.columns)
     bar_width = 0.25
     x = range(len(df_pivot.index))
-    cores = ['#e55039', '#3b3b98', '#f6b93b']  # Vermelho, Azul, Amarelo
+    #cores = ['#e55039', '#3b3b98', '#f6b93b']  # Vermelho, Azul, Amarelo
 
     for i, regiao in enumerate(regioes):
-        bars = plt.bar([xi + i * bar_width for xi in x], df_pivot[regiao], width=bar_width, label=regiao, color=cores[i % len(cores)])
+        #bars = plt.bar([xi + i * bar_width for xi in x], df_pivot[regiao], width=bar_width, label=regiao, color=cores[i % len(cores)])
+        bars = plt.bar([xi + i * bar_width for xi in x], df_pivot[regiao], width=bar_width, label=regiao)
         for bar in bars:
             height = bar.get_height()
             if height > 0:
@@ -1057,7 +1062,8 @@ if not df_comparativo_dia.empty:
 
     plt.xticks([xi + bar_width * (len(regioes)/2 - 0.5) for xi in x], list(df_pivot.index), rotation=45)
     plt.ylabel('Homicídios')
-    plt.legend(title='', loc='best')
+    plt.legend(title='REGIÃO', bbox_to_anchor=(1.00, 1), loc='upper left', fontsize=8, title_fontsize=9)
+
     plt.yticks([])
     plt.tight_layout()
 
@@ -1067,7 +1073,7 @@ if not df_comparativo_dia.empty:
     pdf.ln(3)
     pdf.set_font('Arial', 'B', 12)
     pdf.set_text_color(0, 0, 0)
-    titulo_mes_regiao = f'Homicídios - Por Dia no mês atual: {hoje.strftime("%b/%Y")}'
+    titulo_mes_regiao = f'Homicídios - por dia no mês atual: {hoje.strftime("%b/%Y")}'
     pdf.cell(0, 10, titulo_mes_regiao, ln=1, align='L')
     pdf.image('grafico_homicidios_dia_regiao.png', x=5, w=200)
     pdf.set_font('Arial', 'I', 9)
@@ -1085,7 +1091,7 @@ tempo_execucao_resumo = (
     f'Homicídio Todos os Anos: {tempos_execucao["Homicídio Todos os Anos"]:.2f} | '
     f'Homicídio Regiões: {tempos_execucao["Homicídio Regiões"]:.2f} | '
     f'Homicídio Comparativo por Dia: {tempos_execucao["Homicídio Comparativo por Dia"]:.2f} '
-    f'Homicídio Comparativo por Dia Observatório: {tempos_execucao["Homicídio Comparativo por Dia Observatório"]:.2f} '
+    f'Homicídio Comparativo por Dia Regiões: {tempos_execucao["Homicídio Comparativo por Dia Regiões"]:.2f} '
     f'Homicídio Comparativo por Mes Observatório: {tempos_execucao["Homicídio Comparativo por Mes Observatório"]:.2f} '
     f'Homicídio Comparativo por Semana Observatório: {tempos_execucao["Homicídio Comparativo por Semana Observatório"]:.2f} '
 )
