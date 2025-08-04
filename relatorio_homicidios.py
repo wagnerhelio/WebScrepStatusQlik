@@ -764,7 +764,7 @@ pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 # Gera o gráfico de linhas comparando homicídios mês a mês dos dois últimos anos
 colunas_homicidio_2anos, linhas_homicidio_2anos = resultados["Homicídio Ultimos 2 Anos"]
 
-# Título da grafico
+# Título do grafico
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)
 titulo_homicidio_2anos = f'Homicídios - Comparativo ano atual com os últimos dois anos :'
@@ -936,8 +936,17 @@ pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 
 # ------------------------------------------------- GRAFICO COMPARATIVO POR DIA -------------------------------------------------
 # Gera o gráfico comparativo de homicídios por dia
-
 columns_dia, rows_dia = resultados["Homicídio Comparativo por Dia"]
+
+pdf.ln(1)
+
+# Título do grafico
+pdf.set_font('Arial', 'B', 12)
+pdf.set_text_color(0, 0, 0)  # Preto
+titulo_mes_atual = f'Homicídios - por dia no mês atual: {hoje.strftime("%b/%Y")}'
+pdf.cell(0, 10, titulo_mes_atual, ln=1, align='L')
+
+# Cria o DataFrame
 df_dia = pd.DataFrame(rows_dia, columns=columns_dia)
 
 # Ajusta tipos e nomes
@@ -970,24 +979,18 @@ if not df_dia.empty:
                     va='bottom',
                     fontsize=8
                 )
-
-    plt.xticks([xi + bar_width/2 for xi in x], list(df_pivot.index), rotation=45)
-    plt.ylabel('Homicídios')
-    #plt.title(f'Homicídios - Por Dia no mês atual: {hoje.strftime("%b/%Y")} : {ontem.strftime("%d/%m/%Y")}', loc='left', fontsize=12, fontweight='bold', fontname='Arial')
     plt.legend(title='ANO', bbox_to_anchor=(1.00, 1), loc='upper left', fontsize=8, title_fontsize=9)
+    plt.ylabel('Homicídios')
     plt.yticks([])
     plt.tight_layout()
+    plt.xticks([xi + bar_width/2 for xi in x], list(df_pivot.index), rotation=45)
     plt.savefig('grafico_homicidios_dia.png', dpi=150, bbox_inches='tight')
     plt.close()
 
-    pdf.ln(3)
-    pdf.set_font('Arial', 'B', 12)
-    pdf.set_text_color(0, 0, 0)  # Preto
-    titulo_mes_atual = f'Homicídios - por dia no mês atual: {hoje.strftime("%b/%Y")}'
-    pdf.cell(0, 10, titulo_mes_atual, ln=1, align='L')
-    pdf.image('grafico_homicidios_dia.png', x=5, w=200)
-    pdf.set_font('Arial', 'I', 9)
-    pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
+# Adiciona o DataFrame ao PDF 
+pdf.image('grafico_homicidios_dia.png', x=5, w=200)
+pdf.set_font('Arial', 'I', 9)
+pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 
 # --- TABELA COMPARATIVO POR DIA
 
@@ -1028,9 +1031,20 @@ for ano, row in df_tab.iterrows():
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 
-# --- GRAFICO COMPARATIVO POR DIA OBSERVATÓRIO (por REGIAO_OBSERVATORIO)
-columns_dia_obs, rows_dia_obs = resultados["Homicídio Comparativo por Dia Regiões"]
-df_comparativo_dia = pd.DataFrame(rows_dia_obs, columns=columns_dia_obs)
+# --- GRAFICO COMPARATIVO POR DIA REGIÕES (por REGIAO_OBSERVATORIO)
+# Gera o gráfico comparativo de homicídios por dia por região
+columns_dia_regioes, rows_dia_regioes = resultados["Homicídio Comparativo por Dia Regiões"]
+
+pdf.ln(3)
+
+# Título do grafico
+pdf.set_font('Arial', 'B', 12)
+pdf.set_text_color(0, 0, 0)
+titulo_mes_regiao = f'Homicídios - por dia no mês atual: {hoje.strftime("%b/%Y")}'
+pdf.cell(0, 10, titulo_mes_regiao, ln=1, align='L')
+
+# Cria o DataFrame
+df_comparativo_dia = pd.DataFrame(rows_dia_regioes, columns=columns_dia_regioes)
 
 if not df_comparativo_dia.empty:
     df_comparativo_dia['HOMICIDIOS'] = df_comparativo_dia['HOMICIDIOS'].astype(int)
@@ -1043,10 +1057,8 @@ if not df_comparativo_dia.empty:
     regioes = sorted(df_pivot.columns)
     bar_width = 0.25
     x = range(len(df_pivot.index))
-    #cores = ['#e55039', '#3b3b98', '#f6b93b']  # Vermelho, Azul, Amarelo
 
     for i, regiao in enumerate(regioes):
-        #bars = plt.bar([xi + i * bar_width for xi in x], df_pivot[regiao], width=bar_width, label=regiao, color=cores[i % len(cores)])
         bars = plt.bar([xi + i * bar_width for xi in x], df_pivot[regiao], width=bar_width, label=regiao)
         for bar in bars:
             height = bar.get_height()
@@ -1060,24 +1072,21 @@ if not df_comparativo_dia.empty:
                     fontsize=8
                 )
 
-    plt.xticks([xi + bar_width * (len(regioes)/2 - 0.5) for xi in x], list(df_pivot.index), rotation=45)
-    plt.ylabel('Homicídios')
     plt.legend(title='REGIÃO', bbox_to_anchor=(1.00, 1), loc='upper left', fontsize=8, title_fontsize=9)
-
+    plt.ylabel('Homicídios')
     plt.yticks([])
+    plt.xlabel('')
     plt.tight_layout()
+    
+    plt.xticks([xi + bar_width * (len(regioes)/2 - 0.5) for xi in x], list(df_pivot.index), rotation=45)
 
     plt.savefig('grafico_homicidios_dia_regiao.png', dpi=150, bbox_inches='tight')
     plt.close()
 
-    pdf.ln(3)
-    pdf.set_font('Arial', 'B', 12)
-    pdf.set_text_color(0, 0, 0)
-    titulo_mes_regiao = f'Homicídios - por dia no mês atual: {hoje.strftime("%b/%Y")}'
-    pdf.cell(0, 10, titulo_mes_regiao, ln=1, align='L')
-    pdf.image('grafico_homicidios_dia_regiao.png', x=5, w=200)
-    pdf.set_font('Arial', 'I', 9)
-    pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
+# Adiciona o DataFrame ao PDF
+pdf.image('grafico_homicidios_dia_regiao.png', x=5, w=200)
+pdf.set_font('Arial', 'I', 9)
+pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 
 
 # ------------------------------------------------- SALVANDO O PDF -------------------------------------------------
