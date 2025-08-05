@@ -625,7 +625,7 @@ tempos_execucao = {}
 for nome, query in tqdm(queries, desc="Executando consultas"):
     start = time.time()
     cursor.execute(query)
-    if nome in ["Homicídio Município", "Homicídio Ultimos 2 Anos","Homicídio Todos os Anos","Homicídio Regiões","Homicídio Comparativo por Dia","Homicídio Comparativo por Dia Regiões","Homicídio Comparativo por Mes Regiões"]:
+    if nome in ["Homicídio Município", "Homicídio Ultimos 2 Anos","Homicídio Todos os Anos","Homicídio Regiões","Homicídio Comparativo por Dia","Homicídio Comparativo por Dia Regiões","Homicídio Comparativo por Mes Regiões","Homicídio Comparativo por Semana Regiões"]:
         columns = [str(col[0]) for col in cursor.description]
         rows = [list(row) for row in cursor.fetchall()]
         resultados[nome] = (columns, rows)
@@ -1242,6 +1242,63 @@ if not df_comparativo_mes.empty:
             pdf.cell(col_width, row_height, str(int(valor)), 1, 0, 'C')
         pdf.ln()
 
+pdf.set_font('Arial', 'I', 9)
+pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
+
+# ------------------------------------------------- GRAFICO COMPARATIVO POR SEMANA POR REGIÃO -------------------------------------------------
+# Gera o gráfico comparativo de homicídios por semana por região
+columns_semana_regioes, rows_semana_regioes = resultados["Homicídio Comparativo por Semana Regiões"]
+
+pdf.ln(3)
+
+# Título do grafico
+pdf.set_font('Arial', 'B', 12)
+pdf.set_text_color(0, 0, 0)
+titulo_semana_regiao = f'Homicídios nos dias da semana - {hoje.year} - Acumulado no ano atual'
+pdf.cell(0, 10, titulo_semana_regiao, ln=1, align='L')
+
+# Cria o DataFrame
+df_comparativo_semana = pd.DataFrame(rows_semana_regioes, columns=columns_semana_regioes)
+
+if not df_comparativo_semana.empty:
+    df_comparativo_semana['HOMICIDIOS'] = df_comparativo_semana['HOMICIDIOS'].astype(int)
+    df_comparativo_semana['NUMERO_DIA_SEMANA'] = df_comparativo_semana['NUMERO_DIA_SEMANA'].astype(int)
+    
+    # Pivot por DIA_SEMANA e REGIAO_OBSERVATORIO
+    df_pivot_semana = df_comparativo_semana.pivot(index='DIA_SEMANA', columns='REGIAO_OBSERVATORIO', values='HOMICIDIOS').fillna(0)
+    
+    # Ordena os dias da semana corretamente (domingo=1, segunda=2, ..., sábado=7)
+    df_pivot_semana = df_pivot_semana.reindex(sorted(df_pivot_semana.index, key=lambda x: df_comparativo_semana[df_comparativo_semana['DIA_SEMANA'] == x]['NUMERO_DIA_SEMANA'].iloc[0]))
+    
+    # Inverte a ordem para que domingo apareça no topo do gráfico horizontal
+    df_pivot_semana = df_pivot_semana.iloc[::-1]
+
+    plt.figure(figsize=(12, 6))
+    
+    # Cria o gráfico de barras empilhadas
+    ax = df_pivot_semana.plot(kind='barh', stacked=True, width=0.7)
+    
+    # Adiciona os valores nas barras
+    for c in ax.containers:
+        ax.bar_label(c, label_type='center', fontsize=8)
+    
+    # Adiciona os totais no final das barras
+    totais = df_pivot_semana.sum(axis=1)
+    for i, total in enumerate(totais):
+        if total > 0:
+            ax.text(total + 1, i, f'{int(total)}', ha='left', va='center', fontsize=8)
+    
+    plt.legend(title='REGIÃO', bbox_to_anchor=(1.00, 1), loc='upper left', fontsize=8, title_fontsize=9)
+    plt.ylabel('Dias da Semana')
+    # Configura os labels do eixo Y para mostrar os dias da semana
+    plt.yticks(range(len(df_pivot_semana.index)), df_pivot_semana.index, fontsize=9)
+    plt.tight_layout()
+    plt.xticks([]) 
+    plt.savefig('grafico_homicidios_semana_regiao.png', dpi=150, bbox_inches='tight')
+    plt.close()
+
+# Adiciona o DataFrame ao PDF
+pdf.image('grafico_homicidios_semana_regiao.png', x=5, w=200)
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 
