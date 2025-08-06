@@ -2,6 +2,7 @@ import os
 import oracledb as cx_Oracle
 import time
 import pandas as pd
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np  
 import seaborn as sns
@@ -11,6 +12,25 @@ from tqdm import tqdm
 from datetime import datetime, timedelta
 
 load_dotenv()
+matplotlib.use('Agg')  # Configura o backend antes de importar pyplot
+
+# Cria a pasta img/relatorio_homicidios se não existir
+relatorio_dir = 'img/relatorio_homicidios'
+if not os.path.exists(relatorio_dir):
+    os.makedirs(relatorio_dir)
+
+# Verifica se o diretório foi criado e tem permissões de escrita
+if not os.path.exists(relatorio_dir):
+    raise RuntimeError(f"Não foi possível criar o diretório {relatorio_dir}")
+
+# Testa se é possível escrever no diretório
+try:
+    test_file = os.path.join(relatorio_dir, 'test.txt')
+    with open(test_file, 'w') as f:
+        f.write('test')
+    os.remove(test_file)
+except Exception as e:
+    raise RuntimeError(f"Não é possível escrever no diretório {relatorio_dir}: {e}")
 
 class PDFComRodape(FPDF):
     def __init__(self, *args, **kwargs):
@@ -607,6 +627,75 @@ GROUP BY
 ORDER BY
   TO_CHAR(oc.datafato, 'D')
 '''
+
+query_homicidios_presidios ='''
+SELECT
+  NVL(cid.nome, 'NÃO INFORMADO') AS municipio_nome,
+  oc.id AS id_rai,
+  TO_CHAR(TRUNC(oc.datafato), 'DD/MM/YYYY') AS datafato,
+  COUNT(DISTINCT pes.id) AS total,
+  COUNT(CASE WHEN pes.sexo_nome = 'FEMININO' THEN 1 END) AS F,
+  COUNT(CASE WHEN pes.sexo_nome = 'MASCULINO' THEN 1 END) AS M,
+  COUNT(CASE WHEN pes.sexo_nome IS NULL OR pes.sexo_nome NOT IN ('FEMININO', 'MASCULINO') THEN 1 END) AS NF
+FROM bu.ocorrencia oc
+--ENDERECO/AMBIENTE
+LEFT JOIN bu.endereco ende
+INNER JOIN sspj.bairros bai
+      LEFT JOIN (
+        SELECT cod_bairro, LISTAGG(eor.sigla, ', ') AS siglas
+        FROM sicad.circunscricao circ
+        INNER JOIN sicad.estrutura_organizacional_real eor
+          ON eor.cod_estrutura_organizacional = circ.cod_estrutura_organizacional
+        GROUP BY cod_bairro
+      ) area ON area.cod_bairro = bai.bairro
+      LEFT JOIN sspj.aisps ais
+      LEFT JOIN sspj.risps ris ON ris.risp = ais.risp
+ON ais.aisp = bai.aisp
+LEFT JOIN sspj.cidades cid
+     LEFT JOIN sspj.cidades_ibge cib ON cib.codigo_sspj = cid.cidade
+          LEFT JOIN sspj.microrregioes mic
+               LEFT JOIN sspj.mesorregioes mes ON mes.mesorregiao = mic.mesorregiao
+          ON mic.microrregiao = cid.microrregiao
+     ON cid.cidade = bai.cidade
+ON bai.bairro = ende.bairro_id
+ON ende.id = oc.endereco_id
+LEFT JOIN bu.ocorrenciaambiente oco_a
+ON oco_a.id = oc.ocorrenciaambiente_id
+--PESSOA
+LEFT JOIN bu.ocorrenciapessoa ope 
+     LEFT JOIN bu.pessoa pes 
+	 ON pes.id = ope.pessoa_id
+	 LEFT JOIN bu.ocorrencia_pessoa_natur opn
+	 	  LEFT JOIN bu.natureza nat_pes
+	 	  	   INNER JOIN user_transacional.e_natureza_spi_tipificada_mview nat_tip_pes
+               ON nat_tip_pes.spi_natureza_id = nat_pes.naturezaid
+    	  ON nat_pes.id = opn.natureza_id  
+		  LEFT JOIN bu.ocorrencia_pessoa_natur_qual opnq
+			   LEFT JOIN bu.qualificacao qua
+				     INNER JOIN spi.qalificacao qa
+					       INNER JOIN spi.qualificacao_categorias qcap
+					       ON qcap.qualificacao_categoria = qa.qualificacao_categoria
+				     ON qa.codigo_qualificacao = qua.qualificacaoid
+			   ON qua.id = opnq.qualificacoes_id
+		  ON opnq.ocorrenciapessoanatureza_id = opn.id 
+	 ON opn.ocorrenciapessoa_id = ope.id
+ON oc.id = ope.ocorrencia_id 
+WHERE
+ende.estado_sigla = 'GO'
+AND EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM SYSDATE)
+AND oc.statusocorrencia = 'OCORRENCIA'
+--FILTRO 
+AND (UPPER(nat_tip_pes.GRUPO) = 'HOMICÍDIO' OR nat_pes.naturezaid IN ('500001', '500002', '500003', '500004', '500005', '500006', '500007', '500011', '400711', '400712', '400001', '400002', '501199', '501200', '501201', '501202', '501203', '501204', '501220', '501136', '501137', '501138', '501139', '501140', '501141', '501288', '520269', '520323', '521062', '522242', '522243', '522262', '523006', '523007', '523008', '523009', '523010', '523011', '522745'))
+AND nat_pes.consumacaoenum = 'CONSUMADO'
+AND ope.tipopessoaenum = 'FISICA' 
+AND qcap.nome = 'VÍTIMA'
+AND oco_a.tipoestabelecimento_nome = 'PRESÍDIO'
+GROUP BY
+  cid.nome, oc.id, oc.datafato
+ORDER BY
+  municipio_nome, id_rai, oc.datafato
+'''	
+
 queries = [
     ("Homicídio", query_homicidio),
     ("Feminicídio", query_feminicidio),
@@ -617,7 +706,8 @@ queries = [
     ("Homicídio Comparativo por Dia", query_homicidios_comparativo_dia),
     ("Homicídio Comparativo por Dia Regiões", query_homicidios_comparativo_regioes_dia),
     ("Homicídio Comparativo por Mes Regiões", query_homicidios_comparativo_regioes_mes),
-    ("Homicídio Comparativo por Semana Regiões", query_homicidios_comparativo_regioes_semana)
+    ("Homicídio Comparativo por Semana Regiões", query_homicidios_comparativo_regioes_semana),
+    ("Homicídio Presídios", query_homicidios_presidios)
 ]
 resultados = {}
 tempos_execucao = {}
@@ -625,7 +715,7 @@ tempos_execucao = {}
 for nome, query in tqdm(queries, desc="Executando consultas"):
     start = time.time()
     cursor.execute(query)
-    if nome in ["Homicídio Município", "Homicídio Ultimos 2 Anos","Homicídio Todos os Anos","Homicídio Regiões","Homicídio Comparativo por Dia","Homicídio Comparativo por Dia Regiões","Homicídio Comparativo por Mes Regiões","Homicídio Comparativo por Semana Regiões"]:
+    if nome in ["Homicídio Município", "Homicídio Ultimos 2 Anos","Homicídio Todos os Anos","Homicídio Regiões","Homicídio Comparativo por Dia","Homicídio Comparativo por Dia Regiões","Homicídio Comparativo por Mes Regiões","Homicídio Comparativo por Semana Regiões","Homicídio Presídios"]:
         columns = [str(col[0]) for col in cursor.description]
         rows = [list(row) for row in cursor.fetchall()]
         resultados[nome] = (columns, rows)
@@ -705,25 +795,41 @@ pdf.cell(0, linha_h, 'Obs.: No número de Homicídios estão contabilizados os F
 kpi_x = caixa_x + caixa_w + 10
 kpi_y = caixa_y  # alinhado com a caixa
 pdf.set_xy(kpi_x, kpi_y)
+
+#titulo kpi homicidios em dia
 pdf.set_font('Arial', '', 12)
-pdf.set_text_color(100, 100, 100)
+pdf.set_text_color(100, 100, 100) 
 pdf.cell(0, 8, f'Homicídios em: {hoje.strftime("%d/%m/%Y")}', ln=1)
 
+#valor kpi homicidios em dia
 pdf.set_font('Arial', 'B', 28)
 pdf.set_text_color(30, 80, 160)
 pdf.set_x(kpi_x)
 pdf.cell(0, 15, str(homicidios_hoje), ln=1, align='C')
 
+#rodape kpi homicidios em dia
+pdf.set_font('Arial', 'I', 8)
+pdf.set_text_color(0, 0, 0)
+pdf.set_x(kpi_x)
+pdf.cell(0, 8, f'Até {hoje.strftime("%d/%m/%Y %H:%M:%S")}', ln=1, align='L')
+
+#titulo kpi homicidios em mes
 pdf.set_font('Arial', '', 12)
 pdf.set_text_color(100, 100, 100)
 pdf.set_x(kpi_x)
 pdf.cell(0, 8, f'Homicídios em mês: {mes_atual}', ln=1)
 
+#valor kpi homicidios em mes
 pdf.set_font('Arial', 'B', 28)
 pdf.set_text_color(30, 80, 160)
 pdf.set_x(kpi_x)
 pdf.cell(0, 15, str(homicidios_mes), ln=1, align='C')
 
+#rodape kpi homicidios em mes
+pdf.set_font('Arial', 'I', 8) 
+pdf.set_text_color(0, 0, 0)
+pdf.set_x(kpi_x)
+pdf.cell(0, 8, f'Até {hoje.strftime("%d/%m/%Y %H:%M:%S")}', ln=1, align='L')
 # ------------------------------------------------- TABELA DE HOMICÍDIOS POR MUNICÍPIO DIÁRIO-------------------------------------------------
 # Gera a tabela de homicídios por município
 
@@ -803,11 +909,25 @@ plt.ylabel('Homicídios')
 plt.yticks([])
 plt.xlabel('')
 plt.tight_layout()
-plt.savefig('grafico_homicidio_2anos.png', dpi=150, bbox_inches='tight')
+
+# Salva o gráfico com tratamento de erro
+try:
+    plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidio_2anos.png'), dpi=150, bbox_inches='tight')
+except Exception as e:
+    print(f"Erro ao salvar gráfico: {e}")
+    # Tenta salvar com configurações mais básicas
+    try:
+        plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidio_2anos.png'), format='png', dpi=100)
+    except Exception as e2:
+        print(f"Erro ao salvar com configurações básicas: {e2}")
+        # Cria um gráfico simples como fallback
+        plt.figure(figsize=(10, 6))
+        plt.text(0.5, 0.5, 'Gráfico não disponível', ha='center', va='center', transform=plt.gca().transAxes)
+        plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidio_2anos.png'), format='png', dpi=100)
 plt.close()
 
 # Adiciona o DataFrame ao PDF
-pdf.image('grafico_homicidio_2anos.png', x=5, w=200)
+pdf.image(os.path.join(relatorio_dir, 'grafico_homicidio_2anos.png'), x=5, w=200)
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 
@@ -984,11 +1104,23 @@ if not df_dia.empty:
     plt.yticks([])
     plt.tight_layout()
     plt.xticks([xi + bar_width/2 for xi in x], list(df_pivot.index), rotation=45)
-    plt.savefig('grafico_homicidios_dia.png', dpi=150, bbox_inches='tight')
+    
+    # Salva o gráfico com tratamento de erro
+    try:
+        plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_dia.png'), dpi=150, bbox_inches='tight')
+    except Exception as e:
+        print(f"Erro ao salvar gráfico: {e}")
+        try:
+            plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_dia.png'), format='png', dpi=100)
+        except Exception as e2:
+            print(f"Erro ao salvar com configurações básicas: {e2}")
+            plt.figure(figsize=(10, 6))
+            plt.text(0.5, 0.5, 'Gráfico não disponível', ha='center', va='center', transform=plt.gca().transAxes)
+            plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_dia.png'), format='png', dpi=100)
     plt.close()
 
 # Adiciona o DataFrame ao PDF 
-pdf.image('grafico_homicidios_dia.png', x=5, w=200)
+pdf.image(os.path.join(relatorio_dir, 'grafico_homicidios_dia.png'), x=5, w=200)
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 
@@ -1080,11 +1212,22 @@ if not df_comparativo_dia.empty:
     
     plt.xticks([xi + bar_width * (len(regioes)/2 - 0.5) for xi in x], list(df_pivot.index), rotation=45)
 
-    plt.savefig('grafico_homicidios_dia_regiao.png', dpi=150, bbox_inches='tight')
+    # Salva o gráfico com tratamento de erro
+    try:
+        plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_dia_regiao.png'), dpi=150, bbox_inches='tight')
+    except Exception as e:
+        print(f"Erro ao salvar gráfico: {e}")
+        try:
+            plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_dia_regiao.png'), format='png', dpi=100)
+        except Exception as e2:
+            print(f"Erro ao salvar com configurações básicas: {e2}")
+            plt.figure(figsize=(10, 6))
+            plt.text(0.5, 0.5, 'Gráfico não disponível', ha='center', va='center', transform=plt.gca().transAxes)
+            plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_dia_regiao.png'), format='png', dpi=100)
     plt.close()
 
 # Adiciona o DataFrame ao PDF
-pdf.image('grafico_homicidios_dia_regiao.png', x=5, w=200)
+pdf.image(os.path.join(relatorio_dir, 'grafico_homicidios_dia_regiao.png'), x=5, w=200)
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 
@@ -1176,11 +1319,23 @@ if not df_comparativo_mes.empty:
     plt.tight_layout()
     plt.xlabel('')
     plt.xticks(rotation=0)     
-    plt.savefig('grafico_homicidios_mes_regiao.png', dpi=150, bbox_inches='tight')
+    
+    # Salva o gráfico com tratamento de erro
+    try:
+        plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_mes_regiao.png'), dpi=150, bbox_inches='tight')
+    except Exception as e:
+        print(f"Erro ao salvar gráfico: {e}")
+        try:
+            plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_mes_regiao.png'), format='png', dpi=100)
+        except Exception as e2:
+            print(f"Erro ao salvar com configurações básicas: {e2}")
+            plt.figure(figsize=(10, 6))
+            plt.text(0.5, 0.5, 'Gráfico não disponível', ha='center', va='center', transform=plt.gca().transAxes)
+            plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_mes_regiao.png'), format='png', dpi=100)
     plt.close()
 
 # Adiciona o DataFrame ao PDF
-pdf.image('grafico_homicidios_mes_regiao.png', x=5, w=200)
+pdf.image(os.path.join(relatorio_dir, 'grafico_homicidios_mes_regiao.png'), x=5, w=200)
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 
@@ -1289,19 +1444,96 @@ if not df_comparativo_semana.empty:
             ax.text(total + 1, i, f'{int(total)}', ha='left', va='center', fontsize=8)
     
     plt.legend(title='REGIÃO', bbox_to_anchor=(1.00, 1), loc='upper left', fontsize=8, title_fontsize=9)
-    plt.ylabel('Dias da Semana')
+    #plt.ylabel('Dias da Semana')
     # Configura os labels do eixo Y para mostrar os dias da semana
     plt.yticks(range(len(df_pivot_semana.index)), df_pivot_semana.index, fontsize=9)
     plt.tight_layout()
     plt.xticks([]) 
-    plt.savefig('grafico_homicidios_semana_regiao.png', dpi=150, bbox_inches='tight')
+    
+    # Salva o gráfico com tratamento de erro
+    try:
+        plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_semana_regiao.png'), dpi=150, bbox_inches='tight')
+    except Exception as e:
+        print(f"Erro ao salvar gráfico: {e}")
+        try:
+            plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_semana_regiao.png'), format='png', dpi=100)
+        except Exception as e2:
+            print(f"Erro ao salvar com configurações básicas: {e2}")
+            plt.figure(figsize=(10, 6))
+            plt.text(0.5, 0.5, 'Gráfico não disponível', ha='center', va='center', transform=plt.gca().transAxes)
+            plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_semana_regiao.png'), format='png', dpi=100)
     plt.close()
 
 # Adiciona o DataFrame ao PDF
-pdf.image('grafico_homicidios_semana_regiao.png', x=5, w=200)
+pdf.image(os.path.join(relatorio_dir, 'grafico_homicidios_semana_regiao.png'), x=5, w=200)
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 
+# ------------------------------------------------- TABELA DE HOMICÍDIOS PRESIDIOS -------------------------------------------------
+# Gera tabela com dados do gráfico comparativo de homicídios por mês por região
+columns_tabela_presidios, rows_tabela_presidios = resultados["Homicídio Presídios"]
+
+df_tabela_presidios = pd.DataFrame(rows_tabela_presidios, columns=columns_tabela_presidios)
+
+pdf.ln(3)
+
+# Título da tabela
+pdf.set_font('Arial', 'B', 12)
+pdf.set_text_color(0, 0, 0)
+titulo_tabela = f'Homicídios - Presídios'
+pdf.cell(0, 10, titulo_tabela, ln=1, align='L')
+
+# Cria a tabela com os dados
+if not df_tabela_presidios.empty:
+    
+    # Agrupa por município e soma os totais
+    df_agrupado = df_tabela_presidios.groupby('MUNICIPIO_NOME')['TOTAL'].sum().reset_index()
+    
+    # Cria uma tabela simples com município e total
+    df_tabela_presidios = df_agrupado.set_index('MUNICIPIO_NOME')
+    
+    # Adiciona linha de totais
+    total_geral = df_tabela_presidios['TOTAL'].sum()
+    
+    # Configurações da tabela - Ajustadas para A4
+    largura_total = 190  # Largura disponível na página A4
+    largura_municipio = 120  # Largura da coluna município 
+    largura_total_valor = 70  # Largura da coluna total
+    
+    row_height = 7
+    header_height = 8 
+
+    # Cabeçalho da tabela
+    pdf.set_font('Arial', 'B', 8)
+    pdf.set_fill_color(230, 230, 230)
+    pdf.set_draw_color(0, 0, 0)
+    pdf.set_text_color(0, 0, 0)
+    
+
+    # Cabeçalho da tabela
+    pdf.cell(largura_municipio, header_height, 'Município', 1, 0, 'C', fill=True)
+    pdf.cell(largura_total_valor, header_height, 'Total', 1, 0, 'C', fill=True)
+    pdf.ln()
+
+    # Linhas de dados
+    pdf.set_font('Arial', '', 7)
+    for municipio, row in df_tabela_presidios.iterrows():
+        # Nome do município
+        pdf.cell(largura_municipio, row_height, str(municipio), 1, 0, 'L')
+        
+        # Valor total
+        valor = row['TOTAL']
+        pdf.cell(largura_total_valor, row_height, str(int(valor)), 1, 0, 'C')
+        pdf.ln()
+    
+    # Linha de total geral
+    pdf.set_font('Arial', 'B', 7)
+    pdf.cell(largura_municipio, row_height, 'TOTAL GERAL', 1, 0, 'C', fill=True)
+    pdf.cell(largura_total_valor, row_height, str(int(total_geral)), 1, 0, 'C', fill=True)
+    pdf.ln()
+
+pdf.set_font('Arial', 'I', 9)   
+pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 # ------------------------------------------------- SALVANDO O PDF -------------------------------------------------
 
 # --- ATRIBUIÇÃO DOS TEMPOS DE EXECUÇÃO PARA O RODAPÉ ---
@@ -1315,7 +1547,8 @@ tempo_execucao_resumo = (
     f'Homicídio Comparativo por Dia: {tempos_execucao["Homicídio Comparativo por Dia"]:.2f} | '
     f'Homicídio Comparativo por Dia Regiões: {tempos_execucao["Homicídio Comparativo por Dia Regiões"]:.2f} | '
     f'Homicídio Comparativo por Mes Regiões: {tempos_execucao["Homicídio Comparativo por Mes Regiões"]:.2f} | '
-    f'Homicídio Comparativo por Semana Regiões: {tempos_execucao["Homicídio Comparativo por Semana Regiões"]:.2f} '
+    f'Homicídio Comparativo por Semana Regiões: {tempos_execucao["Homicídio Comparativo por Semana Regiões"]:.2f} | '
+    f'Homicídio Presídios: {tempos_execucao["Homicídio Presídios"]:.2f} '
 )
 pdf.set_font('Arial', '', 6)
 pdf.cell(0, 8, tempo_execucao_resumo, ln=1, align='L')
