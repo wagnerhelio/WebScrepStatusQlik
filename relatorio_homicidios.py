@@ -748,6 +748,118 @@ GROUP BY NVL(cid.nome, 'NÃO INFORMADO')
 ORDER BY 7 DESC
 FETCH FIRST 20 ROWS ONLY
 '''
+
+query_homicidios_comparativo_risp = '''
+SELECT
+ris.nome AS risp,
+COUNT(DISTINCT CASE WHEN oc.datafato >= TRUNC(ADD_MONTHS(SYSDATE, -12), 'MM') AND oc.datafato <  TRUNC(ADD_MONTHS(SYSDATE, -11), 'MM') THEN pes.id END) AS mes_anterior_fechado,
+COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN ADD_MONTHS(TRUNC(SYSDATE - 1, 'MM'), -12) AND ADD_MONTHS(TRUNC(SYSDATE - 1 ), -12) THEN pes.id END) AS periodo_ano_anterior,
+COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN TRUNC(SYSDATE - 1 , 'MM') AND TRUNC(SYSDATE -1 )THEN pes.id END) AS periodo_ano_atual,
+ROUND((COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN TRUNC(SYSDATE - 1 , 'MM') AND TRUNC(SYSDATE - 1 ) THEN pes.id END) - COUNT(DISTINCT CASE  WHEN oc.datafato BETWEEN ADD_MONTHS(TRUNC(SYSDATE - 1 , 'MM'), -12) AND ADD_MONTHS(TRUNC(SYSDATE - 1 ), -12) THEN pes.id END)) * 100.0 / NULLIF(COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN ADD_MONTHS(TRUNC(SYSDATE - 1 , 'MM'), -12) AND ADD_MONTHS(TRUNC(SYSDATE - 1 ), -12) THEN pes.id END), 0), 2) AS variacao_percentual,
+COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN TRUNC(ADD_MONTHS(SYSDATE, -12), 'YYYY') AND ADD_MONTHS(TRUNC(SYSDATE), -12) THEN pes.id END) AS acumulado_ano_anterior,
+COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN TRUNC(SYSDATE - 1 , 'YYYY') AND TRUNC(SYSDATE - 1 ) THEN pes.id END) AS acumulado_ano_atual,
+ROUND(( COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN TRUNC(SYSDATE - 1 , 'YYYY') AND TRUNC(SYSDATE - 1 ) THEN pes.id END) - COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN TRUNC(ADD_MONTHS(SYSDATE - 1 , -12), 'YYYY') AND ADD_MONTHS(TRUNC(SYSDATE - 1 ), -12) THEN pes.id END)) * 100.0 / NULLIF(COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN TRUNC(ADD_MONTHS(SYSDATE - 1 , -12), 'YYYY') AND ADD_MONTHS(TRUNC(SYSDATE - 1), -12)THEN pes.id END), 0), 2) AS variacao_acumulado_percentual,
+SUM(cib.populacao) AS populacao_total
+FROM bu.ocorrencia oc
+LEFT JOIN bu.endereco ende
+INNER JOIN sspj.bairros bai
+      LEFT JOIN (
+        SELECT cod_bairro, LISTAGG(eor.sigla, ', ') AS siglas
+        FROM sicad.circunscricao circ
+        INNER JOIN sicad.estrutura_organizacional_real eor
+          ON eor.cod_estrutura_organizacional = circ.cod_estrutura_organizacional
+        GROUP BY cod_bairro
+      ) area ON area.cod_bairro = bai.bairro
+      LEFT JOIN sspj.aisps ais
+      LEFT JOIN sspj.risps ris ON ris.risp = ais.risp
+ON ais.aisp = bai.aisp
+LEFT JOIN sspj.cidades cid
+     LEFT JOIN sspj.cidades_ibge cib ON cib.codigo_sspj = cid.cidade
+          LEFT JOIN sspj.microrregioes mic
+               LEFT JOIN sspj.mesorregioes mes ON mes.mesorregiao = mic.mesorregiao
+          ON mic.microrregiao = cid.microrregiao
+     ON cid.cidade = bai.cidade
+ON bai.bairro = ende.bairro_id
+ON ende.id = oc.endereco_id
+LEFT JOIN bu.ocorrenciapessoa ope ON oc.id = ope.ocorrencia_id
+LEFT JOIN bu.pessoa pes ON pes.id = ope.pessoa_id
+LEFT JOIN bu.ocorrencia_pessoa_natur opn ON opn.ocorrenciapessoa_id = ope.id
+LEFT JOIN bu.natureza nat_pes ON nat_pes.id = opn.natureza_id
+INNER JOIN user_transacional.e_natureza_spi_tipificada_mview nat_tip_pes ON nat_tip_pes.spi_natureza_id = nat_pes.naturezaid
+LEFT JOIN bu.ocorrencia_pessoa_natur_qual opnq ON opnq.ocorrenciapessoanatureza_id = opn.id
+LEFT JOIN bu.qualificacao qua ON qua.id = opnq.qualificacoes_id
+INNER JOIN spi.qalificacao qa ON qa.codigo_qualificacao = qua.qualificacaoid
+INNER JOIN spi.qualificacao_categorias qcap ON qcap.qualificacao_categoria = qa.qualificacao_categoria
+WHERE ende.estado_sigla = 'GO'
+AND (EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM ADD_MONTHS(SYSDATE, -12)) OR (EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM SYSDATE)AND TRUNC(oc.datafato) <= TRUNC(SYSDATE - 1)))
+AND oc.statusocorrencia = 'OCORRENCIA'
+AND (UPPER(nat_tip_pes.GRUPO) = 'HOMICÍDIO' OR nat_pes.naturezaid IN ('500001', '500002', '500003', '500004', '500005', '500006', '500007', '500011','400711', '400712', '400001', '400002', '501199', '501200', '501201', '501202','501203', '501204', '501220', '501136', '501137', '501138', '501139', '501140','501141', '501288', '520269', '520323', '521062', '522242', '522243', '522262','523006', '523007', '523008', '523009', '523010', '523011', '522745'))
+AND nat_pes.consumacaoenum = 'CONSUMADO'
+AND ope.tipopessoaenum = 'FISICA'
+AND qcap.nome = 'VÍTIMA'
+AND ris.nome IS NOT NULL
+GROUP BY ris.nome
+ORDER BY 7 DESC
+'''
+
+query_homicidios_comparativo_aisp = '''
+SELECT
+CASE
+    WHEN ais.aisp = 9 THEN '09ª AISP - ÁREA DO CRUZEIRO DO SUL DE AP DE GOIÂNIA'
+    WHEN ais.aisp = 10 THEN '10ª AISP - ÁREA DO JD TIRADENTES DE AP DE GOIÂNIA'
+    WHEN ais.aisp = 11 THEN '11ª AISP - ÁREA DA VILA SANTA LUZIA DE AP DE GOIÂNIA'
+    ELSE ais.nome
+END AS aisp,
+COUNT(DISTINCT CASE WHEN oc.datafato >= TRUNC(ADD_MONTHS(SYSDATE, -12), 'MM') AND oc.datafato <  TRUNC(ADD_MONTHS(SYSDATE, -11), 'MM') THEN pes.id END) AS mes_anterior_fechado,
+COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN ADD_MONTHS(TRUNC(SYSDATE - 1, 'MM'), -12) AND ADD_MONTHS(TRUNC(SYSDATE - 1 ), -12) THEN pes.id END) AS periodo_ano_anterior,
+COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN TRUNC(SYSDATE - 1 , 'MM') AND TRUNC(SYSDATE -1 )THEN pes.id END) AS periodo_ano_atual,
+ROUND((COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN TRUNC(SYSDATE - 1 , 'MM') AND TRUNC(SYSDATE - 1 ) THEN pes.id END) - COUNT(DISTINCT CASE  WHEN oc.datafato BETWEEN ADD_MONTHS(TRUNC(SYSDATE - 1 , 'MM'), -12) AND ADD_MONTHS(TRUNC(SYSDATE - 1 ), -12) THEN pes.id END)) * 100.0 / NULLIF(COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN ADD_MONTHS(TRUNC(SYSDATE - 1 , 'MM'), -12) AND ADD_MONTHS(TRUNC(SYSDATE - 1 ), -12) THEN pes.id END), 0), 2) AS variacao_percentual,
+COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN TRUNC(ADD_MONTHS(SYSDATE, -12), 'YYYY') AND ADD_MONTHS(TRUNC(SYSDATE), -12) THEN pes.id END) AS acumulado_ano_anterior,
+COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN TRUNC(SYSDATE - 1 , 'YYYY') AND TRUNC(SYSDATE - 1 ) THEN pes.id END) AS acumulado_ano_atual,
+ROUND(( COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN TRUNC(SYSDATE - 1 , 'YYYY') AND TRUNC(SYSDATE - 1 ) THEN pes.id END) - COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN TRUNC(ADD_MONTHS(SYSDATE - 1 , -12), 'YYYY') AND ADD_MONTHS(TRUNC(SYSDATE - 1 ), -12) THEN pes.id END)) * 100.0 / NULLIF(COUNT(DISTINCT CASE WHEN oc.datafato BETWEEN TRUNC(ADD_MONTHS(SYSDATE - 1 , -12), 'YYYY') AND ADD_MONTHS(TRUNC(SYSDATE - 1), -12)THEN pes.id END), 0), 2) AS variacao_acumulado_percentual,
+SUM(cib.populacao) AS populacao_total
+FROM bu.ocorrencia oc
+LEFT JOIN bu.endereco ende
+INNER JOIN sspj.bairros bai
+      LEFT JOIN (
+        SELECT cod_bairro, LISTAGG(eor.sigla, ', ') AS siglas
+        FROM sicad.circunscricao circ
+        INNER JOIN sicad.estrutura_organizacional_real eor
+          ON eor.cod_estrutura_organizacional = circ.cod_estrutura_organizacional
+        GROUP BY cod_bairro
+      ) area ON area.cod_bairro = bai.bairro
+      LEFT JOIN sspj.aisps ais
+      LEFT JOIN sspj.risps ris ON ris.risp = ais.risp
+ON ais.aisp = bai.aisp
+LEFT JOIN sspj.cidades cid
+     LEFT JOIN sspj.cidades_ibge cib ON cib.codigo_sspj = cid.cidade
+          LEFT JOIN sspj.microrregioes mic
+               LEFT JOIN sspj.mesorregioes mes ON mes.mesorregiao = mic.mesorregiao
+          ON mic.microrregiao = cid.microrregiao
+     ON cid.cidade = bai.cidade
+ON bai.bairro = ende.bairro_id
+ON ende.id = oc.endereco_id
+LEFT JOIN bu.ocorrenciapessoa ope ON oc.id = ope.ocorrencia_id
+LEFT JOIN bu.pessoa pes ON pes.id = ope.pessoa_id
+LEFT JOIN bu.ocorrencia_pessoa_natur opn ON opn.ocorrenciapessoa_id = ope.id
+LEFT JOIN bu.natureza nat_pes ON nat_pes.id = opn.natureza_id
+INNER JOIN user_transacional.e_natureza_spi_tipificada_mview nat_tip_pes ON nat_tip_pes.spi_natureza_id = nat_pes.naturezaid
+LEFT JOIN bu.ocorrencia_pessoa_natur_qual opnq ON opnq.ocorrenciapessoanatureza_id = opn.id
+LEFT JOIN bu.qualificacao qua ON qua.id = opnq.qualificacoes_id
+INNER JOIN spi.qalificacao qa ON qa.codigo_qualificacao = qua.qualificacaoid
+INNER JOIN spi.qualificacao_categorias qcap ON qcap.qualificacao_categoria = qa.qualificacao_categoria
+WHERE ende.estado_sigla = 'GO'
+AND (EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM ADD_MONTHS(SYSDATE, -12)) OR (EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM SYSDATE)AND TRUNC(oc.datafato) <= TRUNC(SYSDATE - 1)))
+AND oc.statusocorrencia = 'OCORRENCIA'
+AND (UPPER(nat_tip_pes.GRUPO) = 'HOMICÍDIO' OR nat_pes.naturezaid IN ('500001', '500002', '500003', '500004', '500005', '500006', '500007', '500011','400711', '400712', '400001', '400002', '501199', '501200', '501201', '501202','501203', '501204', '501220', '501136', '501137', '501138', '501139', '501140','501141', '501288', '520269', '520323', '521062', '522242', '522243', '522262','523006', '523007', '523008', '523009', '523010', '523011', '522745'))
+AND nat_pes.consumacaoenum = 'CONSUMADO'
+AND ope.tipopessoaenum = 'FISICA'
+AND qcap.nome = 'VÍTIMA'
+AND ais.nome IS NOT NULL
+GROUP BY ais.aisp,ais.nome
+ORDER BY 7 DESC
+'''
+
 queries = [
     ("Homicídios", query_homicidios),
     ("Feminicídios", query_feminicidios),
@@ -760,7 +872,9 @@ queries = [
     ("Homicídios Comparativo por Mes por Regiões", query_homicidios_comparativo_regioes_mes),
     ("Homicídios Comparativo por Semana por Regiões", query_homicidios_comparativo_regioes_semana),
     ("Homicídios em Presídios", query_homicidios_em_presidios),
-    ("Homicídios Comparativo por Município Top 20", query_homicidios_comparativo_municipios_top_20)
+    ("Homicídios Comparativo por Município Top 20", query_homicidios_comparativo_municipios_top_20),
+    ("Homicídios Comparativo por Risp", query_homicidios_comparativo_risp),
+    ("Homicídios Comparativo por Aisp", query_homicidios_comparativo_aisp)
 ]
 resultados = {}
 tempos_execucao = {}
@@ -768,7 +882,7 @@ tempos_execucao = {}
 for nome, query in tqdm(queries, desc="Executando consultas"):
     start = time.time()
     cursor.execute(query)
-    if nome in ["Homicídios Comparativo por Município", "Homicídios Comparativo por 2 Anos","Homicídios Comparativo por Todos os Anos","Homicídios Comparativo por Regiões","Homicídios Comparativo por Dia","Homicídios Comparativo por Dia por Regiões","Homicídios Comparativo por Mes por Regiões","Homicídios Comparativo por Semana por Regiões","Homicídios em Presídios","Homicídios Comparativo por Município Top 20"]:
+    if nome in ["Homicídios Comparativo por Município", "Homicídios Comparativo por 2 Anos","Homicídios Comparativo por Todos os Anos","Homicídios Comparativo por Regiões","Homicídios Comparativo por Dia","Homicídios Comparativo por Dia por Regiões","Homicídios Comparativo por Mes por Regiões","Homicídios Comparativo por Semana por Regiões","Homicídios em Presídios","Homicídios Comparativo por Município Top 20","Homicídios Comparativo por Risp","Homicídios Comparativo por Aisp"]:
         columns = [str(col[0]) for col in cursor.description]
         rows = [list(row) for row in cursor.fetchall()]
         resultados[nome] = (columns, rows)
@@ -776,7 +890,7 @@ for nome, query in tqdm(queries, desc="Executando consultas"):
         resultados[nome] = cursor.fetchone()
     end = time.time()
     tempos_execucao[nome] = end - start
-    print(f"Tempo de execução da consulta {nome}: {tempos_execucao[nome]:.2f} segundos")
+    print(f" Tempo de execução da consulta {nome}: {tempos_execucao[nome]:.2f} segundos")
 
 # Extrai os resultados
 homicidios_hoje, homicidios_ontem, homicidios_mes, homicidios_mes_ontem,homicidios_ano, homicidios_ano_ontem = resultados["Homicídios"]
@@ -805,7 +919,7 @@ pdf.ln(25)
 caixa_x = 10
 caixa_y = pdf.get_y() + 5
 caixa_w = 110
-caixa_h = 50  # altura estimada, pode ser ajustada
+caixa_h = 45  # altura estimada, pode ser ajustada
 
 pdf.set_xy(caixa_x, caixa_y)
 pdf.set_draw_color(0, 100, 0)  # verde escuro
@@ -839,7 +953,7 @@ linha_y += linha_h
 
 # Observação
 pdf.set_xy(caixa_x + margem, linha_y)
-pdf.set_font('Arial', 'I', 9)
+pdf.set_font('Arial', 'I', 8)
 pdf.cell(0, linha_h, 'Obs.: No número de Homicídios estão contabilizados os Feminicídios.', ln=1)
 
 # --- KPIs À DIREITA ---
@@ -888,8 +1002,11 @@ pdf.cell(0, 8, f'Até {hoje.strftime("%d/%m/%Y %H:%M:%S")}', ln=1, align='L')
 
 columns_homicidio_municipio, rows_homicidio_municipio = resultados["Homicídios Comparativo por Município"]  
 
+# Reposiciona o cursor próximo ao topo da caixa
+pdf.set_y(caixa_y + caixa_h + 5)
+
 # Espaço antes da tabela
-pdf.ln(3)
+pdf.ln(0.5)
 
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
@@ -899,7 +1016,7 @@ pdf.cell(0, 10, titulo_municipio, ln=1, align='L')
 
 # Cabeçalho da tabela de município
 col_widths_municipio = [45, 22, 22, 12, 12, 12, 12]  # 7 colunas: municipio_nome, id_rai, datafato, total, F, M, NF
-pdf.set_font('Arial', 'B', 8)
+pdf.set_font('Arial', 'B', 7)
 pdf.set_fill_color(230, 230, 230)
 pdf.set_draw_color(0, 0, 0)  # Preto para borda
 pdf.set_text_color(0, 0, 0)  # Preto para texto
@@ -908,7 +1025,7 @@ for i, col in enumerate(columns_homicidio_municipio):
 pdf.ln()
 
 # Dados da tabela de município
-pdf.set_font('Arial', '', 8)
+pdf.set_font('Arial', '', 7)
 pdf.set_text_color(0, 0, 0)  # Preto para texto
 def safe_str(item):
     return str(item) if item is not None else ''
@@ -935,7 +1052,7 @@ df_homicidio_2anos = pd.DataFrame(linhas_homicidio_2anos, columns=colunas_homici
 # Obtém as colunas de meses diretamente do DataFrame (excluindo ANO_FATO)
 colunas_meses = [col for col in df_homicidio_2anos.columns if col != 'ANO_FATO']
 
-plt.figure(figsize=(10, 3.0))
+plt.figure(figsize=(10, 2.0))
 for _, linha in df_homicidio_2anos.iterrows():
     ano = int(linha['ANO_FATO'])
     
@@ -974,7 +1091,7 @@ except Exception as e:
     except Exception as e2:
         print(f"Erro ao salvar com configurações básicas: {e2}")
         # Cria um gráfico simples como fallback
-        plt.figure(figsize=(10, 6))
+        plt.figure(figsize=(10, 5))
         plt.text(0.5, 0.5, 'Gráfico não disponível', ha='center', va='center', transform=plt.gca().transAxes)
         plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidio_2anos.png'), format='png', dpi=100)
 plt.close()
@@ -982,15 +1099,15 @@ plt.close()
 # Adiciona o DataFrame ao PDF
 pdf.image(os.path.join(relatorio_dir, 'grafico_homicidio_2anos.png'), x=5, w=200)
 pdf.set_font('Arial', 'I', 9)
-pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
+pdf.cell(0, 6, f'Até {ontem_data}', ln=1, align='L')
 
 # ------------------------------------------------- TABELA DE HOMICÍDIOS POR MESES/ANOS  -------------------------------------------------
 # Monta a tabela comparativa de homicídios por mês e ano
 colunas_homicidio_todos_anos, linhas_homicidio_todos_anos = resultados["Homicídios Comparativo por Todos os Anos"]
 df_homicidio_todos_anos = pd.DataFrame(linhas_homicidio_todos_anos, columns=colunas_homicidio_todos_anos)
 
-# Espaço antes da tabela
-pdf.ln(1)
+# Espaço antes da tabela (reduzido)
+pdf.ln(0.5)
 
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
@@ -1000,7 +1117,7 @@ pdf.cell(0, 10, titulo_homicidio_todos_anos, ln=1, align='L')
 
 # Cabeçalho da tabela de meses/anos
 col_widths_homicidio_todos_anos = [18] + [14]*12
-pdf.set_font('Arial', 'B', 8)
+pdf.set_font('Arial', 'B', 7)
 pdf.set_fill_color(230, 230, 230)
 pdf.set_draw_color(0, 0, 0)  
 pdf.set_text_color(0, 0, 0) 
@@ -1009,99 +1126,13 @@ for i, col in enumerate(colunas_homicidio_todos_anos):
 pdf.ln()
 
 # Dados da tabela de meses/anos
-pdf.set_font('Arial', '', 8)
+pdf.set_font('Arial', '', 7)
 pdf.set_text_color(0, 0, 0)  # Preto para texto
 def safe_str_homicidio_todos_anos(item):
     return str(item) if item is not None else ''
 for linha in linhas_homicidio_todos_anos:
     for i, item in enumerate(linha):
         pdf.cell(col_widths_homicidio_todos_anos[i], 6, safe_str_homicidio_todos_anos(item), 1, 0, 'C')
-    pdf.ln()
-
-pdf.set_font('Arial', 'I', 9)
-pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
-
-# ------------------------------------------------- TABELA DE REGIAO - COMPARATIVO MENSAL E ACUMULADO -------------------------------------------------
-columns_regiao_observatorio_atualizada = [
-    "REGIÃO",
-    f"{mes_atual}/{ano_anterior} (fechado)",
-    f"{mes_atual}/{ano_anterior} (até dia {dia_ontem})",
-    f"{mes_atual}/{ano_atual} (até dia {dia_ontem})",
-    "%",
-    f"Acumulado Jan a {mes_atual} {ano_anterior} (até dia {dia_ontem})",
-    f"Acumulado Jan a {mes_atual} {ano_atual} (até dia {dia_ontem})",
-    "%",
-    "Índice por 100K hab."
-]
-
-columns_regiao_observatorio, rows_regiao_observatorio = resultados["Homicídios Comparativo por Regiões"]
-
-# Espaço antes da tabela
-pdf.ln(1)
-
-# Título da tabela
-pdf.set_font('Arial', 'B', 12)
-pdf.set_text_color(0, 0, 0)  # Preto
-titulo_regiao_observatorio = f'Homicídios por regiões - comparativo dia anterior e acumulado :'
-pdf.cell(0, 10, titulo_regiao_observatorio, ln=1, align='L')
-
-col_widths_regiao_observatorio = [25, 20, 20, 20, 15, 24, 24, 15, 25]  # 9 colunas
-# Cabeçalho da tabela de regiões observatório (ajustado para quebra de linha, altura uniforme)
-pdf.set_font('Arial', 'B', 8)
-pdf.set_fill_color(230, 230, 230)
-pdf.set_draw_color(0, 0, 0)  # Preto para borda
-pdf.set_text_color(0, 0, 0)  # Preto para texto
-
-x_inicio = pdf.get_x()
-y_inicio = pdf.get_y()
-altura_linha = 6
-
-# Calcula a altura máxima necessária para cada célula do cabeçalho
-alturas = []
-linhas_texto = []
-for i, col in enumerate(columns_regiao_observatorio_atualizada):
-    largura = col_widths_regiao_observatorio[i]
-    # Divide o texto em linhas para a largura da célula
-    linhas = pdf.multi_cell(largura, altura_linha, str(col).upper(), 0, 'C', split_only=True)
-    linhas_texto.append(linhas)
-    alturas.append(len(linhas) * altura_linha)
-altura_max = max(alturas)
-
-# Desenha cada célula do cabeçalho com altura máxima e texto centralizado
-x = x_inicio
-for i, col in enumerate(columns_regiao_observatorio_atualizada):
-    largura = col_widths_regiao_observatorio[i]
-    linhas = linhas_texto[i]
-    n_linhas = len(linhas)
-    y = y_inicio
-    # Centraliza verticalmente o texto
-    y_texto = y + (altura_max - n_linhas * altura_linha) / 2
-    pdf.rect(x, y, largura, altura_max, 'DF')
-    pdf.set_xy(x, y_texto)
-    for linha in linhas:
-        pdf.cell(largura, altura_linha, linha, 0, 2, 'C')
-    x += largura
-pdf.set_xy(x_inicio, y_inicio + altura_max)
-
-# Dados da tabela de regiões observatório
-pdf.set_font('Arial', '', 8)
-pdf.set_text_color(0, 0, 0)  # Preto para texto
-for row in rows_regiao_observatorio:
-    for i, item in enumerate(row):
-        # Coloração e formatação para as colunas de %
-        if i in [4, 7]:  # Índices das colunas de %
-            valor = float(item) if item is not None else 0
-            texto = f"{valor:.2f}%"
-            if valor > 0:
-                pdf.set_text_color(220, 20, 60)  # vermelho
-            elif valor < 0:
-                pdf.set_text_color(0, 128, 0)    # verde
-            else:
-                pdf.set_text_color(0, 0, 0)      # preto
-            pdf.cell(col_widths_regiao_observatorio[i], 6, texto, 1, 0, 'C')
-            pdf.set_text_color(0, 0, 0)  # reset
-        else:
-            pdf.cell(col_widths_regiao_observatorio[i], 6, safe_str(item), 1, 0, 'C')
     pdf.ln()
 
 pdf.set_font('Arial', 'I', 9)
@@ -1211,6 +1242,92 @@ for ano, row in df_tab.iterrows():
     pdf.cell(col_width_ano, 6, str(ano), 1, 0, 'C')
     for valor in row:
         pdf.cell(col_width, 6, str(int(valor)), 1, 0, 'C')
+    pdf.ln()
+
+pdf.set_font('Arial', 'I', 9)
+pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
+
+# ------------------------------------------------- TABELA DE REGIAO - COMPARATIVO MENSAL E ACUMULADO -------------------------------------------------
+columns_regiao_observatorio_atualizada = [
+    "REGIÃO",
+    f"{mes_atual}/{ano_anterior} (fechado)",
+    f"{mes_atual}/{ano_anterior} (até dia {dia_ontem})",
+    f"{mes_atual}/{ano_atual} (até dia {dia_ontem})",
+    "%",
+    f"Acumulado Jan a {mes_atual} {ano_anterior} (até dia {dia_ontem})",
+    f"Acumulado Jan a {mes_atual} {ano_atual} (até dia {dia_ontem})",
+    "%",
+    "Índice por 100K hab."
+]
+
+columns_regiao_observatorio, rows_regiao_observatorio = resultados["Homicídios Comparativo por Regiões"]
+
+# Espaço antes da tabela
+pdf.ln(1)
+
+# Título da tabela
+pdf.set_font('Arial', 'B', 12)
+pdf.set_text_color(0, 0, 0)  # Preto
+titulo_regiao_observatorio = f'Homicídios por regiões - comparativo dia anterior e acumulado :'
+pdf.cell(0, 10, titulo_regiao_observatorio, ln=1, align='L')
+
+col_widths_regiao_observatorio = [25, 20, 20, 20, 15, 24, 24, 15, 25]  # 9 colunas
+# Cabeçalho da tabela de regiões observatório (ajustado para quebra de linha, altura uniforme)
+pdf.set_font('Arial', 'B', 7)
+pdf.set_fill_color(230, 230, 230)
+pdf.set_draw_color(0, 0, 0)  # Preto para borda
+pdf.set_text_color(0, 0, 0)  # Preto para texto
+
+x_inicio = pdf.get_x()
+y_inicio = pdf.get_y()
+altura_linha = 6
+
+# Calcula a altura máxima necessária para cada célula do cabeçalho
+alturas = []
+linhas_texto = []
+for i, col in enumerate(columns_regiao_observatorio_atualizada):
+    largura = col_widths_regiao_observatorio[i]
+    # Divide o texto em linhas para a largura da célula
+    linhas = pdf.multi_cell(largura, altura_linha, str(col).upper(), 0, 'C', split_only=True)
+    linhas_texto.append(linhas)
+    alturas.append(len(linhas) * altura_linha)
+altura_max = max(alturas)
+
+# Desenha cada célula do cabeçalho com altura máxima e texto centralizado
+x = x_inicio
+for i, col in enumerate(columns_regiao_observatorio_atualizada):
+    largura = col_widths_regiao_observatorio[i]
+    linhas = linhas_texto[i]
+    n_linhas = len(linhas)
+    y = y_inicio
+    # Centraliza verticalmente o texto
+    y_texto = y + (altura_max - n_linhas * altura_linha) / 2
+    pdf.rect(x, y, largura, altura_max, 'DF')
+    pdf.set_xy(x, y_texto)
+    for linha in linhas:
+        pdf.cell(largura, altura_linha, linha, 0, 2, 'C')
+    x += largura
+pdf.set_xy(x_inicio, y_inicio + altura_max)
+
+# Dados da tabela de regiões observatório
+pdf.set_font('Arial', '', 7)
+pdf.set_text_color(0, 0, 0)  # Preto para texto
+for row in rows_regiao_observatorio:
+    for i, item in enumerate(row):
+        # Coloração e formatação para as colunas de %
+        if i in [4, 7]:  # Índices das colunas de %
+            valor = float(item) if item is not None else 0
+            texto = f"{valor:.2f}%"
+            if valor > 0:
+                pdf.set_text_color(220, 20, 60)  # vermelho
+            elif valor < 0:
+                pdf.set_text_color(0, 128, 0)    # verde
+            else:
+                pdf.set_text_color(0, 0, 0)      # preto
+            pdf.cell(col_widths_regiao_observatorio[i], 6, texto, 1, 0, 'C')
+            pdf.set_text_color(0, 0, 0)  # reset
+        else:
+            pdf.cell(col_widths_regiao_observatorio[i], 6, safe_str(item), 1, 0, 'C')
     pdf.ln()
 
 pdf.set_font('Arial', 'I', 9)
@@ -1613,9 +1730,9 @@ pdf.set_text_color(0, 0, 0)  # Preto
 titulo_municipio_top20 = f'Homicídios por municípios - comparativo dia anterior e acumulado :'
 pdf.cell(0, 10, titulo_municipio_top20, ln=1, align='L')
 
-col_widths_municipio_top20 = [36, 20, 20, 20, 14, 26, 26, 14, 18]  # 9 colunas
+col_widths_municipio_top20 = [50, 17, 17, 17, 12, 22, 22, 12, 15]  # 9 colunas
 # Cabeçalho da tabela de regiões observatório (ajustado para quebra de linha, altura uniforme)
-pdf.set_font('Arial', 'B', 8)
+pdf.set_font('Arial', 'B', 7)
 pdf.set_fill_color(230, 230, 230)
 pdf.set_draw_color(0, 0, 0)  # Preto para borda
 pdf.set_text_color(0, 0, 0)  # Preto para texto
@@ -1673,7 +1790,7 @@ pdf.set_xy(pdf.l_margin, y_inicio + altura_max)
 pdf.set_auto_page_break(prev_auto, prev_margin)
 
 # Dados da tabela de regiões observatório
-pdf.set_font('Arial', '', 8)
+pdf.set_font('Arial', '', 7)
 pdf.set_text_color(0, 0, 0)  # Preto para texto
 for row in rows_municipio_top20:
     for i, item in enumerate(row):
@@ -1696,6 +1813,223 @@ for row in rows_municipio_top20:
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 
+# ------------------------------------------------- TABELA DE HOMICÍDIOS POR RISP -------------------------------------------------
+
+columns_risp_atualizada = [
+    "RISP",
+    f"{mes_atual}/{ano_anterior} (fechado)",
+    f"{mes_atual}/{ano_anterior} (até dia {dia_ontem})",
+    f"{mes_atual}/{ano_atual} (até dia {dia_ontem})",
+    "%",
+    f"Acumulado Jan a {mes_atual} {ano_anterior} (até dia {dia_ontem})",
+    f"Acumulado Jan a {mes_atual} {ano_atual} (até dia {dia_ontem})",
+    "%",
+    "Índice por 100K hab."
+]
+
+columns_risp, rows_risp = resultados["Homicídios Comparativo por Risp"]
+
+# Espaço antes da tabela
+pdf.ln(1)
+
+# Título da tabela
+pdf.set_font('Arial', 'B', 12)
+pdf.set_text_color(0, 0, 0)  # Preto
+titulo_risp = f'Homicídios por Risp - comparativo dia anterior e acumulado :'
+pdf.cell(0, 10, titulo_risp, ln=1, align='L')
+
+col_widths_risp = [50, 17, 17, 17, 12, 22, 22, 12, 15]  
+
+# Cabeçalho da tabela de Risp (ajustado para quebra de linha, altura uniforme)
+pdf.set_font('Arial', 'B', 7)
+pdf.set_fill_color(230, 230, 230)
+pdf.set_draw_color(0, 0, 0)  # Preto para borda
+pdf.set_text_color(0, 0, 0)  # Preto para texto
+
+# Garante início na margem esquerda
+pdf.set_x(pdf.l_margin)
+x_inicio = pdf.get_x()
+y_inicio = pdf.get_y()
+altura_linha = 5
+
+# Pré-calcula quebras e alturas
+alturas, linhas_texto = [], []
+for i, col in enumerate(columns_risp_atualizada):
+    largura = col_widths_risp[i]
+    linhas = pdf.multi_cell(largura, altura_linha, str(col).upper(), 0, 'C', split_only=True)
+    linhas_texto.append(linhas)
+    alturas.append(len(linhas) * altura_linha)
+altura_max = max(alturas)
+# --- se não couber, vá para nova página antes de desenhar ---
+if y_inicio + altura_max > pdf.page_break_trigger:
+    pdf.add_page()
+    pdf.set_x(pdf.l_margin)
+    x_inicio = pdf.get_x()
+    y_inicio = pdf.get_y()
+
+# Desenha o cabeçalho sem permitir que o FPDF quebre a página no meio
+prev_auto = pdf.auto_page_break
+prev_margin = getattr(pdf, 'b_margin', pdf.b_margin if hasattr(pdf, 'b_margin') else 0)
+pdf.set_auto_page_break(False)
+
+x = x_inicio
+y = y_inicio
+
+for i, _ in enumerate(columns_risp_atualizada):
+    largura = col_widths_risp[i]
+    linhas = linhas_texto[i]
+    n_linhas = len(linhas)
+
+    y_texto = y + (altura_max - n_linhas * altura_linha) / 2
+    pdf.rect(x, y, largura, altura_max, 'DF')
+
+    # escreve as linhas sem quebrar para a margem (sem ln=2)
+    y_atual = y_texto
+    for linha in linhas:
+        pdf.set_xy(x, y_atual)
+        pdf.cell(largura, altura_linha, linha, 0, 0, 'C')
+        y_atual += altura_linha
+
+    x += largura
+
+# posiciona o cursor logo abaixo do cabeçalho
+pdf.set_xy(pdf.l_margin, y_inicio + altura_max)
+
+# Restaura o autobrake
+pdf.set_auto_page_break(prev_auto, prev_margin)
+
+# Dados da tabela de regiões observatório
+pdf.set_font('Arial', '', 7)
+pdf.set_text_color(0, 0, 0)  # Preto para texto
+for row in rows_risp:
+    for i, item in enumerate(row):
+        # Coloração e formatação para as colunas de %
+        if i in [4, 7]:  # Índices das colunas de %
+            valor = float(item) if item is not None else 0
+            texto = f"{valor:.2f}%"
+            if valor > 0:
+                pdf.set_text_color(220, 20, 60)  # vermelho
+            elif valor < 0:
+                pdf.set_text_color(0, 128, 0)    # verde
+            else:
+                pdf.set_text_color(0, 0, 0)      # preto
+            pdf.cell(col_widths_risp[i], 6, texto, 1, 0, 'C')
+            pdf.set_text_color(0, 0, 0)  # reset
+        else:
+            pdf.cell(col_widths_risp[i], 6, safe_str(item), 1, 0, 'C')
+    pdf.ln()
+
+pdf.set_font('Arial', 'I', 9)
+pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
+
+# ------------------------------------------------- TABELA DE HOMICÍDIOS POR AISP ------------------------------------------------- 
+
+columns_aisp_atualizada = [
+    "AISP",
+    f"{mes_atual}/{ano_anterior} (fechado)",
+    f"{mes_atual}/{ano_anterior} (até dia {dia_ontem})",
+    f"{mes_atual}/{ano_atual} (até dia {dia_ontem})",
+    "%",
+    f"Acumulado Jan a {mes_atual} {ano_anterior} (até dia {dia_ontem})",
+    f"Acumulado Jan a {mes_atual} {ano_atual} (até dia {dia_ontem})",
+    "%",
+    "Índice por 100K hab."
+]
+
+columns_aisp, rows_aisp = resultados["Homicídios Comparativo por Aisp"]
+
+# Espaço antes da tabela
+pdf.ln(1)
+
+# Título da tabela
+pdf.set_font('Arial', 'B', 12)
+pdf.set_text_color(0, 0, 0)  # Preto
+titulo_aisp = f'Homicídios por Aisp - comparativo dia anterior e acumulado :'
+pdf.cell(0, 10, titulo_aisp, ln=1, align='L')
+
+col_widths_aisp = [50, 17, 17, 17, 12, 22, 22, 12, 15]  # 9 colunas
+# Cabeçalho da tabela de Aisp (ajustado para quebra de linha, altura uniforme)
+pdf.set_font('Arial', 'B', 7)
+pdf.set_fill_color(230, 230, 230)
+pdf.set_draw_color(0, 0, 0)  # Preto para borda
+pdf.set_text_color(0, 0, 0)  # Preto para texto
+
+# Garante início na margem esquerda
+pdf.set_x(pdf.l_margin)
+x_inicio = pdf.get_x()
+y_inicio = pdf.get_y()
+altura_linha = 5
+
+# Pré-calcula quebras e alturas
+alturas, linhas_texto = [], []
+for i, col in enumerate(columns_aisp_atualizada):
+    largura = col_widths_aisp[i]
+    linhas = pdf.multi_cell(largura, altura_linha, str(col).upper(), 0, 'C', split_only=True)
+    linhas_texto.append(linhas)
+    alturas.append(len(linhas) * altura_linha)
+altura_max = max(alturas)
+# --- se não couber, vá para nova página antes de desenhar ---
+if y_inicio + altura_max > pdf.page_break_trigger:
+    pdf.add_page()
+    pdf.set_x(pdf.l_margin)
+    x_inicio = pdf.get_x()
+    y_inicio = pdf.get_y()  
+
+# Desenha o cabeçalho sem permitir que o FPDF quebre a página no meio
+prev_auto = pdf.auto_page_break
+prev_margin = getattr(pdf, 'b_margin', pdf.b_margin if hasattr(pdf, 'b_margin') else 0)
+pdf.set_auto_page_break(False)
+
+x = x_inicio
+y = y_inicio
+
+for i, _ in enumerate(columns_aisp_atualizada):
+    largura = col_widths_aisp[i]
+    linhas = linhas_texto[i]
+    n_linhas = len(linhas)
+
+    y_texto = y + (altura_max - n_linhas * altura_linha) / 2
+    pdf.rect(x, y, largura, altura_max, 'DF') 
+
+    # escreve as linhas sem quebrar para a margem (sem ln=2)
+    y_atual = y_texto
+    for linha in linhas:
+        pdf.set_xy(x, y_atual)
+        pdf.cell(largura, altura_linha, linha, 0, 0, 'C')
+        y_atual += altura_linha
+
+    x += largura  
+
+# posiciona o cursor logo abaixo do cabeçalho
+pdf.set_xy(pdf.l_margin, y_inicio + altura_max)
+
+# Restaura o autobrake
+pdf.set_auto_page_break(prev_auto, prev_margin) 
+
+# Dados da tabela de regiões observatório
+pdf.set_font('Arial', '', 7)
+pdf.set_text_color(0, 0, 0)  # Preto para texto
+for row in rows_aisp:
+    for i, item in enumerate(row):
+        # Coloração e formatação para as colunas de %
+        if i in [4, 7]:  # Índices das colunas de %
+            valor = float(item) if item is not None else 0
+            texto = f"{valor:.2f}%" 
+            if valor > 0:
+                pdf.set_text_color(220, 20, 60)  # vermelho
+            elif valor < 0:
+                pdf.set_text_color(0, 128, 0)    # verde
+            else:
+                pdf.set_text_color(0, 0, 0)      # preto  
+            pdf.cell(col_widths_aisp[i], 6, texto, 1, 0, 'C')
+            pdf.set_text_color(0, 0, 0)  # reset
+        else:
+            pdf.cell(col_widths_aisp[i], 6, safe_str(item), 1, 0, 'C')
+    pdf.ln()
+
+pdf.set_font('Arial', 'I', 9)
+pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
+
 # ------------------------------------------------- SALVANDO O PDF -------------------------------------------------
 
 # --- ATRIBUIÇÃO DOS TEMPOS DE EXECUÇÃO PARA O RODAPÉ ---
@@ -1711,7 +2045,9 @@ tempo_execucao_resumo = (
     f'Homicídios Comparativo por Mes por Regiões: {tempos_execucao["Homicídios Comparativo por Mes por Regiões"]:.2f} | '
     f'Homicídios Comparativo por Semana por Regiões: {tempos_execucao["Homicídios Comparativo por Semana por Regiões"]:.2f} | '
     f'Homicídios em Presídios: {tempos_execucao["Homicídios em Presídios"]:.2f} | '
-    f'Homicídios Comparativo por Município Top 20: {tempos_execucao["Homicídios Comparativo por Município Top 20"]:.2f} '
+    f'Homicídios Comparativo por Município Top 20: {tempos_execucao["Homicídios Comparativo por Município Top 20"]:.2f} | '
+    f'Homicídios Comparativo por Risp: {tempos_execucao["Homicídios Comparativo por Risp"]:.2f} | '
+    f'Homicídios Comparativo por Aisp: {tempos_execucao["Homicídios Comparativo por Aisp"]:.2f} '
 )
 pdf.set_font('Arial', '', 6)
 pdf.cell(0, 8, tempo_execucao_resumo, ln=1, align='L')
