@@ -1056,7 +1056,7 @@ df_homicidio_2anos = pd.DataFrame(linhas_homicidio_2anos, columns=colunas_homici
 # Obtém as colunas de meses diretamente do DataFrame (excluindo ANO_FATO)
 colunas_meses = [col for col in df_homicidio_2anos.columns if col != 'ANO_FATO']
 
-plt.figure(figsize=(10, 2.0))
+plt.figure(figsize=(10, 3.0))
 for _, linha in df_homicidio_2anos.iterrows():
     ano = int(linha['ANO_FATO'])
     
@@ -1082,7 +1082,6 @@ plt.legend(title='ANO', bbox_to_anchor=(1.00, 1), loc='upper left', fontsize=8, 
 plt.ylabel('Homicídios')
 plt.yticks([])
 plt.xlabel('')
-plt.tight_layout()
 
 # Salva o gráfico com tratamento de erro
 try:
@@ -1095,7 +1094,7 @@ except Exception as e:
     except Exception as e2:
         print(f"Erro ao salvar com configurações básicas: {e2}")
         # Cria um gráfico simples como fallback
-        plt.figure(figsize=(10, 5))
+        plt.figure(figsize=(10, 3.0))
         plt.text(0.5, 0.5, 'Gráfico não disponível', ha='center', va='center', transform=plt.gca().transAxes)
         plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidio_2anos.png'), format='png', dpi=100)
 plt.close()
@@ -1151,7 +1150,7 @@ pdf.ln(3)
 # Título do grafico
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)  # Preto
-titulo_mes_atual = f'Homicídios - por dia no mês atual: {hoje.strftime("%b/%Y")}'
+titulo_mes_atual = f'Homicídios - Comparativo por dia no mês atual: {hoje.strftime("%b/%Y")}'
 pdf.cell(0, 10, titulo_mes_atual, ln=1, align='L')
 
 # Cria o DataFrame
@@ -1166,7 +1165,7 @@ if not df_dia.empty:
     df_pivot = df_dia.pivot(index='DATA', columns='ANO', values='HOMICIDIOS').fillna(0)
     df_pivot = df_pivot.reindex(sorted(df_pivot.index, key=lambda x: int(x.split('/')[0])))
 
-    plt.figure(figsize=(10, 3.5))
+    plt.figure(figsize=(10, 3.0))
     anos = sorted(df_pivot.columns)
     bar_width = 0.4
     x = range(len(df_pivot.index))
@@ -1190,7 +1189,6 @@ if not df_dia.empty:
     plt.legend(title='ANO', bbox_to_anchor=(1.00, 1), loc='upper left', fontsize=8, title_fontsize=9)
     plt.ylabel('Homicídios')
     plt.yticks([])
-    plt.tight_layout()
     plt.xticks([xi + bar_width/2 for xi in x], list(df_pivot.index), rotation=45)
     
     # Salva o gráfico com tratamento de erro
@@ -1202,7 +1200,7 @@ if not df_dia.empty:
             plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_dia.png'), format='png', dpi=100)
         except Exception as e2:
             print(f"Erro ao salvar com configurações básicas: {e2}")
-            plt.figure(figsize=(10, 6))
+            plt.figure(figsize=(10, 3.0))
             plt.text(0.5, 0.5, 'Gráfico não disponível', ha='center', va='center', transform=plt.gca().transAxes)
             plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_dia.png'), format='png', dpi=100)
     plt.close()
@@ -1212,7 +1210,8 @@ pdf.image(os.path.join(relatorio_dir, 'grafico_homicidios_dia.png'), x=5, w=200)
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 
-# --- TABELA COMPARATIVO POR DIA
+# ------------------------------------------------- TABELA COMPARATIVO POR DIA -------------------------------------------------
+
 
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
@@ -1341,7 +1340,7 @@ pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 # Gera o gráfico comparativo de homicídios por dia por região
 columns_dia_regioes, rows_dia_regioes = resultados["Homicídios Comparativo por Dia por Regiões"]
 
-pdf.ln(3)
+pdf.ln(0.5)
 
 # Título do grafico
 pdf.set_font('Arial', 'B', 12)
@@ -1359,7 +1358,7 @@ if not df_comparativo_dia.empty:
     df_pivot = df_comparativo_dia.pivot(index='DATA', columns='REGIAO_OBSERVATORIO', values='HOMICIDIOS').fillna(0)
     df_pivot = df_pivot.reindex(sorted(df_pivot.index, key=lambda x: int(x.split('/')[0])))
 
-    plt.figure(figsize=(10, 3.5))
+    plt.figure(figsize=(10, 3.0))
     regioes = sorted(df_pivot.columns)
     bar_width = 0.25
     x = range(len(df_pivot.index))
@@ -1382,7 +1381,6 @@ if not df_comparativo_dia.empty:
     plt.ylabel('Homicídios')
     plt.yticks([])
     plt.xlabel('')
-    plt.tight_layout()
     
     plt.xticks([xi + bar_width * (len(regioes)/2 - 0.5) for xi in x], list(df_pivot.index), rotation=45)
 
@@ -1395,7 +1393,7 @@ if not df_comparativo_dia.empty:
             plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_dia_regiao.png'), format='png', dpi=100)
         except Exception as e2:
             print(f"Erro ao salvar com configurações básicas: {e2}")
-            plt.figure(figsize=(10, 6))
+            plt.figure(figsize=(10, 3.0))
             plt.text(0.5, 0.5, 'Gráfico não disponível', ha='center', va='center', transform=plt.gca().transAxes)
             plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_dia_regiao.png'), format='png', dpi=100)
     plt.close()
@@ -1404,7 +1402,6 @@ if not df_comparativo_dia.empty:
 pdf.image(os.path.join(relatorio_dir, 'grafico_homicidios_dia_regiao.png'), x=5, w=200)
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
-
 
 # ------------------------------------------------- GRAFICO COMPARATIVO POR MES POR REGIÃO -------------------------------------------------
 # Gera o gráfico comparativo de homicídios por mês por região
@@ -1431,10 +1428,10 @@ if not df_comparativo_mes.empty:
     # Ordena por número do mês
     df_pivot_mes = df_pivot_mes.reindex(sorted(df_pivot_mes.index, key=lambda x: df_comparativo_mes[df_comparativo_mes['MES'] == x]['NUMERO_MES'].iloc[0]))
 
-    plt.figure(figsize=(12, 6))
+    #plt.figure(figsize=(10, 3.0))
     
     # Cria o gráfico de barras empilhadas
-    ax = df_pivot_mes.plot(kind='bar', stacked=True, width=0.7)
+    ax = df_pivot_mes.plot(kind='bar', stacked=True, width=0.7, figsize=(10, 3.0))  
     
     # Adiciona os valores nas barras
     for c in ax.containers:
@@ -1490,9 +1487,9 @@ if not df_comparativo_mes.empty:
     plt.legend(title='REGIÃO', bbox_to_anchor=(1.00, 1), loc='upper left', fontsize=8, title_fontsize=9)
     plt.ylabel('Homicídios')
     plt.yticks([])
-    plt.tight_layout()
     plt.xlabel('')
-    plt.xticks(rotation=0)     
+    plt.xticks([])  
+    #plt.tight_layout()   
     
     # Salva o gráfico com tratamento de erro
     try:
@@ -1503,7 +1500,7 @@ if not df_comparativo_mes.empty:
             plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_mes_regiao.png'), format='png', dpi=100)
         except Exception as e2:
             print(f"Erro ao salvar com configurações básicas: {e2}")
-            plt.figure(figsize=(10, 6))
+            plt.figure(figsize=(10, 3.0))
             plt.text(0.5, 0.5, 'Gráfico não disponível', ha='center', va='center', transform=plt.gca().transAxes)
             plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_mes_regiao.png'), format='png', dpi=100)
     plt.close()
@@ -1602,10 +1599,10 @@ if not df_comparativo_semana.empty:
     # Inverte a ordem para que domingo apareça no topo do gráfico horizontal
     df_pivot_semana = df_pivot_semana.iloc[::-1]
 
-    plt.figure(figsize=(12, 6))
+    plt.figure(figsize=(10, 3.0))
     
     # Cria o gráfico de barras empilhadas
-    ax = df_pivot_semana.plot(kind='barh', stacked=True, width=0.7)
+    ax = df_pivot_semana.plot(kind='barh', stacked=True, width=0.7, figsize=(10, 3.0))
     
     # Adiciona os valores nas barras
     for c in ax.containers:
@@ -1618,11 +1615,10 @@ if not df_comparativo_semana.empty:
             ax.text(total + 1, i, f'{int(total)}', ha='left', va='center', fontsize=8)
     
     plt.legend(title='REGIÃO', bbox_to_anchor=(1.00, 1), loc='upper left', fontsize=8, title_fontsize=9)
-    #plt.ylabel('Dias da Semana')
-    # Configura os labels do eixo Y para mostrar os dias da semana
+    plt.ylabel('Dias da Semana')
     plt.yticks(range(len(df_pivot_semana.index)), df_pivot_semana.index, fontsize=9)
-    plt.tight_layout()
     plt.xticks([]) 
+    
     
     # Salva o gráfico com tratamento de erro
     try:
@@ -1633,7 +1629,7 @@ if not df_comparativo_semana.empty:
             plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_semana_regiao.png'), format='png', dpi=100)
         except Exception as e2:
             print(f"Erro ao salvar com configurações básicas: {e2}")
-            plt.figure(figsize=(10, 6))
+            plt.figure(figsize=(10, 3.0))
             plt.text(0.5, 0.5, 'Gráfico não disponível', ha='center', va='center', transform=plt.gca().transAxes)
             plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_semana_regiao.png'), format='png', dpi=100)
     plt.close()
@@ -1643,11 +1639,9 @@ pdf.image(os.path.join(relatorio_dir, 'grafico_homicidios_semana_regiao.png'), x
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 
-# ------------------------------------------------- TABELA DE HOMICÍDIOS EM PRESIDIOS -------------------------------------------------
+# ------------------------------------------------- GRAFICO DE HOMICÍDIOS EM PRESIDIOS -------------------------------------------------
 # Gera tabela com dados do gráfico comparativo de homicídios por mês por região
-columns_tabela_presidios, rows_tabela_presidios = resultados["Homicídios em Presídios"]
-
-df_tabela_presidios = pd.DataFrame(rows_tabela_presidios, columns=columns_tabela_presidios)
+columns_grafico_presidios, rows_grafico_presidios = resultados["Homicídios em Presídios"]
 
 pdf.ln(3)
 
@@ -1657,57 +1651,58 @@ pdf.set_text_color(0, 0, 0)
 titulo_tabela = f'Homicídios - Presídios'
 pdf.cell(0, 10, titulo_tabela, ln=1, align='L')
 
+# Cria o DataFrame
+df_grafico_presidios = pd.DataFrame(rows_grafico_presidios, columns=columns_grafico_presidios)
+
 # Cria a tabela com os dados
-if not df_tabela_presidios.empty:
+if not df_grafico_presidios.empty:
     
     # Agrupa por município e soma os totais
-    df_agrupado = df_tabela_presidios.groupby('MUNICIPIO_NOME')['TOTAL'].sum().reset_index()
+    df_agrupado = df_grafico_presidios.groupby('MUNICIPIO_NOME')['TOTAL'].sum().reset_index()
     
-    # Cria uma tabela simples com município e total
-    df_tabela_presidios = df_agrupado.set_index('MUNICIPIO_NOME')
+    # Ordena por total de homicídios em ordem decrescente
+    df_agrupado = df_agrupado.sort_values('TOTAL', ascending=False)
     
-    # Adiciona linha de totais
-    total_geral = df_tabela_presidios['TOTAL'].sum()
+    # Calcula o total geral
+    total_geral = df_agrupado['TOTAL'].sum()
     
-    # Configurações da tabela - Ajustadas para A4
-    largura_total = 190  # Largura disponível na página A4
-    largura_municipio = 120  # Largura da coluna município 
-    largura_total_valor = 70  # Largura da coluna total
+    # Cria o gráfico de barras horizontais
+    plt.figure(figsize=(10, max(3.0, len(df_agrupado) * 0.4)))
     
-    row_height = 7
-    header_height = 8 
+    # Cria o gráfico de barras horizontais
+    bars = plt.barh(df_agrupado['MUNICIPIO_NOME'], df_agrupado['TOTAL'], color='steelblue', alpha=0.8)
+    
+    # Adiciona os valores nas barras
+    for i, bar in enumerate(bars):
+        width = bar.get_width()
+        plt.text(width + 0.01, bar.get_y() + bar.get_height()/2, 
+                f'{int(width)}', ha='left', va='center', fontweight='bold')
+    
+    # Configurações do gráfico
+    plt.xlabel('Homicídios em Presídios', fontweight='bold')
+    plt.ylabel('Município', fontweight='bold')
+    plt.title('HOMICÍDIOS EM PRESÍDIOS - 2025', fontweight='bold', fontsize=14, pad=20)
+    plt.grid(axis='x', alpha=0.3)
+    plt.subplots_adjust(left=0.15, right=0.95, top=0.85, bottom=0.15)
+    
+    # Salva o gráfico com tratamento de erro
+    try:
+        plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_presidios.png'), dpi=150, bbox_inches='tight')
+    except Exception as e:
+        print(f"Erro ao salvar gráfico: {e}")
+        try:
+            plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_presidios.png'), format='png', dpi=100)
+        except Exception as e2:
+            print(f"Erro ao salvar com configurações básicas: {e2}")
+            plt.figure(figsize=(10, 3.0))
+            plt.text(0.5, 0.5, 'Gráfico não disponível', ha='center', va='center', transform=plt.gca().transAxes)
+            plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_presidios.png'), format='png', dpi=100)
+    plt.close()
 
-    # Cabeçalho da tabela
-    pdf.set_font('Arial', 'B', 8)
-    pdf.set_fill_color(230, 230, 230)
-    pdf.set_draw_color(0, 0, 0)
-    pdf.set_text_color(0, 0, 0)
-    
-
-    # Cabeçalho da tabela
-    pdf.cell(largura_municipio, header_height, 'Município', 1, 0, 'C', fill=True)
-    pdf.cell(largura_total_valor, header_height, 'Total', 1, 0, 'C', fill=True)
-    pdf.ln()
-
-    # Linhas de dados
-    pdf.set_font('Arial', '', 7)
-    for municipio, row in df_tabela_presidios.iterrows():
-        # Nome do município
-        pdf.cell(largura_municipio, row_height, str(municipio), 1, 0, 'L')
-        
-        # Valor total
-        valor = row['TOTAL']
-        pdf.cell(largura_total_valor, row_height, str(int(valor)), 1, 0, 'C')
-        pdf.ln()
-    
-    # Linha de total geral
-    pdf.set_font('Arial', 'B', 7)
-    pdf.cell(largura_municipio, row_height, 'TOTAL GERAL', 1, 0, 'C', fill=True)
-    pdf.cell(largura_total_valor, row_height, str(int(total_geral)), 1, 0, 'C', fill=True)
-    pdf.ln()
-
-pdf.set_font('Arial', 'I', 9)   
-pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
+    # Adiciona o gráfico ao PDF
+    pdf.image(os.path.join(relatorio_dir, 'grafico_homicidios_presidios.png'), x=5, w=200)
+    pdf.set_font('Arial', 'I', 9)
+    pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')    
 
 # ------------------------------------------------- TABELA DE HOMICÍDIOS POR MUNICIPIOS TOP 20 -------------------------------------------------
 
