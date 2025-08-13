@@ -805,9 +805,13 @@ ORDER BY 7 DESC
 query_homicidios_comparativo_aisp = '''
 SELECT
 CASE
-    WHEN ais.aisp = 9 THEN '09ª AISP - ÁREA DO CRUZEIRO DO SUL DE AP DE GOIÂNIA'
-    WHEN ais.aisp = 10 THEN '10ª AISP - ÁREA DO JD TIRADENTES DE AP DE GOIÂNIA'
-    WHEN ais.aisp = 11 THEN '11ª AISP - ÁREA DA VILA SANTA LUZIA DE AP DE GOIÂNIA'
+	WHEN ais.aisp = 8 THEN '08ª AISP - ÁREA CENT DE AP GYN'	
+    WHEN ais.aisp = 9 THEN '09ª AISP - ÁREA DO CRUZEIRO DO SUL AP GYN'
+    WHEN ais.aisp = 10 THEN '10ª AISP - ÁREA DO JD TIRADENTES DE AP GYN'
+    WHEN ais.aisp = 11 THEN '11ª AISP - ÁREA DA VL ST LUZIA DE AP DE GYN'
+    WHEN ais.aisp = 37 THEN '37ª AISP - ÁREA DE ST ANT DO DESCOBERTO'
+    WHEN ais.aisp = 43 THEN '43ª AISP - ÁREA DE VALP. DE GOIÁS'
+    WHEN ais.aisp = 48 THEN '48ª AISP - ÁREA DE SL DE MONTES BELOS'
     ELSE ais.nome
 END AS aisp,
 COUNT(DISTINCT CASE WHEN oc.datafato >= TRUNC(ADD_MONTHS(SYSDATE, -12), 'MM') AND oc.datafato <  TRUNC(ADD_MONTHS(SYSDATE, -11), 'MM') THEN pes.id END) AS mes_anterior_fechado,
@@ -1142,7 +1146,7 @@ pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 # Gera o gráfico comparativo de homicídios por dia
 columns_dia, rows_dia = resultados["Homicídios Comparativo por Dia"]
 
-pdf.ln(1)
+pdf.ln(3)
 
 # Título do grafico
 pdf.set_font('Arial', 'B', 12)
@@ -1730,7 +1734,7 @@ pdf.set_text_color(0, 0, 0)  # Preto
 titulo_municipio_top20 = f'Homicídios por municípios - comparativo dia anterior e acumulado :'
 pdf.cell(0, 10, titulo_municipio_top20, ln=1, align='L')
 
-col_widths_municipio_top20 = [50, 17, 17, 17, 12, 22, 22, 12, 15]  # 9 colunas
+col_widths_municipio_top20 = [60, 17, 17, 17, 12, 22, 22, 12, 15]  # 9 colunas
 # Cabeçalho da tabela de regiões observatório (ajustado para quebra de linha, altura uniforme)
 pdf.set_font('Arial', 'B', 7)
 pdf.set_fill_color(230, 230, 230)
@@ -1838,7 +1842,7 @@ pdf.set_text_color(0, 0, 0)  # Preto
 titulo_risp = f'Homicídios por Risp - comparativo dia anterior e acumulado :'
 pdf.cell(0, 10, titulo_risp, ln=1, align='L')
 
-col_widths_risp = [50, 17, 17, 17, 12, 22, 22, 12, 15]  
+col_widths_risp = [60, 17, 17, 17, 12, 22, 22, 12, 15]  
 
 # Cabeçalho da tabela de Risp (ajustado para quebra de linha, altura uniforme)
 pdf.set_font('Arial', 'B', 7)
@@ -1947,7 +1951,7 @@ pdf.set_text_color(0, 0, 0)  # Preto
 titulo_aisp = f'Homicídios por Aisp - comparativo dia anterior e acumulado :'
 pdf.cell(0, 10, titulo_aisp, ln=1, align='L')
 
-col_widths_aisp = [50, 17, 17, 17, 12, 22, 22, 12, 15]  # 9 colunas
+col_widths_aisp = [60, 17, 17, 17, 12, 22, 22, 12, 15]  # 9 colunas
 # Cabeçalho da tabela de Aisp (ajustado para quebra de linha, altura uniforme)
 pdf.set_font('Arial', 'B', 7)
 pdf.set_fill_color(230, 230, 230)
