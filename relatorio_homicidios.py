@@ -14,6 +14,9 @@ from datetime import datetime, timedelta
 load_dotenv()
 matplotlib.use('Agg')  # Configura o backend antes de importar pyplot
 
+def safe_str(item):
+    return str(item) if item is not None else ''
+
 # Cria a pasta img/relatorio_homicidios se não existir
 relatorio_dir = 'img/relatorio_homicidios'
 if not os.path.exists(relatorio_dir):
@@ -178,6 +181,8 @@ SELECT
   NVL(cid.nome, 'NÃO INFORMADO') AS municipio_nome,
   oc.id AS id_rai,
   TO_CHAR(TRUNC(oc.datafato), 'DD/MM/YYYY') AS datafato,
+  TO_CHAR(TRUNC(oc.datafato), 'HH:MM:SS') AS hora_fato,
+  TO_CHAR(TRUNC(oc.dataultimaatualizacao), 'DD/MM/YYYY HH:MM:SS') AS dataultimaatualizacao,
   COUNT(DISTINCT pes.id) AS total,
   COUNT(CASE WHEN pes.sexo_nome = 'FEMININO' THEN 1 END) AS F,
   COUNT(CASE WHEN pes.sexo_nome = 'MASCULINO' THEN 1 END) AS M,
@@ -213,7 +218,7 @@ LEFT JOIN bu.qualificacao qua ON qua.id = opnq.qualificacoes_id
 INNER JOIN spi.qalificacao qa ON qa.codigo_qualificacao = qua.qualificacaoid
 INNER JOIN spi.qualificacao_categorias qcap ON qcap.qualificacao_categoria = qa.qualificacao_categoria
 WHERE ende.estado_sigla = 'GO'
-  AND TRUNC(oc.datafato) = TRUNC(SYSDATE-1)
+  AND TRUNC(oc.datafato) IN(TRUNC(SYSDATE-1),TRUNC(SYSDATE))
   AND oc.statusocorrencia = 'OCORRENCIA'
   AND (
     UPPER(nat_tip_pes.GRUPO) = 'HOMICÍDIO' OR nat_pes.naturezaid IN (
@@ -228,9 +233,9 @@ WHERE ende.estado_sigla = 'GO'
   AND ope.tipopessoaenum = 'FISICA'
   AND qcap.nome = 'VÍTIMA'
 GROUP BY
-  cid.nome, oc.id, oc.datafato
+  cid.nome, oc.id, oc.datafato,oc.dataultimaatualizacao
 ORDER BY
-  municipio_nome, id_rai, oc.datafato
+  municipio_nome, id_rai, oc.datafato,oc.dataultimaatualizacao
 '''
 
 # Query de homicídio comparativo dois anos (gráfico)
@@ -1015,11 +1020,11 @@ pdf.ln(0.5)
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)  # Preto
-titulo_municipio = f'Homicídios - dia anterior por município :'
+titulo_municipio = f'Homicídios - dia anterior e atualpor município :'
 pdf.cell(0, 10, titulo_municipio, ln=1, align='L')
 
 # Cabeçalho da tabela de município
-col_widths_municipio = [45, 22, 22, 12, 12, 12, 12]  # 7 colunas: municipio_nome, id_rai, datafato, total, F, M, NF
+col_widths_municipio = [45, 20, 20, 20, 35, 12, 12, 12, 12]  # 9 colunas: municipio_nome, id_rai, datafato, horafato, dataultimaatualizacao, total, F, M, NF
 pdf.set_font('Arial', 'B', 7)
 pdf.set_fill_color(230, 230, 230)
 pdf.set_draw_color(0, 0, 0)  # Preto para borda
@@ -1031,15 +1036,14 @@ pdf.ln()
 # Dados da tabela de município
 pdf.set_font('Arial', '', 7)
 pdf.set_text_color(0, 0, 0)  # Preto para texto
-def safe_str(item):
-    return str(item) if item is not None else ''
+
 for row in rows_homicidio_municipio:
     for i, item in enumerate(row):
         pdf.cell(col_widths_municipio[i], 6, safe_str(item), 1, 0, 'C')
     pdf.ln()
 
 pdf.set_font('Arial', 'I', 9)
-pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
+pdf.cell(0, 8, f'Até {hoje.strftime("%d/%m/%Y %H:%M:%S")}', ln=1, align='L')
 # ------------------------------------------------- GRAFICO DE HOMICÍDIOS ÚLTIMOS 2 ANOS -------------------------------------------------
 # Gera o gráfico de linhas comparando homicídios mês a mês dos dois últimos anos
 colunas_homicidio_2anos, linhas_homicidio_2anos = resultados["Homicídios Comparativo por 2 Anos"]
