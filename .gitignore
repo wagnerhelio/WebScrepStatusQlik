@@ -11,6 +11,13 @@ venv/
 *.jpg
 *.jpeg
 
+# Permitir estes arquivos específicos serem versionados
+!img/Docker.png
+!img/LogoRelatorio.jpg
+!img/WebScrep_QMC.drawio.png
+!img/WebScrep_QMC.jpg
+!Relatório Técnico/WebScrepStatusQlik__Monitoramento_Automatizado_de_Tarefas_do_Qlik_Sense_com_Envio_de_Alertas_via_WhatsApp.pdf
+
 # (opcional) ignorar pastas específicas
 img/**/*.png
 img/**/*.jpg
