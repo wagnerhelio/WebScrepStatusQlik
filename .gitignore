@@ -4,3 +4,15 @@
 # Ignore pastas de ambiente virtual
 .venv/
 venv/
+
+.pdf
+.jpg
+.png
+.csv
+.xlsx
+.xls
+.docx
+.doc
+.txt
+.json
+.xml
