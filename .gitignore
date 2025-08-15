@@ -1,10 +1,17 @@
-# Ignore o arquivo de variáveis de ambiente
+# Ignore variáveis de ambiente
 .env
 
-# Ignore pastas de ambiente virtual
+# Ambientes virtuais
 .venv/
 venv/
 
-.pdf
-.jpg
-.png
+# Arquivos por extensão
+*.pdf
+*.png
+*.jpg
+*.jpeg
+
+# (opcional) ignorar pastas específicas
+img/**/*.png
+img/**/*.jpg
+task/**/*.pdf
