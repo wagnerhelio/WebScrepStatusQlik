@@ -61,6 +61,15 @@ TASKS_DIR = os.getenv("TASKS_DIR")
 if not TASKS_DIR:
     TASKS_DIR = "task" if (os.path.isdir("task") and not os.path.isdir("tasks")) else "tasks"
 
+def _normalize_domain_user(value: str | None) -> str | None:
+    if value is None:
+        return None
+    # Converte \\ para \ e remove espaços laterais
+    return value.replace("\\\\", "\\").strip()
+
+# Normaliza usuário do Qlik (aceita domini\\usuario ou dominio\usuario)
+usuario = _normalize_domain_user(usuario)
+
 QMCs = [
     {"nome": "estatistica", "url_login": os.getenv("QLIK_QMC_QAP"), "url_tasks": os.getenv("QLIK_TASK_QAP")},
     {"nome": "paineis", "url_login": os.getenv("QLIK_QMC_HUB"), "url_tasks": os.getenv("QLIK_TASK_HUB")}
