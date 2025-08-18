@@ -1696,13 +1696,13 @@ if not df_comparativo_mes.empty:
     
     # Configurações da tabela - Ajustadas para A4
     largura_total = 190  # Largura disponível na página A4
-    largura_regiao = 40  # Largura da coluna região
+    largura_regiao = 25  # Largura da coluna região (alinhado ao padrão das demais tabelas)
     largura_disponivel = largura_total - largura_regiao
     num_meses = len(df_tabela.columns)
     col_width = largura_disponivel / num_meses if num_meses > 0 else largura_disponivel
     
-    row_height = 7
-    header_height = 8
+    row_height = 6
+    header_height = 6
     
     # Cabeçalho da tabela
     pdf.set_font('Arial', 'B', 7)
