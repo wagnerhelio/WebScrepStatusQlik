@@ -984,7 +984,7 @@ pdf = PDFComRodape()
 pdf.add_page()
 
 # --- CABEÇALHO DO PDF (LOGO E TÍTULO INSTITUCIONAL) ---
-pdf.image('img_reports/LogoRelatorio.jpg', x=10, y=8, w=190)
+pdf.image(os.path.join(relatorio_dir, 'LogoRelatorio.jpg'), x=10, y=8, w=190)
 pdf.ln(25)
 
 # --- CONTEXTO: CAIXA DE TEXTO COM INDICADORES ---
@@ -1076,7 +1076,7 @@ kpi_end_y = pdf.get_y()
 
 # ------------------------------------------------- TABELA DE REGIAO - COMPARATIVO MENSAL ATUAL E ACUMULADO -------------------------------------------------
 # Posiciona abaixo do bloco mais baixo (caixa à esquerda ou KPIs à direita)
-y_after_header = max(caixa_y + caixa_h, kpi_end_y) + 2
+y_after_header = max(caixa_y + caixa_h, kpi_end_y) + 0.5    
 pdf.set_xy(pdf.l_margin, y_after_header)
 
 columns_regiao_observatorio_atualizada = [
@@ -1175,7 +1175,7 @@ pdf.ln(1)
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)  # Preto
-titulo_municipio = f'Homicídios - dia anterior e atualpor município :'
+titulo_municipio = f'Homicídios - dia atual por município :'
 pdf.cell(0, 10, titulo_municipio, ln=1, align='L')
 
 # Cabeçalho da tabela de município
@@ -1435,7 +1435,7 @@ pdf.set_text_color(0, 0, 0)  # Preto
 titulo_regiao_observatorio = f'Homicídios por regiões - comparativo dia anterior e acumulado :'
 pdf.cell(0, 10, titulo_regiao_observatorio, ln=1, align='L')
 
-col_widths_regiao_observatorio = [25, 20, 20, 20, 15, 24, 24, 15, 25]  # 9 colunas
+col_widths_regiao_observatorio = [25, 20, 20, 20, 15, 23, 23, 15, 23]  # 9 colunas
 # Cabeçalho da tabela de regiões observatório (ajustado para quebra de linha, altura uniforme)
 pdf.set_font('Arial', 'B', 7)
 pdf.set_fill_color(230, 230, 230)
