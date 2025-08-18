@@ -57,9 +57,23 @@ def _resolve_chromedriver_path() -> str | None:
     return None
 
 # Diretório de saída dos PDFs de status
-TASKS_DIR = os.getenv("TASKS_DIR")
-if not TASKS_DIR:
-    TASKS_DIR = "task" if (os.path.isdir("task") and not os.path.isdir("tasks")) else "tasks"
+def _resolve_reports_dir() -> str:
+    env_dir = os.getenv("TASKS_DIR", "").strip().strip('"').strip("'")
+    if env_dir:
+        return env_dir
+    repo_root = Path(__file__).resolve().parent.parent
+    preferred = repo_root / "crawler_qlik" / "reports_qlik"
+    try:
+        preferred.mkdir(parents=True, exist_ok=True)
+        return str(preferred)
+    except Exception:
+        pass
+    # fallback para pastas antigas
+    if os.path.isdir("task") and not os.path.isdir("tasks"):
+        return "task"
+    return "tasks"
+
+TASKS_DIR = _resolve_reports_dir()
 
 def _normalize_domain_user(value: str | None) -> str | None:
     if value is None:
@@ -131,7 +145,9 @@ def esperar_popover_abrir(icone, max_tentativas=10):
 
 def coletar_status_qmc():
     resumos = {}
-    os.makedirs("errorlogs", exist_ok=True)
+    # resolve errorlogs sempre em crawler_qlik/errorlogs
+    errorlogs_dir = Path(__file__).resolve().parent / "errorlogs"
+    os.makedirs(errorlogs_dir, exist_ok=True)
     os.makedirs(TASKS_DIR, exist_ok=True)
     for qmc in QMCs:
         nome_sufixo = qmc["nome"]
@@ -142,7 +158,7 @@ def coletar_status_qmc():
         options.add_argument("--start-maximized")
         options.add_argument("--incognito")
         options.add_experimental_option("prefs", {
-            "download.default_directory": os.path.abspath("errorlogs"),
+            "download.default_directory": str(errorlogs_dir.resolve()),
         })
         driver_path = _resolve_chromedriver_path()
         if driver_path:
@@ -205,7 +221,7 @@ def coletar_status_qmc():
                             botao_log.click()
                             print(f"📥 Log da tarefa '{nome}' baixado com sucesso.")
                             time.sleep(5)
-                            download_dir = os.path.abspath("errorlogs")
+                            download_dir = str(errorlogs_dir.resolve())
                             tmp_encontrado = None
                             for _ in range(10):
                                 arquivos = [f for f in os.listdir(download_dir) if f.endswith(".tmp")]
@@ -279,7 +295,8 @@ def coletar_status_qmc():
 
 def coletar_status_nprinting():
     resumos = {}
-    os.makedirs("errorlogs", exist_ok=True)
+    errorlogs_dir = Path(__file__).resolve().parent / "errorlogs"
+    os.makedirs(errorlogs_dir, exist_ok=True)
     os.makedirs(TASKS_DIR, exist_ok=True)
     for nprinting in NPRINTINGs:
         nome_sufixo = nprinting["nome"]
@@ -290,7 +307,7 @@ def coletar_status_nprinting():
         options.add_argument("--start-maximized")
         options.add_argument("--incognito")
         options.add_experimental_option("prefs", {
-            "download.default_directory": os.path.abspath("errorlogs"),
+            "download.default_directory": str(errorlogs_dir.resolve()),
         })
         driver_path = _resolve_chromedriver_path()
         if driver_path:
@@ -348,7 +365,7 @@ def coletar_status_nprinting():
                         soup = BeautifulSoup(driver.page_source, "html.parser")
                         log_linhas = soup.select("table#executionsLogTable tbody tr")
                         if log_linhas:
-                            log_path = f"errorlogs/{nome}_log.txt"
+                            log_path = str(errorlogs_dir / f"{nome}_log.txt")
                             with open(log_path, "w", encoding="utf-8") as f:
                                 for linha_log in log_linhas:
                                     tds = linha_log.find_all("td")

@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from evolutionapi.client import EvolutionClient
 from evolutionapi.models.message import TextMessage, MediaMessage
 from glob import glob
-from crawler_qlik.status_task_qlik import (
+from crawler_qlik.status_qlik_task import (
     coletar_status_nprinting,
     coletar_status_qmc,
 )
@@ -20,12 +20,23 @@ evo_destino = os.getenv("EVO_DESTINO")      # Número individual
 
 # Pastas de origem
 pasta_compartilhada = r"\\relatorios\NPrintingServer\Relatorios"
-tasks_dir = os.getenv("TASKS_DIR")
-if not tasks_dir:
-    tasks_dir = "task" if (os.path.isdir("task") and not os.path.isdir("tasks")) else "tasks"
+def _resolve_reports_dir():
+    env_dir = os.getenv("TASKS_DIR", "").strip().strip('"').strip("'")
+    if env_dir:
+        return env_dir
+    repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    preferred = os.path.join(repo_root, "crawler_qlik", "reports_qlik")
+    try:
+        os.makedirs(preferred, exist_ok=True)
+        return preferred
+    except Exception:
+        pass
+    return "task" if (os.path.isdir("task") and not os.path.isdir("tasks")) else "tasks"
+
+tasks_dir = _resolve_reports_dir()
 
 pastas_envio = [
-    "errorlogs",
+    os.path.join(os.path.dirname(__file__), "..", "crawler_qlik", "errorlogs"),
     tasks_dir,
     pasta_compartilhada
 ]
@@ -150,7 +161,7 @@ enviar_pdfs_status()
 
 # Envio dos logs de erro (errorlogs)
 def enviar_logs_erro():
-    pastas_erro = ["errorlogs"]
+    pastas_erro = [os.path.join(os.path.dirname(__file__), "..", "crawler_qlik", "errorlogs")]
     arquivos_erro = []
     for pasta in pastas_erro:
         if not os.path.exists(pasta):

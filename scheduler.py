@@ -11,12 +11,12 @@ python_exec = sys.executable
 # (Funções limpar_pasta_mais_recente e limpar_errorlogs removidas)
 
 def run_statusqlik_qmc():
-    print(f"[{datetime.now()}] Executando crawler_qlik/status_task_qlik.py...")
-    subprocess.run([python_exec, "-m", "crawler_qlik.status_task_qlik"]) 
+    print(f"[{datetime.now()}] Executando crawler_qlik/status_qlik_task.py...")
+    subprocess.run([python_exec, "-m", "crawler_qlik.status_qlik_task"]) 
 
 def run_statusqlik_nprinting():
-    print(f"[{datetime.now()}] Executando crawler_qlik/status_task_qlik.py (NPrinting e QMC)...")
-    subprocess.run([python_exec, "-m", "crawler_qlik.status_task_qlik"]) 
+    print(f"[{datetime.now()}] Executando crawler_qlik/status_qlik_task.py (NPrinting e QMC)...")
+    subprocess.run([python_exec, "-m", "crawler_qlik.status_qlik_task"]) 
 
 def run_send_statusqlik_evolution():
     print(f"[{datetime.now()}] Enviando resumo e arquivos...")

@@ -17,8 +17,8 @@ matplotlib.use('Agg')  # Configura o backend antes de importar pyplot
 def safe_str(item):
     return str(item) if item is not None else ''
 
-# Cria a pasta img/relatorio_homicidios se não existir
-relatorio_dir = 'img/relatorio_homicidios'
+# Cria a pasta relatorios/img_relatorio se não existir
+relatorio_dir = 'relatorios/img_relatorio'
 if not os.path.exists(relatorio_dir):
     os.makedirs(relatorio_dir)
 

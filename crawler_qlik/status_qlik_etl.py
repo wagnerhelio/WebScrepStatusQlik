@@ -11,7 +11,7 @@ import argparse
 # Configuração padrão
 # ======================
 
-# Raiz do projeto = pasta onde está este script
+# Raiz do módulo = pasta do crawler (para usar crawler_qlik/errorlogs)
 REPO_ROOT = Path(__file__).resolve().parent
 
 # Diretórios A PARTIR DA RAIZ DO PROJETO (relativos). Altere se quiser.
