@@ -984,7 +984,7 @@ pdf = PDFComRodape()
 pdf.add_page()
 
 # --- CABEÇALHO DO PDF (LOGO E TÍTULO INSTITUCIONAL) ---
-pdf.image('img/LogoRelatorio.jpg', x=10, y=8, w=190)
+pdf.image('img_reports/LogoRelatorio.jpg', x=10, y=8, w=190)
 pdf.ln(25)
 
 # --- CONTEXTO: CAIXA DE TEXTO COM INDICADORES ---
