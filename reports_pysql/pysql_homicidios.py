@@ -235,7 +235,7 @@ WHERE ende.estado_sigla = 'GO'
 GROUP BY
   cid.nome, oc.id, oc.datafato,oc.dataultimaatualizacao
 ORDER BY
-  municipio_nome, id_rai, oc.datafato,oc.dataultimaatualizacao
+  oc.datafato,id_rai,oc.dataultimaatualizacao
 '''
 
 # Query de homicídio comparativo dois anos (gráfico)
@@ -814,7 +814,7 @@ AND ope.tipopessoaenum = 'FISICA'
 AND qcap.nome = 'VÍTIMA'
 GROUP BY NVL(cid.nome, 'NÃO INFORMADO')
 ORDER BY 7 DESC
-FETCH FIRST 30 ROWS ONLY
+FETCH FIRST 40 ROWS ONLY
 '''
 
 query_homicidios_comparativo_risp = '''
@@ -1076,7 +1076,7 @@ kpi_end_y = pdf.get_y()
 
 # ------------------------------------------------- TABELA DE REGIAO - COMPARATIVO MENSAL ATUAL E ACUMULADO -------------------------------------------------
 # Posiciona abaixo do bloco mais baixo (caixa à esquerda ou KPIs à direita)
-y_after_header = max(caixa_y + caixa_h, kpi_end_y) + 0.5    
+y_after_header = max(caixa_y + caixa_h, kpi_end_y) - 1   
 pdf.set_xy(pdf.l_margin, y_after_header)
 
 columns_regiao_observatorio_atualizada = [
@@ -1093,8 +1093,6 @@ columns_regiao_observatorio_atualizada = [
 
 columns_regiao_observatorio, rows_regiao_observatorio = resultados["Homicídios Comparativo por Regiões dia atual"]
 
-# Espaço antes da tabela
-pdf.ln(1)
 
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
@@ -1215,7 +1213,7 @@ df_homicidio_2anos = pd.DataFrame(linhas_homicidio_2anos, columns=colunas_homici
 # Obtém as colunas de meses diretamente do DataFrame (excluindo ANO_FATO)
 colunas_meses = [col for col in df_homicidio_2anos.columns if col != 'ANO_FATO']
 
-plt.figure(figsize=(10, 3.0))
+plt.figure(figsize=(10, 2.0))
 for _, linha in df_homicidio_2anos.iterrows():
     ano = int(linha['ANO_FATO'])
     
@@ -1432,7 +1430,7 @@ pdf.ln(1)
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)  # Preto
-titulo_regiao_observatorio = f'Homicídios por regiões - comparativo dia anterior e acumulado :'
+titulo_regiao_observatorio = f'Homicídios por regiões comparativo dia anterior e acumulado :'
 pdf.cell(0, 10, titulo_regiao_observatorio, ln=1, align='L')
 
 col_widths_regiao_observatorio = [25, 20, 20, 20, 15, 23, 23, 15, 23]  # 9 colunas
@@ -1509,7 +1507,7 @@ pdf.ln(0.5)
 # Título do grafico
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)
-titulo_mes_regiao = f'Homicídios - por dia no mês atual: {hoje.strftime("%b/%Y")}'
+titulo_mes_regiao = f'Homicídios por dia por Região no mês atual: {hoje.strftime("%b/%Y")}'
 pdf.cell(0, 10, titulo_mes_regiao, ln=1, align='L')
 
 # Cria o DataFrame
@@ -1576,7 +1574,7 @@ pdf.ln(0.5)
 # Título do grafico
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)
-titulo_mes_regiao = f'Homicídios - Mês a mês no ano atual: {hoje.year}'
+titulo_mes_regiao = f'Homicídios - Mês a mês por Região no ano {hoje.year}:'
 pdf.cell(0, 10, titulo_mes_regiao, ln=1, align='L')
 
 # Cria o DataFrame
@@ -1681,7 +1679,7 @@ pdf.ln(0.5)
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)
-titulo_tabela = f'Homicídios - Mês a mês no ano atual: {hoje.year}'
+titulo_tabela = f'Homicídios - Mês a mês por Região no ano {hoje.year}:'
 pdf.cell(0, 10, titulo_tabela, ln=1, align='L')
 
 # Cria a tabela com os dados
@@ -1744,7 +1742,7 @@ pdf.ln(0.5)
 # Título do grafico
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)
-titulo_semana_regiao = f'Homicídios nos dias da semana - {hoje.year} - Acumulado no ano atual'
+titulo_semana_regiao = f'Homicídios - dias da semana por Região no ano {hoje.year}:'    
 pdf.cell(0, 10, titulo_semana_regiao, ln=1, align='L')
 
 # Cria o DataFrame
@@ -1979,6 +1977,8 @@ for row in rows_municipio_top20:
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 
+# Adiciona uma nova página
+pdf.add_page()
 # ------------------------------------------------- TABELA DE HOMICÍDIOS POR RISP -------------------------------------------------
 
 columns_risp_atualizada = [
@@ -2088,6 +2088,8 @@ for row in rows_risp:
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 
+# Adiciona uma nova página
+pdf.add_page()
 # ------------------------------------------------- TABELA DE HOMICÍDIOS POR AISP ------------------------------------------------- 
 
 columns_aisp_atualizada = [
