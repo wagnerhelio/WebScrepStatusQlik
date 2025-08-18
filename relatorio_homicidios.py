@@ -814,7 +814,7 @@ AND ope.tipopessoaenum = 'FISICA'
 AND qcap.nome = 'VÍTIMA'
 GROUP BY NVL(cid.nome, 'NÃO INFORMADO')
 ORDER BY 7 DESC
-FETCH FIRST 20 ROWS ONLY
+FETCH FIRST 30 ROWS ONLY
 '''
 
 query_homicidios_comparativo_risp = '''
@@ -1571,7 +1571,7 @@ pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 # Gera o gráfico comparativo de homicídios por mês por região
 columns_mes_regioes, rows_mes_regioes = resultados["Homicídios Comparativo por Mes por Regiões"]
 
-pdf.ln(3)
+pdf.ln(0.5)
 
 # Título do grafico
 pdf.set_font('Arial', 'B', 12)
@@ -1676,7 +1676,7 @@ pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 
 # ------------------------------------------------- TABELA COMPARATIVO POR MES POR REGIÃO -------------------------------------------------
 # Gera tabela com dados do gráfico comparativo de homicídios por mês por região
-pdf.ln(3)
+pdf.ln(0.5)
 
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
@@ -1739,7 +1739,7 @@ pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 # Gera o gráfico comparativo de homicídios por semana por região
 columns_semana_regioes, rows_semana_regioes = resultados["Homicídios Comparativo por Semana por Regiões"]
 
-pdf.ln(3)
+pdf.ln(0.5)
 
 # Título do grafico
 pdf.set_font('Arial', 'B', 12)
@@ -1807,7 +1807,7 @@ pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 # Gera tabela com dados do gráfico comparativo de homicídios por mês por região
 columns_grafico_presidios, rows_grafico_presidios = resultados["Homicídios em Presídios"]
 
-pdf.ln(3)
+pdf.ln(0.5)
 
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)

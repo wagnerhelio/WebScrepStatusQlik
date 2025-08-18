@@ -7,6 +7,8 @@ venv/
 
 # Arquivos por extensão
 *.pdf
+*.txt
+*.log
 *.png
 *.jpg
 *.jpeg
