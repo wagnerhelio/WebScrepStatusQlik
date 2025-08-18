@@ -17,8 +17,8 @@ matplotlib.use('Agg')  # Configura o backend antes de importar pyplot
 def safe_str(item):
     return str(item) if item is not None else ''
 
-# Cria a pasta relatorios/img_relatorio se não existir
-relatorio_dir = 'relatorios/img_relatorio'
+# Cria a pasta reports_pysql/img_reports se não existir
+relatorio_dir = 'reports_pysql/img_reports'
 if not os.path.exists(relatorio_dir):
     os.makedirs(relatorio_dir)
 
@@ -2219,7 +2219,7 @@ pdf.set_font('Arial', '', 6)
 pdf.cell(0, 8, tempo_execucao_resumo, ln=1, align='L')
 
 # --- Antes de salvar, defina os tempos: ---
-pdf.output('task/relatorio_homicidios.pdf')
+pdf.output('reports_pysql/relatorio_homicidios.pdf')
 
 cursor.close()
 conn.close()
