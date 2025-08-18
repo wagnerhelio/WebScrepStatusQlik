@@ -36,6 +36,26 @@ senha = os.getenv("QLIK_SENHA")
 email = os.getenv("QLIK_EMAIL")
 CAMINHO_CHROMEDRIVER = os.getenv("CHROMEDRIVER")
 
+def _resolve_chromedriver_path() -> str | None:
+    """Resolve o caminho do ChromeDriver com base em variáveis e fallbacks locais."""
+    try:
+        env_path = os.getenv("CHROMEDRIVER", "").strip().strip('"').strip("'")
+        candidates = []
+        if env_path:
+            candidates.append(Path(env_path))
+        repo_root = Path(__file__).resolve().parent.parent
+        candidates.append(repo_root / "chromedriver" / "chromedriver.exe")
+        candidates.append(repo_root / "chromedriver.exe")
+        for p in candidates:
+            try:
+                if p.is_file():
+                    return str(p)
+            except Exception:
+                continue
+    except Exception:
+        pass
+    return None
+
 # Diretório de saída dos PDFs de status
 TASKS_DIR = os.getenv("TASKS_DIR")
 if not TASKS_DIR:
@@ -115,7 +135,12 @@ def coletar_status_qmc():
         options.add_experimental_option("prefs", {
             "download.default_directory": os.path.abspath("errorlogs"),
         })
-        driver = webdriver.Chrome(service=Service(CAMINHO_CHROMEDRIVER), options=options)
+        driver_path = _resolve_chromedriver_path()
+        if driver_path:
+            driver = webdriver.Chrome(service=Service(driver_path), options=options)
+        else:
+            # fallback: deixa o Selenium Manager resolver
+            driver = webdriver.Chrome(options=options)
         try:
             driver.get(url_login)
             time.sleep(2)
@@ -258,7 +283,12 @@ def coletar_status_nprinting():
         options.add_experimental_option("prefs", {
             "download.default_directory": os.path.abspath("errorlogs"),
         })
-        driver = webdriver.Chrome(service=Service(CAMINHO_CHROMEDRIVER), options=options)
+        driver_path = _resolve_chromedriver_path()
+        if driver_path:
+            driver = webdriver.Chrome(service=Service(driver_path), options=options)
+        else:
+            # fallback: deixa o Selenium Manager resolver
+            driver = webdriver.Chrome(options=options)
         try:
             driver.get(url_login)
             wait = WebDriverWait(driver, 10)
