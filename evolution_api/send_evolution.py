@@ -4,8 +4,10 @@ from dotenv import load_dotenv
 from evolutionapi.client import EvolutionClient
 from evolutionapi.models.message import TextMessage, MediaMessage
 from glob import glob
-from statusqlik_nprinting import coletar_status_nprinting
-from statusqlik_qmc import coletar_status_qmc
+from crawler_qlik.status_task_qlik import (
+    coletar_status_nprinting,
+    coletar_status_qmc,
+)
 
 # Carrega variáveis do ambiente
 load_dotenv()
@@ -14,21 +16,26 @@ evo_api_token = os.getenv("EVOLUTION_API_TOKEN")
 evo_instance_id = os.getenv("EVOLUTION_INSTANCE_NAME")
 evo_instance_token = os.getenv("EVOLUTION_INSTANCE_ID")
 evo_grupo = os.getenv("EVO_DESTINO_GRUPO")  # Grupo padrão
+evo_destino = os.getenv("EVO_DESTINO")      # Número individual
 
 # Pastas de origem
 pasta_compartilhada = r"\\relatorios\NPrintingServer\Relatorios"
+tasks_dir = os.getenv("TASKS_DIR")
+if not tasks_dir:
+    tasks_dir = "task" if (os.path.isdir("task") and not os.path.isdir("tasks")) else "tasks"
+
 pastas_envio = [
     "errorlogs",
-    "tasks",
+    tasks_dir,
     pasta_compartilhada
 ]
 
 def get_resumos_concatenados():
     # Ordem desejada: relatorios, estatistica, paineis
     ordem = [
-        ("tasks", "relatorios"),
-        ("tasks", "estatistica"),
-        ("tasks", "paineis"),
+        (tasks_dir, "relatorios"),
+        (tasks_dir, "estatistica"),
+        (tasks_dir, "paineis"),
     ]
     blocos = []
     for pasta, sufixo in ordem:
@@ -44,7 +51,7 @@ def get_resumos_concatenados():
     return "\n\n".join(blocos)
 
 # Inicializa cliente Evolution
-if not all([evo_api_token, evo_instance_id, evo_instance_token, evo_grupo]):
+if not all([evo_api_token, evo_instance_id, evo_instance_token, (evo_grupo or evo_destino)]):
     print("❌ Variáveis de ambiente obrigatórias não definidas. Verifique o .env.")
     exit(1)
 
@@ -56,7 +63,8 @@ evo_grupo = str(evo_grupo)
 api_token = evo_api_token
 instance_id = evo_instance_id
 instance_token = evo_instance_token
-grupo_num = evo_grupo
+grupo_num = str(evo_grupo) if evo_grupo else ""
+destino_num = str(evo_destino) if evo_destino else ""
 
 client = EvolutionClient(
     base_url="http://localhost:8080",
@@ -76,6 +84,28 @@ if 'estatistica' in resumos_qmc:
 if 'paineis' in resumos_qmc:
     blocos.append(resumos_qmc['paineis'])
 resumo_concat = "\n\n".join(blocos)
+
+# Função auxiliar para envio de arquivo (declarada antes do uso)
+def enviar_arquivo_para(destinatario, caminho_completo):
+    nome_arquivo = os.path.basename(caminho_completo)
+    ext = os.path.splitext(nome_arquivo)[1].lower()
+    mimetype = "application/pdf" if ext == ".pdf" else "text/plain"
+
+    media_message = MediaMessage(
+        number=destinatario,
+        mediatype="document",
+        mimetype=mimetype,
+        caption=f"📎 {nome_arquivo}",
+        fileName=nome_arquivo
+    )
+
+    response = client.messages.send_media(
+        instance_id,
+        media_message,
+        instance_token,
+        caminho_completo
+    )
+    print(f"📨 Enviado para {destinatario}: {nome_arquivo} | Resultado: {response}")
 
 for destino in [destino_num, grupo_num]:
     if not destino:
@@ -118,7 +148,7 @@ def enviar_pdfs_status():
 
 enviar_pdfs_status()
 
-# Envio dos logs de erro (errorlogs e errorlogs_nprinting)
+# Envio dos logs de erro (errorlogs)
 def enviar_logs_erro():
     pastas_erro = ["errorlogs"]
     arquivos_erro = []
@@ -169,28 +199,6 @@ def enviar_relatorios_compartilhados():
                 print(f"❌ Erro ao enviar relatório compartilhado {arquivo} para {destino}: {e}")
 
 enviar_relatorios_compartilhados()
-
-# Função auxiliar para envio de arquivo
-def enviar_arquivo_para(destinatario, caminho_completo):
-    nome_arquivo = os.path.basename(caminho_completo)
-    ext = os.path.splitext(nome_arquivo)[1].lower()
-    mimetype = "application/pdf" if ext == ".pdf" else "text/plain"
-
-    media_message = MediaMessage(
-        number=destinatario,
-        mediatype="document",
-        mimetype=mimetype,
-        caption=f"📎 {nome_arquivo}",
-        fileName=nome_arquivo
-    )
-
-    response = client.messages.send_media(
-        instance_id,
-        media_message,
-        instance_token,
-        caminho_completo
-    )
-    print(f"📨 Enviado para {destinatario}: {nome_arquivo} | Resultado: {response}")
 
 # Envio e limpeza das pastas
 for pasta in pastas_envio:

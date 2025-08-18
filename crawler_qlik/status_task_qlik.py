@@ -13,6 +13,7 @@ from selenium.common.exceptions import TimeoutException
 from colorama import init, Fore, Style
 from xhtml2pdf import pisa
 from jinja2 import Environment, FileSystemLoader
+from pathlib import Path
 from selenium.webdriver.remote.webelement import WebElement
 from bs4 import BeautifulSoup
 
@@ -34,6 +35,11 @@ usuario = os.getenv("QLIK_USUARIO")
 senha = os.getenv("QLIK_SENHA")
 email = os.getenv("QLIK_EMAIL")
 CAMINHO_CHROMEDRIVER = os.getenv("CHROMEDRIVER")
+
+# Diretório de saída dos PDFs de status
+TASKS_DIR = os.getenv("TASKS_DIR")
+if not TASKS_DIR:
+    TASKS_DIR = "task" if (os.path.isdir("task") and not os.path.isdir("tasks")) else "tasks"
 
 QMCs = [
     {"nome": "estatistica", "url_login": os.getenv("QLIK_QMC_QAP"), "url_tasks": os.getenv("QLIK_TASK_QAP")},
@@ -97,7 +103,7 @@ def esperar_popover_abrir(icone, max_tentativas=10):
 def coletar_status_qmc():
     resumos = {}
     os.makedirs("errorlogs", exist_ok=True)
-    os.makedirs("tasks", exist_ok=True)
+    os.makedirs(TASKS_DIR, exist_ok=True)
     for qmc in QMCs:
         nome_sufixo = qmc["nome"]
         url_login = qmc["url_login"]
@@ -222,8 +228,9 @@ def coletar_status_qmc():
             resumos[nome_sufixo] = resumo_str
             registros = [tarefa for tarefas in tarefas_por_status.values() for tarefa in tarefas]
             nome_arquivo = f"status_qlik_{nome_sufixo}_{hoje.strftime('%Y-%m-%d')}.pdf"
-            caminho_pdf = os.path.join("tasks", nome_arquivo)
-            env = Environment(loader=FileSystemLoader("."))
+            caminho_pdf = os.path.join(TASKS_DIR, nome_arquivo)
+            templates_dir = Path(__file__).resolve().parent / "teamplate"
+            env = Environment(loader=FileSystemLoader(str(templates_dir)))
             template = env.get_template("template.html")
             html_renderizado = template.render(
                 nome_sufixo=nome_sufixo,
@@ -239,7 +246,7 @@ def coletar_status_qmc():
 def coletar_status_nprinting():
     resumos = {}
     os.makedirs("errorlogs", exist_ok=True)
-    os.makedirs("tasks", exist_ok=True)
+    os.makedirs(TASKS_DIR, exist_ok=True)
     for nprinting in NPRINTINGs:
         nome_sufixo = nprinting["nome"]
         url_login = nprinting["url_login"]
@@ -328,8 +335,9 @@ def coletar_status_nprinting():
             resumos[nome_sufixo] = resumo_str
             registros = [tarefa for tarefas in tarefas_por_status.values() for tarefa in tarefas]
             nome_arquivo = f"status_nprinting_{nome_sufixo}_{hoje.strftime('%Y-%m-%d')}.pdf"
-            caminho_pdf = os.path.join("tasks", nome_arquivo)
-            env = Environment(loader=FileSystemLoader("."))
+            caminho_pdf = os.path.join(TASKS_DIR, nome_arquivo)
+            templates_dir = Path(__file__).resolve().parent / "teamplate"
+            env = Environment(loader=FileSystemLoader(str(templates_dir)))
             template = env.get_template("template_nprinting.html")
             html_renderizado = template.render(
                 nome_sufixo=nome_sufixo,

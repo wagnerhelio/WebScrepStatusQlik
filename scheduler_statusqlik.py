@@ -10,22 +10,22 @@ python_exec = sys.executable
 
 # (Funções limpar_pasta_mais_recente e limpar_errorlogs removidas)
 
-def run_statusqlik():
-    print(f"[{datetime.now()}] Executando statusqlik.py...")
-    subprocess.run([python_exec, "statusqlik.py"])
+def run_statusqlik_qmc():
+    print(f"[{datetime.now()}] Executando crawler_qlik/status_task_qlik.py...")
+    subprocess.run([python_exec, "-m", "crawler_qlik.status_task_qlik"]) 
 
 def run_statusqlik_nprinting():
-    print(f"[{datetime.now()}] Executando statusqlik_nprinting.py...")
-    subprocess.run([python_exec, "statusqlik_nprinting.py"])
+    print(f"[{datetime.now()}] Executando crawler_qlik/status_task_qlik.py (NPrinting e QMC)...")
+    subprocess.run([python_exec, "-m", "crawler_qlik.status_task_qlik"]) 
 
 def run_send_statusqlik_evolution():
     print(f"[{datetime.now()}] Enviando resumo e arquivos...")
     # Limpa as pastas ANTES do envio, mantendo só o mais recente de cada tipo
     # (Funções limpar_pasta_mais_recente e limpar_errorlogs removidas)
-    subprocess.run([python_exec, "send_statusqlik_evolution.py"])
+    subprocess.run([python_exec, "-m", "evolution_api.send_evolution"]) 
 
 # Agendamento
-schedule.every().hour.at(":00").do(run_statusqlik)
+schedule.every().hour.at(":00").do(run_statusqlik_qmc)
 schedule.every().day.at("08:00").do(run_send_statusqlik_evolution)
 
 print("Agendador iniciado. Pressione Ctrl+C para sair.")
