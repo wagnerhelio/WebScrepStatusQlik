@@ -1337,9 +1337,17 @@ pdf.set_font('Arial', '', 7)
 pdf.set_text_color(0, 0, 0)  # Preto para texto
 def safe_str_homicidio_todos_anos(item):
     return str(item) if item is not None else ''
-for linha in linhas_homicidio_todos_anos:
+
+# Adiciona zebragem (alternância de cores de fundo)
+for idx, linha in enumerate(linhas_homicidio_todos_anos):
+    # Alterna a cor de fundo: linhas pares = branco, linhas ímpares = cinza claro
+    if idx % 2 == 0:
+        pdf.set_fill_color(255, 255, 255)  # Branco
+    else:
+        pdf.set_fill_color(240, 240, 245)  # Cinza claro
+    
     for i, item in enumerate(linha):
-        pdf.cell(col_widths_homicidio_todos_anos[i], 6, safe_str_homicidio_todos_anos(item), 1, 0, 'C')
+        pdf.cell(col_widths_homicidio_todos_anos[i], 6, safe_str_homicidio_todos_anos(item), 1, 0, 'C', fill=True)
     pdf.ln()
 
 pdf.set_font('Arial', 'I', 9)
@@ -2040,7 +2048,15 @@ pdf.set_auto_page_break(prev_auto, prev_margin)
 # Dados da tabela de regiões observatório
 pdf.set_font('Arial', '', 7)
 pdf.set_text_color(0, 0, 0)  # Preto para texto
-for row in rows_municipio_top20:
+
+# Adiciona zebragem (alternância de cores de fundo)
+for idx, row in enumerate(rows_municipio_top20):
+    # Alterna a cor de fundo: linhas pares = branco, linhas ímpares = cinza claro
+    if idx % 2 == 0:
+        pdf.set_fill_color(255, 255, 255)  # Branco
+    else:
+        pdf.set_fill_color(240, 240, 245)  # Cinza claro
+    
     for i, item in enumerate(row):
         # Coloração e formatação para as colunas de %
         if i in [4, 7]:  # Índices das colunas de %
@@ -2052,10 +2068,10 @@ for row in rows_municipio_top20:
                 pdf.set_text_color(0, 128, 0)    # verde
             else:
                 pdf.set_text_color(0, 0, 0)      # preto
-            pdf.cell(col_widths_municipio_top20[i], 6, texto, 1, 0, 'C')
+            pdf.cell(col_widths_municipio_top20[i], 6, texto, 1, 0, 'C', fill=True)
             pdf.set_text_color(0, 0, 0)  # reset
         else:
-            pdf.cell(col_widths_municipio_top20[i], 6, safe_str(item), 1, 0, 'C')
+            pdf.cell(col_widths_municipio_top20[i], 6, safe_str(item), 1, 0, 'C', fill=True)
     pdf.ln()
 
 pdf.set_font('Arial', 'I', 9)
@@ -2151,7 +2167,15 @@ pdf.set_auto_page_break(prev_auto, prev_margin)
 # Dados da tabela de regiões observatório
 pdf.set_font('Arial', '', 7)
 pdf.set_text_color(0, 0, 0)  # Preto para texto
-for row in rows_risp:
+
+# Adiciona zebragem (alternância de cores de fundo)
+for idx, row in enumerate(rows_risp):
+    # Alterna a cor de fundo: linhas pares = branco, linhas ímpares = cinza claro
+    if idx % 2 == 0:
+        pdf.set_fill_color(255, 255, 255)  # Branco
+    else:
+        pdf.set_fill_color(240, 240, 245)  # Cinza claro
+    
     for i, item in enumerate(row):
         # Coloração e formatação para as colunas de %
         if i in [4, 7]:  # Índices das colunas de %
@@ -2163,10 +2187,10 @@ for row in rows_risp:
                 pdf.set_text_color(0, 128, 0)    # verde
             else:
                 pdf.set_text_color(0, 0, 0)      # preto
-            pdf.cell(col_widths_risp[i], 6, texto, 1, 0, 'C')
+            pdf.cell(col_widths_risp[i], 6, texto, 1, 0, 'C', fill=True)
             pdf.set_text_color(0, 0, 0)  # reset
         else:
-            pdf.cell(col_widths_risp[i], 6, safe_str(item), 1, 0, 'C')
+            pdf.cell(col_widths_risp[i], 6, safe_str(item), 1, 0, 'C', fill=True)
     pdf.ln()
 
 pdf.set_font('Arial', 'I', 9)
@@ -2261,7 +2285,15 @@ pdf.set_auto_page_break(prev_auto, prev_margin)
 # Dados da tabela de regiões observatório
 pdf.set_font('Arial', '', 7)
 pdf.set_text_color(0, 0, 0)  # Preto para texto
-for row in rows_aisp:
+
+# Adiciona zebragem (alternância de cores de fundo)
+for idx, row in enumerate(rows_aisp):
+    # Alterna a cor de fundo: linhas pares = branco, linhas ímpares = cinza claro
+    if idx % 2 == 0:
+        pdf.set_fill_color(255, 255, 255)  # Branco
+    else:
+        pdf.set_fill_color(240, 240, 245)  # Cinza claro
+    
     for i, item in enumerate(row):
         # Coloração e formatação para as colunas de %
         if i in [4, 7]:  # Índices das colunas de %
@@ -2273,10 +2305,10 @@ for row in rows_aisp:
                 pdf.set_text_color(0, 128, 0)    # verde
             else:
                 pdf.set_text_color(0, 0, 0)      # preto  
-            pdf.cell(col_widths_aisp[i], 6, texto, 1, 0, 'C')
+            pdf.cell(col_widths_aisp[i], 6, texto, 1, 0, 'C', fill=True)
             pdf.set_text_color(0, 0, 0)  # reset
         else:
-            pdf.cell(col_widths_aisp[i], 6, safe_str(item), 1, 0, 'C')
+            pdf.cell(col_widths_aisp[i], 6, safe_str(item), 1, 0, 'C', fill=True)
     pdf.ln()
 
 pdf.set_font('Arial', 'I', 9)
