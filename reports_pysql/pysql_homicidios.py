@@ -1159,6 +1159,51 @@ for row in rows_regiao_observatorio:
             pdf.cell(col_widths_regiao_observatorio[i], 6, safe_str(item), 1, 0, 'C')
     pdf.ln()
 
+# Calcula e adiciona linha de TOTAL
+if rows_regiao_observatorio:
+    # Inicializa totais
+    totais = [0] * len(rows_regiao_observatorio[0])
+    
+    # Calcula totais para colunas numéricas (excluindo a primeira coluna que é texto)
+    for row in rows_regiao_observatorio:
+        for i, item in enumerate(row):
+            if i > 0:  # Pula a primeira coluna (REGIÃO)
+                try:
+                    if i in [4, 7]:  # Colunas de porcentagem
+                        totais[i] += float(item) if item is not None else 0
+                    else:  # Colunas numéricas
+                        totais[i] += int(item) if item is not None else 0
+                except (ValueError, TypeError):
+                    pass  # Ignora valores não numéricos
+    
+    # Cria linha de total
+    linha_total = ["GOIÁS"]
+    for i in range(1, len(totais)):
+        if i in [4, 7]:  # Colunas de porcentagem
+            linha_total.append(f"{totais[i]:.2f}")
+        else:  # Colunas numéricas
+            linha_total.append(str(totais[i]))
+    
+    # Adiciona linha de total com formatação especial
+    pdf.set_font('Arial', 'B', 7)  # Negrito para destacar
+    for i, item in enumerate(linha_total):
+        # Coloração e formatação para as colunas de %
+        if i in [4, 7]:  # Índices das colunas de %
+            valor = float(item) if item is not None else 0
+            texto = f"{valor:.2f}%"
+            if valor > 0:
+                pdf.set_text_color(220, 20, 60)  # vermelho
+            elif valor < 0:
+                pdf.set_text_color(0, 128, 0)    # verde
+            else:
+                pdf.set_text_color(0, 0, 0)      # preto
+            pdf.cell(col_widths_regiao_observatorio[i], 6, texto, 1, 0, 'C')
+            pdf.set_text_color(0, 0, 0)  # reset
+        else:
+            pdf.cell(col_widths_regiao_observatorio[i], 6, safe_str(item), 1, 0, 'C')
+    pdf.ln()
+    pdf.set_font('Arial', '', 7)  # Volta para fonte normal
+
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, f'Até {hoje.strftime("%d/%m/%Y %H:%M:%S")}', ln=1, align='L')
 
@@ -1491,6 +1536,51 @@ for row in rows_regiao_observatorio:
         else:
             pdf.cell(col_widths_regiao_observatorio[i], 6, safe_str(item), 1, 0, 'C')
     pdf.ln()
+
+# Calcula e adiciona linha de TOTAL
+if rows_regiao_observatorio:
+    # Inicializa totais
+    totais = [0] * len(rows_regiao_observatorio[0])
+    
+    # Calcula totais para colunas numéricas (excluindo a primeira coluna que é texto)
+    for row in rows_regiao_observatorio:
+        for i, item in enumerate(row):
+            if i > 0:  # Pula a primeira coluna (REGIÃO)
+                try:
+                    if i in [4, 7]:  # Colunas de porcentagem
+                        totais[i] += float(item) if item is not None else 0
+                    else:  # Colunas numéricas
+                        totais[i] += int(item) if item is not None else 0
+                except (ValueError, TypeError):
+                    pass  # Ignora valores não numéricos
+    
+    # Cria linha de total
+    linha_total = ["GOIÁS"]
+    for i in range(1, len(totais)):
+        if i in [4, 7]:  # Colunas de porcentagem
+            linha_total.append(f"{totais[i]:.2f}")
+        else:  # Colunas numéricas
+            linha_total.append(str(totais[i]))
+    
+    # Adiciona linha de total com formatação especial
+    pdf.set_font('Arial', 'B', 7)  # Negrito para destacar
+    for i, item in enumerate(linha_total):
+        # Coloração e formatação para as colunas de %
+        if i in [4, 7]:  # Índices das colunas de %
+            valor = float(item) if item is not None else 0
+            texto = f"{valor:.2f}%"
+            if valor > 0:
+                pdf.set_text_color(220, 20, 60)  # vermelho
+            elif valor < 0:
+                pdf.set_text_color(0, 128, 0)    # verde
+            else:
+                pdf.set_text_color(0, 0, 0)      # preto
+            pdf.cell(col_widths_regiao_observatorio[i], 6, texto, 1, 0, 'C')
+            pdf.set_text_color(0, 0, 0)  # reset
+        else:
+            pdf.cell(col_widths_regiao_observatorio[i], 6, safe_str(item), 1, 0, 'C')
+    pdf.ln()
+    pdf.set_font('Arial', '', 7)  # Volta para fonte normal
 
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
