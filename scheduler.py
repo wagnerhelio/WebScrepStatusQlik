@@ -25,8 +25,8 @@ def run_send_statusqlik_evolution():
     subprocess.run([python_exec, "-m", "evolution_api.send_evolution"]) 
 
 def run_reports_pysql_homicidios():
-    print(f"[{datetime.now()}] Gerando relatório de homicídios (reports_pysql/pysql_homicidios.py)...")
-    subprocess.run([python_exec, "reports_pysql/pysql_homicidios.py"]) 
+    print(f"[{datetime.now()}] Gerando relatório de homicídios (pysql/pysql_homicidios.py)...")
+    subprocess.run([python_exec, "pysql/pysql_homicidios.py"]) 
 
 def run_statusqlik_desktop():
     print(f"[{datetime.now()}] Executando crawler_qlik/status_qlik_desktop.py...")

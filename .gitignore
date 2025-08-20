@@ -12,6 +12,7 @@ venv/
 *.png
 *.jpg
 *.jpeg
+*.json
 
 # Permitir estes arquivos específicos serem versionados
 !img/Docker.png

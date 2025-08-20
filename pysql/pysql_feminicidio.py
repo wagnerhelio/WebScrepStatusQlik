@@ -20,7 +20,7 @@ matplotlib.use('Agg')  # Configura o backend antes de importar pyplot
 def safe_str(item):
     return str(item) if item is not None else ''
 
-def salvar_tempos_execucao(tempos_execucao, arquivo='pysql/reports_pysql/homicidios_tempos_execucao.json'):
+def salvar_tempos_execucao(tempos_execucao, arquivo='pysql/reports_pysql/feminicidio_tempos_execucao.json'):
     """Salva os tempos de execução em um arquivo JSON"""
     try:
         # Cria o diretório se não existir
@@ -55,7 +55,7 @@ def salvar_tempos_execucao(tempos_execucao, arquivo='pysql/reports_pysql/homicid
     except Exception as e:
         print(f"Erro ao salvar tempos de execução: {e}")
 
-def carregar_tempos_execucao(arquivo='pysql/reports_pysql/homicidios_tempos_execucao.json'):
+def carregar_tempos_execucao(arquivo='pysql/reports_pysql/feminicidio_tempos_execucao.json'):
     """Carrega os tempos de execução históricos e calcula a média"""
     try:
         if not os.path.exists(arquivo):
@@ -1132,7 +1132,7 @@ pdf = PDFComRodape()
 pdf.add_page()
 
 # --- CABEÇALHO DO PDF (LOGO E TÍTULO INSTITUCIONAL) ---
-pdf.image(os.path.join(relatorio_dir, 'LogoRelatorio.jpg'), x=10, y=8, w=190)
+pdf.image(os.path.join(relatorio_dir, 'img_reports', 'LogoRelatorio.jpg'), x=10, y=8, w=190)
 pdf.ln(25)
 
 # --- CONTEXTO: CAIXA DE TEXTO COM INDICADORES ---
@@ -2475,7 +2475,7 @@ pdf.cell(0, 8, f'TEMPO TOTAL DE EXECUÇÃO DAS CONSULTAS: {tempo_total_formatado
 pdf.set_font('Arial', '', 6)  # Volta para fonte normal
 
 # --- Antes de salvar, defina os tempos: ---
-pdf.output('pysql/reports_pysql/relatorio_homicidios.pdf')
+pdf.output('pysql/reports_pysql/relatorio_feminicidio.pdf')
 
 # Salva os tempos de execução para uso futuro
 salvar_tempos_execucao(tempos_execucao)
