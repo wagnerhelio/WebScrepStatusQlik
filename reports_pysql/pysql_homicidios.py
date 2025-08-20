@@ -814,7 +814,7 @@ AND ope.tipopessoaenum = 'FISICA'
 AND qcap.nome = 'VÍTIMA'
 GROUP BY NVL(cid.nome, 'NÃO INFORMADO')
 ORDER BY 7 DESC
-FETCH FIRST 40 ROWS ONLY
+FETCH FIRST 38 ROWS ONLY
 '''
 
 query_homicidios_comparativo_risp = '''
@@ -1076,7 +1076,7 @@ kpi_end_y = pdf.get_y()
 
 # ------------------------------------------------- TABELA DE REGIAO - COMPARATIVO MENSAL ATUAL E ACUMULADO -------------------------------------------------
 # Posiciona abaixo do bloco mais baixo (caixa à esquerda ou KPIs à direita)
-y_after_header = max(caixa_y + caixa_h, kpi_end_y) - 1   
+y_after_header = max(caixa_y + caixa_h, kpi_end_y) - 4   
 pdf.set_xy(pdf.l_margin, y_after_header)
 
 columns_regiao_observatorio_atualizada = [
@@ -1173,7 +1173,7 @@ pdf.ln(1)
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)  # Preto
-titulo_municipio = f'Homicídios - dia atual por município :'
+titulo_municipio = f'Homicídios - até dia atual por município :'
 pdf.cell(0, 10, titulo_municipio, ln=1, align='L')
 
 # Cabeçalho da tabela de município
@@ -1324,7 +1324,7 @@ if not df_dia.empty:
     df_pivot = df_dia.pivot(index='DATA', columns='ANO', values='HOMICIDIOS').fillna(0)
     df_pivot = df_pivot.reindex(sorted(df_pivot.index, key=lambda x: int(x.split('/')[0])))
 
-    plt.figure(figsize=(10, 3.0))
+    plt.figure(figsize=(10, 2.0))
     anos = sorted(df_pivot.columns)
     bar_width = 0.4
     x = range(len(df_pivot.index))
@@ -1425,7 +1425,7 @@ columns_regiao_observatorio_atualizada = [
 columns_regiao_observatorio, rows_regiao_observatorio = resultados["Homicídios Comparativo por Regiões"]
 
 # Espaço antes da tabela
-pdf.ln(1)
+pdf.ln(0.5)
 
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
@@ -1502,8 +1502,6 @@ pdf.add_page()
 # Gera o gráfico comparativo de homicídios por dia por região
 columns_dia_regioes, rows_dia_regioes = resultados["Homicídios Comparativo por Dia por Regiões"]
 
-pdf.ln(0.5)
-
 # Título do grafico
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)
@@ -1520,7 +1518,7 @@ if not df_comparativo_dia.empty:
     df_pivot = df_comparativo_dia.pivot(index='DATA', columns='REGIAO_OBSERVATORIO', values='HOMICIDIOS').fillna(0)
     df_pivot = df_pivot.reindex(sorted(df_pivot.index, key=lambda x: int(x.split('/')[0])))
 
-    plt.figure(figsize=(10, 3.0))
+    plt.figure(figsize=(10, 1.0))
     regioes = sorted(df_pivot.columns)
     bar_width = 0.25
     x = range(len(df_pivot.index))
@@ -1569,8 +1567,6 @@ pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 # Gera o gráfico comparativo de homicídios por mês por região
 columns_mes_regioes, rows_mes_regioes = resultados["Homicídios Comparativo por Mes por Regiões"]
 
-pdf.ln(0.5)
-
 # Título do grafico
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)
@@ -1593,7 +1589,7 @@ if not df_comparativo_mes.empty:
     #plt.figure(figsize=(10, 3.0))
     
     # Cria o gráfico de barras empilhadas
-    ax = df_pivot_mes.plot(kind='bar', stacked=True, width=0.7, figsize=(10, 3.0))  
+    ax = df_pivot_mes.plot(kind='bar', stacked=True, width=0.7, figsize=(10, 2.0))  
     
     # Adiciona os valores nas barras
     for c in ax.containers:
@@ -1674,7 +1670,6 @@ pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 
 # ------------------------------------------------- TABELA COMPARATIVO POR MES POR REGIÃO -------------------------------------------------
 # Gera tabela com dados do gráfico comparativo de homicídios por mês por região
-pdf.ln(0.5)
 
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
@@ -1701,8 +1696,8 @@ if not df_comparativo_mes.empty:
     num_meses = len(df_tabela.columns)
     col_width = largura_disponivel / num_meses if num_meses > 0 else largura_disponivel
     
-    row_height = 6
-    header_height = 6
+    row_height = 5
+    header_height = 5
     
     # Cabeçalho da tabela
     pdf.set_font('Arial', 'B', 7)
@@ -1737,8 +1732,6 @@ pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 # Gera o gráfico comparativo de homicídios por semana por região
 columns_semana_regioes, rows_semana_regioes = resultados["Homicídios Comparativo por Semana por Regiões"]
 
-pdf.ln(0.5)
-
 # Título do grafico
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)
@@ -1761,7 +1754,7 @@ if not df_comparativo_semana.empty:
     # Inverte a ordem para que domingo apareça no topo do gráfico horizontal
     df_pivot_semana = df_pivot_semana.iloc[::-1]
 
-    plt.figure(figsize=(10, 3.0))
+    plt.figure(figsize=(10, 2.0))
     
     # Cria o gráfico de barras empilhadas
     ax = df_pivot_semana.plot(kind='barh', stacked=True, width=0.7, figsize=(10, 3.0))
@@ -1805,8 +1798,6 @@ pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 # Gera tabela com dados do gráfico comparativo de homicídios por mês por região
 columns_grafico_presidios, rows_grafico_presidios = resultados["Homicídios em Presídios"]
 
-pdf.ln(0.5)
-
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)
@@ -1829,10 +1820,16 @@ if not df_grafico_presidios.empty:
     total_geral = df_agrupado['TOTAL'].sum()
     
     # Cria o gráfico de barras horizontais
-    plt.figure(figsize=(10, max(3.0, len(df_agrupado) * 0.4)))
+    plt.figure(figsize=(10, max(1.2, len(df_agrupado) * 0.35)))
     
-    # Cria o gráfico de barras horizontais
-    bars = plt.barh(df_agrupado['MUNICIPIO_NOME'], df_agrupado['TOTAL'], color='steelblue', alpha=0.8)
+    # Cria o gráfico de barras horizontais (mais fina)
+    bars = plt.barh(df_agrupado['MUNICIPIO_NOME'],df_agrupado['TOTAL'], height=0.4,color='steelblue',alpha=0.8 )
+
+    # Garante margem vertical para não ocupar toda a altura quando houver poucas barras
+    ax = plt.gca()
+    num_barras = len(df_agrupado)
+    pad = 0.6
+    ax.set_ylim(-0.5 - pad, (num_barras - 1) + 0.5 + pad)
     
     # Adiciona os valores nas barras
     for i, bar in enumerate(bars):
@@ -1841,11 +1838,8 @@ if not df_grafico_presidios.empty:
                 f'{int(width)}', ha='left', va='center', fontweight='bold')
     
     # Configurações do gráfico
-    plt.xlabel('Homicídios em Presídios', fontweight='bold')
-    plt.ylabel('Município', fontweight='bold')
-    plt.title('HOMICÍDIOS EM PRESÍDIOS - 2025', fontweight='bold', fontsize=14, pad=20)
-    plt.grid(axis='x', alpha=0.3)
-    plt.subplots_adjust(left=0.15, right=0.95, top=0.85, bottom=0.15)
+    plt.ylabel('Município')
+    plt.xticks([])
     
     # Salva o gráfico com tratamento de erro
     try:
