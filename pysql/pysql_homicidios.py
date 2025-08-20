@@ -10,12 +10,156 @@ from fpdf import FPDF
 from dotenv import load_dotenv
 from tqdm import tqdm
 from datetime import datetime, timedelta
+import json
+import sys
+import threading
 
 load_dotenv()
 matplotlib.use('Agg')  # Configura o backend antes de importar pyplot
 
 def safe_str(item):
     return str(item) if item is not None else ''
+
+def salvar_tempos_execucao(tempos_execucao, arquivo='reports_pysql/tempos_execucao.json'):
+    """Salva os tempos de execução em um arquivo JSON"""
+    try:
+        # Cria o diretório se não existir
+        os.makedirs(os.path.dirname(arquivo), exist_ok=True)
+        
+        # Carrega tempos existentes se o arquivo existir
+        tempos_historicos = {}
+        if os.path.exists(arquivo):
+            try:
+                with open(arquivo, 'r', encoding='utf-8') as f:
+                    tempos_historicos = json.load(f)
+            except (json.JSONDecodeError, FileNotFoundError):
+                tempos_historicos = {}
+        
+        # Adiciona a nova execução com timestamp
+        timestamp = datetime.now().isoformat()
+        tempos_historicos[timestamp] = tempos_execucao
+        
+        # Mantém apenas as últimas 10 execuções para calcular a média
+        if len(tempos_historicos) > 10:
+            # Remove as execuções mais antigas
+            timestamps_ordenados = sorted(tempos_historicos.keys())
+            for ts in timestamps_ordenados[:-10]:
+                del tempos_historicos[ts]
+        
+        # Salva o arquivo atualizado
+        with open(arquivo, 'w', encoding='utf-8') as f:
+            json.dump(tempos_historicos, f, indent=2, ensure_ascii=False)
+            
+        print(f"Tempos de execução salvos em: {arquivo}")
+        
+    except Exception as e:
+        print(f"Erro ao salvar tempos de execução: {e}")
+
+def carregar_tempos_execucao(arquivo='reports_pysql/tempos_execucao.json'):
+    """Carrega os tempos de execução históricos e calcula a média"""
+    try:
+        if not os.path.exists(arquivo):
+            return {}
+        
+        with open(arquivo, 'r', encoding='utf-8') as f:
+            tempos_historicos = json.load(f)
+        
+        if not tempos_historicos:
+            return {}
+        
+        # Calcula a média dos tempos para cada consulta
+        tempos_medios = {}
+        consultas = list(next(iter(tempos_historicos.values())).keys())
+        
+        for consulta in consultas:
+            tempos_consulta = []
+            for execucao in tempos_historicos.values():
+                if consulta in execucao:
+                    tempos_consulta.append(execucao[consulta])
+            
+            if tempos_consulta:
+                tempos_medios[consulta] = sum(tempos_consulta) / len(tempos_consulta)
+        
+        return tempos_medios
+        
+    except Exception as e:
+        print(f"Erro ao carregar tempos de execução: {e}")
+        return {}
+
+def mostrar_progresso_tempo(nome_consulta, tempo_inicio, tempo_medio_esperado):
+    """Mostra uma barra de progresso baseada no tempo médio esperado"""
+    if tempo_medio_esperado <= 0:
+        return
+    
+    tempo_atual = time.time() - tempo_inicio
+    progresso = min(tempo_atual / tempo_medio_esperado, 1.0)
+    
+    # Cria uma barra de progresso simples
+    largura_barra = 50
+    posicao = int(progresso * largura_barra)
+    
+    barra = '█' * posicao + '░' * (largura_barra - posicao)
+    percentual = progresso * 100
+    
+    # Limpa a linha atual e mostra o progresso
+    sys.stdout.write(f'\r{nome_consulta}: [{barra}] {percentual:.1f}% ({tempo_atual:.1f}s/{tempo_medio_esperado:.1f}s)')
+    sys.stdout.flush()
+    
+    if progresso >= 1.0:
+        print()  # Nova linha quando terminar
+
+def executar_com_progresso(nome, query, cursor, tempos_medios):
+    """Executa uma query com barra de progresso baseada no tempo médio esperado"""
+    start = time.time()
+    tempo_medio_esperado = tempos_medios.get(nome, 0)
+    
+    if tempo_medio_esperado > 0:
+        print(f"\nExecutando: {nome}")
+        # Inicia um thread para mostrar o progresso
+        import time as time_module
+        
+        def mostrar_progresso():
+            while True:
+                tempo_atual = time.time() - start
+                progresso = min(tempo_atual / tempo_medio_esperado, 1.0)
+                
+                largura_barra = 50
+                posicao = int(progresso * largura_barra)
+                barra = '█' * posicao + '░' * (largura_barra - posicao)
+                percentual = progresso * 100
+                
+                sys.stdout.write(f'\r{nome}: [{barra}] {percentual:.1f}% ({tempo_atual:.1f}s/{tempo_medio_esperado:.1f}s)')
+                sys.stdout.flush()
+                
+                if progresso >= 1.0:
+                    break
+                time_module.sleep(0.1)
+        
+        # Inicia o thread de progresso
+        progresso_thread = threading.Thread(target=mostrar_progresso)
+        progresso_thread.daemon = True
+        progresso_thread.start()
+    
+    # Executa a query
+    cursor.execute(query)
+    
+    # Processa o resultado
+    if nome in ["Homicídios Comparativo por Município", "Homicídios Comparativo por 2 Anos","Homicídios Comparativo por Todos os Anos","Homicídios Comparativo por Regiões","Homicídios Comparativo por Regiões dia atual","Homicídios Comparativo por Dia","Homicídios Comparativo por Dia por Regiões","Homicídios Comparativo por Mes por Regiões","Homicídios Comparativo por Semana por Regiões","Homicídios em Presídios","Homicídios Comparativo por Município Top 20","Homicídios Comparativo por Risp","Homicídios Comparativo por Aisp"]:
+        columns = [str(col[0]) for col in cursor.description]
+        rows = [list(row) for row in cursor.fetchall()]
+        resultado = (columns, rows)
+    else:
+        resultado = cursor.fetchone()
+    
+    end = time.time()
+    tempo_execucao = end - start
+    
+    # Aguarda o thread de progresso terminar
+    if tempo_medio_esperado > 0:
+        progresso_thread.join(timeout=0.5)
+        print()  # Nova linha
+    
+    return resultado, tempo_execucao
 
 # Cria a pasta reports_pysql/img_reports se não existir
 relatorio_dir = 'reports_pysql/img_reports'
@@ -949,21 +1093,25 @@ queries = [
     ("Homicídios Comparativo por Risp", query_homicidios_comparativo_risp),
     ("Homicídios Comparativo por Aisp", query_homicidios_comparativo_aisp)
 ]
+
+# Carrega tempos médios de execução históricos
+tempos_medios = carregar_tempos_execucao()
+
 resultados = {}
 tempos_execucao = {}
 
-for nome, query in tqdm(queries, desc="Executando consultas"):
-    start = time.time()
-    cursor.execute(query)
-    if nome in ["Homicídios Comparativo por Município", "Homicídios Comparativo por 2 Anos","Homicídios Comparativo por Todos os Anos","Homicídios Comparativo por Regiões","Homicídios Comparativo por Regiões dia atual","Homicídios Comparativo por Dia","Homicídios Comparativo por Dia por Regiões","Homicídios Comparativo por Mes por Regiões","Homicídios Comparativo por Semana por Regiões","Homicídios em Presídios","Homicídios Comparativo por Município Top 20","Homicídios Comparativo por Risp","Homicídios Comparativo por Aisp"]:
-        columns = [str(col[0]) for col in cursor.description]
-        rows = [list(row) for row in cursor.fetchall()]
-        resultados[nome] = (columns, rows)
+for nome, query in queries:
+    # Executa a query com barra de progresso
+    resultado, tempo_execucao = executar_com_progresso(nome, query, cursor, tempos_medios)
+    resultados[nome] = resultado
+    tempos_execucao[nome] = tempo_execucao
+    
+    # Mostra o tempo real de execução
+    tempo_medio_esperado = tempos_medios.get(nome, 0)
+    if tempo_medio_esperado > 0:
+        print(f" Tempo real: {tempo_execucao:.2f}s (esperado: {tempo_medio_esperado:.2f}s)")
     else:
-        resultados[nome] = cursor.fetchone()
-    end = time.time()
-    tempos_execucao[nome] = end - start
-    print(f" Tempo de execução da consulta {nome}: {tempos_execucao[nome]:.2f} segundos")
+        print(f" Tempo de execução da consulta {nome}: {tempo_execucao:.2f} segundos")
 
 # Extrai os resultados
 homicidios_hoje, homicidios_ontem, homicidios_mes, homicidios_mes_ontem,homicidios_ano, homicidios_ano_ontem = resultados["Homicídios"]
@@ -1977,9 +2125,6 @@ columns_municipio_top20_atualizada = [
 
 columns_municipio_top20, rows_municipio_top20 = resultados["Homicídios Comparativo por Município Top 20"]
 
-# Espaço antes da tabela
-pdf.ln(1)
-
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)  # Preto
@@ -2317,27 +2462,23 @@ pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 # ------------------------------------------------- SALVANDO O PDF -------------------------------------------------
 
 # --- ATRIBUIÇÃO DOS TEMPOS DE EXECUÇÃO PARA O RODAPÉ ---
-tempo_execucao_resumo = (
-    f'Homicídios: {tempos_execucao["Homicídios"]:.2f} | '
-    f'Feminicídios: {tempos_execucao["Feminicídios"]:.2f} | '
-    f'Homicídios Comparativo por Município: {tempos_execucao["Homicídios Comparativo por Município"]:.2f} | '
-    f'Homicídios Comparativo por 2 Anos: {tempos_execucao["Homicídios Comparativo por 2 Anos"]:.2f} | '
-    f'Homicídios Comparativo por Todos os Anos: {tempos_execucao["Homicídios Comparativo por Todos os Anos"]:.2f} | '
-    f'Homicídios Comparativo por Dia: {tempos_execucao["Homicídios Comparativo por Dia"]:.2f} | '
-    f'Homicídios Comparativo por Regiões: {tempos_execucao["Homicídios Comparativo por Regiões"]:.2f} | '
-    f'Homicídios Comparativo por Dia por Regiões: {tempos_execucao["Homicídios Comparativo por Dia por Regiões"]:.2f} | '
-    f'Homicídios Comparativo por Mes por Regiões: {tempos_execucao["Homicídios Comparativo por Mes por Regiões"]:.2f} | '
-    f'Homicídios Comparativo por Semana por Regiões: {tempos_execucao["Homicídios Comparativo por Semana por Regiões"]:.2f} | '
-    f'Homicídios em Presídios: {tempos_execucao["Homicídios em Presídios"]:.2f} | '
-    f'Homicídios Comparativo por Município Top 20: {tempos_execucao["Homicídios Comparativo por Município Top 20"]:.2f} | '
-    f'Homicídios Comparativo por Risp: {tempos_execucao["Homicídios Comparativo por Risp"]:.2f} | '
-    f'Homicídios Comparativo por Aisp: {tempos_execucao["Homicídios Comparativo por Aisp"]:.2f} '
-)
-pdf.set_font('Arial', '', 6)
-pdf.cell(0, 8, tempo_execucao_resumo, ln=1, align='L')
+# Calcula o tempo total de execução
+tempo_total_segundos = sum(tempos_execucao.values())
+horas = int(tempo_total_segundos // 3600)
+minutos = int((tempo_total_segundos % 3600) // 60)
+segundos = int(tempo_total_segundos % 60)
+tempo_total_formatado = f"{horas:02d}:{minutos:02d}:{segundos:02d}"
+
+# Adiciona linha com tempo total
+pdf.set_font('Arial', 'B', 7)  # Negrito para destacar o total
+pdf.cell(0, 8, f'TEMPO TOTAL DE EXECUÇÃO DAS CONSULTAS: {tempo_total_formatado}', ln=1, align='L')
+pdf.set_font('Arial', '', 6)  # Volta para fonte normal
 
 # --- Antes de salvar, defina os tempos: ---
 pdf.output('reports_pysql/relatorio_homicidios.pdf')
+
+# Salva os tempos de execução para uso futuro
+salvar_tempos_execucao(tempos_execucao)
 
 cursor.close()
 conn.close()
