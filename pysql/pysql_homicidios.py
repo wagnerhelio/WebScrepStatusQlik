@@ -162,7 +162,7 @@ def executar_com_progresso(nome, query, cursor, tempos_medios):
     return resultado, tempo_execucao
 
 # Cria a pasta pysql/reports_pysql/img_reports se não existir
-relatorio_dir = 'pysql/reports_pysql/img_reports'
+relatorio_dir = 'pysql/img_reports'
 if not os.path.exists(relatorio_dir):
     os.makedirs(relatorio_dir)
 
@@ -178,6 +178,9 @@ try:
     os.remove(test_file)
 except Exception as e:
     raise RuntimeError(f"Não é possível escrever no diretório {relatorio_dir}: {e}")
+
+# Define o diretório onde está o logo
+logo_dir = 'pysql/img_reports'
 
 class PDFComRodape(FPDF):
     def __init__(self, *args, **kwargs):
@@ -1132,7 +1135,7 @@ pdf = PDFComRodape()
 pdf.add_page()
 
 # --- CABEÇALHO DO PDF (LOGO E TÍTULO INSTITUCIONAL) ---
-pdf.image(os.path.join(relatorio_dir, 'LogoRelatorio.jpg'), x=10, y=8, w=190)
+pdf.image(os.path.join(logo_dir, 'LogoRelatorio.jpg'), x=10, y=8, w=190)
 pdf.ln(25)
 
 # --- CONTEXTO: CAIXA DE TEXTO COM INDICADORES ---
