@@ -415,7 +415,7 @@ LEFT JOIN bu.ocorrenciapessoa ope
   ON opn.ocorrenciapessoa_id = ope.id
 ON oc.id = ope.ocorrencia_id 
 WHERE ende.estado_sigla = 'GO'
-AND (EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM ADD_MONTHS(SYSDATE, -12)) OR (EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM SYSDATE)AND TRUNC(oc.datafato) <= TRUNC(SYSDATE - 1)))
+AND (EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM ADD_MONTHS(SYSDATE, -12)) OR (EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM SYSDATE)AND TRUNC(oc.datafato) <= TRUNC(SYSDATE)))
 AND oc.statusocorrencia = 'OCORRENCIA'
 AND (UPPER(nat_tip_pes.GRUPO) = 'HOMICÍDIO' OR nat_pes.naturezaid IN ('500001', '500002', '500003', '500004', '500005', '500006', '500007', '500011', '400711', '400712', '400001', '400002', '501199', '501200', '501201', '501202', '501203', '501204', '501220', '501136', '501137', '501138', '501139', '501140', '501141', '501288', '520269', '520323', '521062', '522242', '522243', '522262', '523006', '523007', '523008', '523009', '523010', '523011', '522745'))
 AND nat_pes.consumacaoenum = 'CONSUMADO'
@@ -463,7 +463,7 @@ LEFT JOIN bu.ocorrenciapessoa ope
 ON oc.id = ope.ocorrencia_id 
 WHERE
 ende.estado_sigla = 'GO'
-AND TRUNC(oc.datafato) BETWEEN TO_DATE('01/01/2016', 'DD/MM/YYYY') AND TRUNC(SYSDATE - 1)
+AND TRUNC(oc.datafato) BETWEEN TO_DATE('01/01/2016', 'DD/MM/YYYY') AND TRUNC(SYSDATE)
 --AND oc.datafato >= TRUNC(SYSDATE - 1)
 AND oc.statusocorrencia = 'OCORRENCIA'
 --FILTRO
@@ -1455,7 +1455,7 @@ plt.close()
 # Adiciona o DataFrame ao PDF
 pdf.image(os.path.join(relatorio_dir, 'grafico_homicidio_2anos.png'), x=5, w=200)
 pdf.set_font('Arial', 'I', 9)
-pdf.cell(0, 6, f'Até {ontem_data}', ln=1, align='L')
+pdf.cell(0, 8, f'Até {hoje.strftime("%d/%m/%Y %H:%M:%S")}', ln=1, align='L')
 
 # Adiciona uma nova página
 pdf.add_page()
@@ -1502,7 +1502,7 @@ for idx, linha in enumerate(linhas_homicidio_todos_anos):
     pdf.ln()
 
 pdf.set_font('Arial', 'I', 9)
-pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
+pdf.cell(0, 8, f'Até {hoje.strftime("%d/%m/%Y %H:%M:%S")}', ln=1, align='L')
 
 # ------------------------------------------------- GRAFICO COMPARATIVO POR DIA -------------------------------------------------
 # Gera o gráfico comparativo de homicídios por dia

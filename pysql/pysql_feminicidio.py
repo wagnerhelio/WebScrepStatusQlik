@@ -20,7 +20,7 @@ matplotlib.use('Agg')  # Configura o backend antes de importar pyplot
 def safe_str(item):
     return str(item) if item is not None else ''
 
-def salvar_tempos_execucao(tempos_execucao, arquivo='pysql/reports_pysql/feminicidio_tempos_execucao.json'):
+def salvar_tempos_execucao(tempos_execucao, arquivo='pysql/reports_pysql/feminicidios_tempos_execucao.json'):
     """Salva os tempos de execução em um arquivo JSON"""
     try:
         # Cria o diretório se não existir
@@ -55,7 +55,7 @@ def salvar_tempos_execucao(tempos_execucao, arquivo='pysql/reports_pysql/feminic
     except Exception as e:
         print(f"Erro ao salvar tempos de execução: {e}")
 
-def carregar_tempos_execucao(arquivo='pysql/reports_pysql/feminicidio_tempos_execucao.json'):
+def carregar_tempos_execucao(arquivo='pysql/reports_pysql/feminicidios_tempos_execucao.json'):
     """Carrega os tempos de execução históricos e calcula a média"""
     try:
         if not os.path.exists(arquivo):
@@ -162,7 +162,7 @@ def executar_com_progresso(nome, query, cursor, tempos_medios):
     return resultado, tempo_execucao
 
 # Cria a pasta pysql/reports_pysql/img_reports se não existir
-relatorio_dir = 'pysql/reports_pysql/img_reports'
+relatorio_dir = 'pysql/img_reports'
 if not os.path.exists(relatorio_dir):
     os.makedirs(relatorio_dir)
 
@@ -178,6 +178,9 @@ try:
     os.remove(test_file)
 except Exception as e:
     raise RuntimeError(f"Não é possível escrever no diretório {relatorio_dir}: {e}")
+
+# Define o diretório onde está o logo
+logo_dir = 'pysql/img_reports'
 
 class PDFComRodape(FPDF):
     def __init__(self, *args, **kwargs):
@@ -227,51 +230,6 @@ conn = cx_Oracle.connect(
 cursor = conn.cursor()
 
 # --- BLOCO DE QUERIES SQL ---
-# Query principal de homicídio
-query_homicidios = '''
-SELECT
-  COUNT(DISTINCT CASE WHEN TRUNC(oc.datafato) = TRUNC(SYSDATE) THEN pes.id END) AS homicidios_hoje,
-  COUNT(DISTINCT CASE WHEN TRUNC(oc.datafato) = TRUNC(SYSDATE - 1) THEN pes.id END) AS homicidios_ontem,
-  COUNT(DISTINCT CASE WHEN TRUNC(oc.datafato) >= TRUNC(SYSDATE, 'MM') THEN pes.id END) AS homicidios_mes,
-  COUNT(DISTINCT CASE WHEN TRUNC(oc.datafato) >= TRUNC(SYSDATE, 'MM') AND TRUNC(oc.datafato) < TRUNC(SYSDATE) THEN pes.id END) AS homicidios_mes_ontem,
-  COUNT(DISTINCT CASE WHEN TRUNC(oc.datafato) >= TRUNC(SYSDATE, 'YYYY') THEN pes.id END) AS homicidios_ano,
-  COUNT(DISTINCT CASE WHEN TRUNC(oc.datafato) >= TRUNC(SYSDATE, 'YYYY') AND TRUNC(oc.datafato) < TRUNC(SYSDATE) THEN pes.id END) AS homicidios_ano_ontem
-FROM bu.ocorrencia oc
-LEFT JOIN bu.endereco ende
-INNER JOIN sspj.bairros bai
-      LEFT JOIN (SELECT cod_bairro, LISTAGG(eor.sigla, ', ') AS siglas FROM sicad.circunscricao circ INNER JOIN sicad.estrutura_organizacional_real eor ON eor.cod_estrutura_organizacional = circ.cod_estrutura_organizacional GROUP BY cod_bairro) area
-      ON area.cod_bairro = bai.bairro
-      LEFT JOIN sspj.aisps ais
-      LEFT JOIN sspj.risps ris
-      ON ris.risp = ais.risp
-ON ais.aisp = bai.aisp
-LEFT JOIN sspj.cidades cid
-     LEFT JOIN sspj.cidades_ibge cib
-          ON cib.codigo_sspj = cid.cidade
-          LEFT JOIN sspj.microrregioes mic
-               LEFT JOIN sspj.mesorregioes mes
-               ON mes.mesorregiao = mic.mesorregiao
-          ON mic.microrregiao = cid.microrregiao
-     ON cid.cidade = bai.cidade
-ON bai.bairro = ende.bairro_id
-ON ende.id = oc.endereco_id
-LEFT JOIN bu.ocorrenciapessoa ope ON oc.id = ope.ocorrencia_id
-LEFT JOIN bu.pessoa pes ON pes.id = ope.pessoa_id
-LEFT JOIN bu.ocorrencia_pessoa_natur opn ON opn.ocorrenciapessoa_id = ope.id
-LEFT JOIN bu.natureza nat_pes ON nat_pes.id = opn.natureza_id
-INNER JOIN user_transacional.e_natureza_spi_tipificada_mview nat_tip_pes ON nat_tip_pes.spi_natureza_id = nat_pes.naturezaid
-LEFT JOIN bu.ocorrencia_pessoa_natur_qual opnq ON opnq.ocorrenciapessoanatureza_id = opn.id
-LEFT JOIN bu.qualificacao qua ON qua.id = opnq.qualificacoes_id
-INNER JOIN spi.qalificacao qa ON qa.codigo_qualificacao = qua.qualificacaoid
-INNER JOIN spi.qualificacao_categorias qcap ON qcap.qualificacao_categoria = qa.qualificacao_categoria
-WHERE ende.estado_sigla = 'GO'
-  AND EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM SYSDATE)
-  AND oc.statusocorrencia = 'OCORRENCIA'
-  AND (UPPER(nat_tip_pes.GRUPO) = 'HOMICÍDIO' OR nat_pes.naturezaid IN ('500001', '500002', '500003', '500004', '500005', '500006', '500007', '500011', '400711', '400712', '400001', '400002', '501199', '501200', '501201', '501202', '501203', '501204', '501220', '501136', '501137', '501138', '501139', '501140', '501141', '501288', '520269', '520323', '521062', '522242', '522243', '522262', '523006', '523007', '523008', '523009', '523010', '523011', '522745'))
-  AND nat_pes.consumacaoenum = 'CONSUMADO'
-  AND ope.tipopessoaenum = 'FISICA'
-  AND qcap.nome = 'VÍTIMA'
-'''
 
 # Query principal de feminicídio
 query_feminicidios = '''
@@ -1077,7 +1035,6 @@ ORDER BY 7 DESC
 '''
 
 queries = [
-    ("Homicídios", query_homicidios),
     ("Feminicídios", query_feminicidios),
     ("Homicídios Comparativo por Município", query_homicidios_comparativo_municipios),
     ("Homicídios Comparativo por 2 Anos", query_homicidios_comparativo_dois_anos),
@@ -1114,7 +1071,6 @@ for nome, query in queries:
         print(f" Tempo de execução da consulta {nome}: {tempo_execucao:.2f} segundos")
 
 # Extrai os resultados
-homicidios_hoje, homicidios_ontem, homicidios_mes, homicidios_mes_ontem,homicidios_ano, homicidios_ano_ontem = resultados["Homicídios"]
 feminicidios_hoje, feminicidios_ontem, feminicidios_mes, feminicidios_mes_ontem, feminicidios_ano, feminicidios_ano_ontem = resultados["Feminicídios"]
 
 hoje = datetime.now()
@@ -1132,7 +1088,7 @@ pdf = PDFComRodape()
 pdf.add_page()
 
 # --- CABEÇALHO DO PDF (LOGO E TÍTULO INSTITUCIONAL) ---
-pdf.image(os.path.join(relatorio_dir, 'img_reports', 'LogoRelatorio.jpg'), x=10, y=8, w=190)
+pdf.image(os.path.join(logo_dir, 'LogoRelatorio.jpg'), x=10, y=8, w=190)
 pdf.ln(25)
 
 # --- CONTEXTO: CAIXA DE TEXTO COM INDICADORES ---
@@ -1161,11 +1117,7 @@ def escreve_linha_valor(texto, valor):
     pdf.cell(pdf.get_string_width(str(valor)), linha_h, str(valor), ln=1)
 
 # Indicadores principais
-escreve_linha_valor(f'Homicídios em {ontem.strftime("%d/%m/%Y")}', homicidios_ontem)
-linha_y += linha_h
-escreve_linha_valor(f'Homicídios no mês {mes_ontem}', homicidios_mes_ontem)
-linha_y += linha_h
-escreve_linha_valor(f'Homicídios no ano {ano_atual}', homicidios_ano_ontem)
+escreve_linha_valor(f'Feminicídios em {ontem.strftime("%d/%m/%Y")}', feminicidios_ontem)
 linha_y += linha_h
 escreve_linha_valor(f'Feminicídios no mês {mes_ontem}', feminicidios_mes_ontem)
 linha_y += linha_h
@@ -1175,7 +1127,7 @@ linha_y += linha_h
 # Observação
 pdf.set_xy(caixa_x + margem, linha_y)
 pdf.set_font('Arial', 'I', 8)
-pdf.cell(0, linha_h, 'Obs.: No número de Homicídios estão contabilizados os Feminicídios.', ln=1)
+pdf.cell(0, linha_h, 'Obs.: No número de Feminicídios estão contabilizados os Homicídios.', ln=1)
 
 # --- KPIs À DIREITA ---
 # Exibe os KPIs de homicídios do dia e do mês à direita da caixa de indicadores
@@ -1184,36 +1136,36 @@ kpi_x = caixa_x + caixa_w + 10
 kpi_y = caixa_y  # alinhado com a caixa
 pdf.set_xy(kpi_x, kpi_y)
 
-#titulo kpi homicidios em dia
+#titulo kpi feminicidios em dia
 pdf.set_font('Arial', '', 12)
 pdf.set_text_color(100, 100, 100) 
-pdf.cell(0, 8, f'Homicídios em: {hoje.strftime("%d/%m/%Y")}', ln=1)
+pdf.cell(0, 8, f'Feminicídios em: {hoje.strftime("%d/%m/%Y")}', ln=1)
 
-#valor kpi homicidios em dia
+#valor kpi feminicidios em dia
 pdf.set_font('Arial', 'B', 28)
 pdf.set_text_color(30, 80, 160)
 pdf.set_x(kpi_x)
-pdf.cell(0, 15, str(homicidios_hoje), ln=1, align='C')
+pdf.cell(0, 15, str(feminicidios_hoje), ln=1, align='C')
 
-#rodape kpi homicidios em dia
+#rodape kpi feminicidios em dia
 pdf.set_font('Arial', 'I', 8)
 pdf.set_text_color(0, 0, 0)
 pdf.set_x(kpi_x)
 pdf.cell(0, 8, f'Até {hoje.strftime("%d/%m/%Y %H:%M:%S")}', ln=1, align='L')
 
-#titulo kpi homicidios em mes
+#titulo kpi feminicidios em mes
 pdf.set_font('Arial', '', 12)
 pdf.set_text_color(100, 100, 100)
 pdf.set_x(kpi_x)
-pdf.cell(0, 8, f'Homicídios em mês: {mes_atual}', ln=1)
+pdf.cell(0, 8, f'Feminicídios em mês: {mes_atual}', ln=1)
 
-#valor kpi homicidios em mes
+#valor kpi feminicidios em mes
 pdf.set_font('Arial', 'B', 28)
 pdf.set_text_color(30, 80, 160)
 pdf.set_x(kpi_x)
-pdf.cell(0, 15, str(homicidios_mes), ln=1, align='C')
+pdf.cell(0, 15, str(feminicidios_mes), ln=1, align='C')
 
-#rodape kpi homicidios em mes
+#rodape kpi feminicidios em mes
 pdf.set_font('Arial', 'I', 8) 
 pdf.set_text_color(0, 0, 0)
 pdf.set_x(kpi_x)
