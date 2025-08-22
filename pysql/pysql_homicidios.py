@@ -1299,13 +1299,17 @@ for row in rows_regiao_observatorio:
             valor = float(item) if item is not None else 0
             texto = f"{valor:.2f}%"
             if valor > 0:
-                pdf.set_text_color(220, 20, 60)  # vermelho
+                pdf.set_fill_color(220, 20, 60)  # vermelho no background
+                pdf.set_text_color(255, 255, 255)  # texto branco
             elif valor < 0:
-                pdf.set_text_color(0, 128, 0)    # verde
+                pdf.set_fill_color(0, 128, 0)    # verde no background
+                pdf.set_text_color(255, 255, 255)  # texto branco
             else:
-                pdf.set_text_color(0, 0, 0)      # preto
-            pdf.cell(col_widths_regiao_observatorio[i], 6, texto, 1, 0, 'C')
-            pdf.set_text_color(0, 0, 0)  # reset
+                pdf.set_fill_color(255, 255, 255)  # fundo branco
+                pdf.set_text_color(0, 0, 0)      # texto preto
+            pdf.cell(col_widths_regiao_observatorio[i], 6, texto, 1, 0, 'C', fill=True)
+            pdf.set_fill_color(255, 255, 255)  # reset do background
+            pdf.set_text_color(0, 0, 0)  # reset do texto
         else:
             pdf.cell(col_widths_regiao_observatorio[i], 6, safe_str(item), 1, 0, 'C')
     pdf.ln()
@@ -1343,13 +1347,17 @@ if rows_regiao_observatorio:
             valor = float(item) if item is not None else 0
             texto = f"{valor:.2f}%"
             if valor > 0:
-                pdf.set_text_color(220, 20, 60)  # vermelho
+                pdf.set_fill_color(220, 20, 60)  # vermelho no background
+                pdf.set_text_color(255, 255, 255)  # texto branco
             elif valor < 0:
-                pdf.set_text_color(0, 128, 0)    # verde
+                pdf.set_fill_color(0, 128, 0)    # verde no background
+                pdf.set_text_color(255, 255, 255)  # texto branco
             else:
-                pdf.set_text_color(0, 0, 0)      # preto
-            pdf.cell(col_widths_regiao_observatorio[i], 6, texto, 1, 0, 'C')
-            pdf.set_text_color(0, 0, 0)  # reset
+                pdf.set_fill_color(255, 255, 255)  # fundo branco
+                pdf.set_text_color(0, 0, 0)      # texto preto
+            pdf.cell(col_widths_regiao_observatorio[i], 6, texto, 1, 0, 'C', fill=True)
+            pdf.set_fill_color(255, 255, 255)  # reset do background
+            pdf.set_text_color(0, 0, 0)  # reset do texto
         else:
             pdf.cell(col_widths_regiao_observatorio[i], 6, safe_str(item), 1, 0, 'C')
     pdf.ln()
@@ -1685,13 +1693,17 @@ for row in rows_regiao_observatorio:
             valor = float(item) if item is not None else 0
             texto = f"{valor:.2f}%"
             if valor > 0:
-                pdf.set_text_color(220, 20, 60)  # vermelho
+                pdf.set_fill_color(220, 20, 60)  # vermelho no background
+                pdf.set_text_color(255, 255, 255)  # texto branco
             elif valor < 0:
-                pdf.set_text_color(0, 128, 0)    # verde
+                pdf.set_fill_color(0, 128, 0)    # verde no background
+                pdf.set_text_color(255, 255, 255)  # texto branco
             else:
-                pdf.set_text_color(0, 0, 0)      # preto
-            pdf.cell(col_widths_regiao_observatorio[i], 6, texto, 1, 0, 'C')
-            pdf.set_text_color(0, 0, 0)  # reset
+                pdf.set_fill_color(255, 255, 255)  # fundo branco
+                pdf.set_text_color(0, 0, 0)      # texto preto
+            pdf.cell(col_widths_regiao_observatorio[i], 6, texto, 1, 0, 'C', fill=True)
+            pdf.set_fill_color(255, 255, 255)  # reset do background
+            pdf.set_text_color(0, 0, 0)  # reset do texto
         else:
             pdf.cell(col_widths_regiao_observatorio[i], 6, safe_str(item), 1, 0, 'C')
     pdf.ln()
@@ -1729,13 +1741,17 @@ if rows_regiao_observatorio:
             valor = float(item) if item is not None else 0
             texto = f"{valor:.2f}%"
             if valor > 0:
-                pdf.set_text_color(220, 20, 60)  # vermelho
+                pdf.set_fill_color(220, 20, 60)  # vermelho no background
+                pdf.set_text_color(255, 255, 255)  # texto branco
             elif valor < 0:
-                pdf.set_text_color(0, 128, 0)    # verde
+                pdf.set_fill_color(0, 128, 0)    # verde no background
+                pdf.set_text_color(255, 255, 255)  # texto branco
             else:
-                pdf.set_text_color(0, 0, 0)      # preto
-            pdf.cell(col_widths_regiao_observatorio[i], 6, texto, 1, 0, 'C')
-            pdf.set_text_color(0, 0, 0)  # reset
+                pdf.set_fill_color(255, 255, 255)  # fundo branco
+                pdf.set_text_color(0, 0, 0)      # texto preto
+            pdf.cell(col_widths_regiao_observatorio[i], 6, texto, 1, 0, 'C', fill=True)
+            pdf.set_fill_color(255, 255, 255)  # reset do background
+            pdf.set_text_color(0, 0, 0)  # reset do texto
         else:
             pdf.cell(col_widths_regiao_observatorio[i], 6, safe_str(item), 1, 0, 'C')
     pdf.ln()
@@ -2211,13 +2227,17 @@ for idx, row in enumerate(rows_municipio_top20):
             valor = float(item) if item is not None else 0
             texto = f"{valor:.2f}%"
             if valor > 0:
-                pdf.set_text_color(220, 20, 60)  # vermelho
+                pdf.set_fill_color(220, 20, 60)  # vermelho no background
+                pdf.set_text_color(255, 255, 255)  # texto branco
             elif valor < 0:
-                pdf.set_text_color(0, 128, 0)    # verde
+                pdf.set_fill_color(0, 128, 0)    # verde no background
+                pdf.set_text_color(255, 255, 255)  # texto branco
             else:
-                pdf.set_text_color(0, 0, 0)      # preto
+                pdf.set_fill_color(255, 255, 255)  # fundo branco
+                pdf.set_text_color(0, 0, 0)      # texto preto
             pdf.cell(col_widths_municipio_top20[i], 6, texto, 1, 0, 'C', fill=True)
-            pdf.set_text_color(0, 0, 0)  # reset
+            pdf.set_fill_color(255, 255, 255)  # reset do background
+            pdf.set_text_color(0, 0, 0)  # reset do texto
         else:
             pdf.cell(col_widths_municipio_top20[i], 6, safe_str(item), 1, 0, 'C', fill=True)
     pdf.ln()
@@ -2330,13 +2350,17 @@ for idx, row in enumerate(rows_risp):
             valor = float(item) if item is not None else 0
             texto = f"{valor:.2f}%"
             if valor > 0:
-                pdf.set_text_color(220, 20, 60)  # vermelho
+                pdf.set_fill_color(220, 20, 60)  # vermelho no background
+                pdf.set_text_color(255, 255, 255)  # texto branco
             elif valor < 0:
-                pdf.set_text_color(0, 128, 0)    # verde
+                pdf.set_fill_color(0, 128, 0)    # verde no background
+                pdf.set_text_color(255, 255, 255)  # texto branco
             else:
-                pdf.set_text_color(0, 0, 0)      # preto
+                pdf.set_fill_color(255, 255, 255)  # fundo branco
+                pdf.set_text_color(0, 0, 0)      # texto preto
             pdf.cell(col_widths_risp[i], 6, texto, 1, 0, 'C', fill=True)
-            pdf.set_text_color(0, 0, 0)  # reset
+            pdf.set_fill_color(255, 255, 255)  # reset do background
+            pdf.set_text_color(0, 0, 0)  # reset do texto
         else:
             pdf.cell(col_widths_risp[i], 6, safe_str(item), 1, 0, 'C', fill=True)
     pdf.ln()
@@ -2448,13 +2472,17 @@ for idx, row in enumerate(rows_aisp):
             valor = float(item) if item is not None else 0
             texto = f"{valor:.2f}%" 
             if valor > 0:
-                pdf.set_text_color(220, 20, 60)  # vermelho
+                pdf.set_fill_color(220, 20, 60)  # vermelho no background
+                pdf.set_text_color(255, 255, 255)  # texto branco
             elif valor < 0:
-                pdf.set_text_color(0, 128, 0)    # verde
+                pdf.set_fill_color(0, 128, 0)    # verde no background
+                pdf.set_text_color(255, 255, 255)  # texto branco
             else:
-                pdf.set_text_color(0, 0, 0)      # preto  
+                pdf.set_fill_color(255, 255, 255)  # fundo branco
+                pdf.set_text_color(0, 0, 0)      # texto preto  
             pdf.cell(col_widths_aisp[i], 6, texto, 1, 0, 'C', fill=True)
-            pdf.set_text_color(0, 0, 0)  # reset
+            pdf.set_fill_color(255, 255, 255)  # reset do background
+            pdf.set_text_color(0, 0, 0)  # reset do texto
         else:
             pdf.cell(col_widths_aisp[i], 6, safe_str(item), 1, 0, 'C', fill=True)
     pdf.ln()
