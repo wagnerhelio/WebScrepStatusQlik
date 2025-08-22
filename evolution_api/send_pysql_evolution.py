@@ -82,8 +82,108 @@ client = EvolutionClient(
 )
 
 # =============================================================================
+# VERIFICAÇÃO DE DEPENDÊNCIAS
+# =============================================================================
+
+def verificar_dependencias_pysql():
+    """
+    Verifica se as dependências necessárias para os scripts PySQL estão disponíveis.
+    """
+    print("🔍 Verificando dependências PySQL...")
+    
+    dependencias = [
+        'oracledb',
+        'pandas', 
+        'matplotlib',
+        'seaborn',
+        'fpdf',
+        'tqdm'
+    ]
+    
+    dependencias_faltando = []
+    
+    for dep in dependencias:
+        try:
+            __import__(dep)
+            print(f"   ✅ {dep}")
+        except ImportError:
+            print(f"   ❌ {dep} - NÃO ENCONTRADO")
+            dependencias_faltando.append(dep)
+    
+    if dependencias_faltando:
+        print(f"\n⚠️ Dependências faltando: {', '.join(dependencias_faltando)}")
+        print("💡 Instale com: pip install " + " ".join(dependencias_faltando))
+        return False
+    else:
+        print("✅ Todas as dependências estão disponíveis")
+        return True
+
+# =============================================================================
 # EXECUÇÃO DE SCRIPTS PYSQL
 # =============================================================================
+
+def executar_script_interativo(script_path, descricao):
+    """
+    Executa um script PySQL de forma interativa, mostrando progresso em tempo real.
+    
+    Args:
+        script_path (str): Caminho para o script a ser executado
+        descricao (str): Descrição do script para logs
+        
+    Returns:
+        str: Resultado da execução
+    """
+    try:
+        print(f"🚀 Executando {descricao} de forma interativa...")
+        print(f"   📁 Script: {script_path}")
+        print(f"   🐍 Python: {sys.executable}")
+        print(f"   📂 Diretório de trabalho: {project_root}")
+        
+        # Verifica se o script existe
+        if not os.path.exists(script_path):
+            return f"Script não encontrado: {script_path}"
+        
+        print(f"\n{'='*60}")
+        print(f"🔄 EXECUTANDO: {descricao}")
+        print(f"{'='*60}")
+        
+        # Executa o script de forma interativa
+        processo = subprocess.Popen(
+            [sys.executable, script_path],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            cwd=project_root,
+            env=os.environ.copy(),
+            bufsize=1,
+            universal_newlines=True
+        )
+        
+        # Mostra a saída em tempo real
+        while True:
+            output = processo.stdout.readline()
+            if output == '' and processo.poll() is not None:
+                break
+            if output:
+                print(output.strip())
+        
+        # Aguarda o processo terminar
+        return_code = processo.poll()
+        
+        print(f"\n{'='*60}")
+        print(f"🏁 EXECUÇÃO FINALIZADA: {descricao}")
+        print(f"{'='*60}")
+        
+        if return_code == 0:
+            print(f"✅ {descricao} executado com sucesso")
+            return f"Script {descricao} executado com sucesso (código {return_code})"
+        else:
+            print(f"⚠️ {descricao} retornou código {return_code}")
+            return f"Erro na execução de {descricao} (código {return_code})"
+            
+    except Exception as e:
+        print(f"❌ Erro ao executar {descricao}: {e}")
+        return f"Erro ao executar {descricao}: {str(e)}"
 
 def executar_script_pysql(script_path, descricao):
     """
@@ -98,29 +198,81 @@ def executar_script_pysql(script_path, descricao):
     """
     try:
         print(f"🔄 Executando {descricao}...")
+        print(f"   📁 Script: {script_path}")
+        print(f"   🐍 Python: {sys.executable}")
+        print(f"   📂 Diretório de trabalho: {project_root}")
         
-        # Executa o script e captura a saída
+        # Verifica se o script existe
+        if not os.path.exists(script_path):
+            return f"Script não encontrado: {script_path}"
+        
+        print(f"🚀 Iniciando execução de {descricao}...")
+        print("─" * 60)
+        
+        # Executa o script SEM capturar saída para mostrar em tempo real
         resultado = subprocess.run(
             [sys.executable, script_path],
-            capture_output=True,
+            capture_output=False,  # Permite que a saída apareça no terminal
             text=True,
             cwd=project_root,
-            timeout=600  # 10 minutos de timeout para scripts PySQL
+            timeout=3600,  # 60 minutos de timeout para scripts PySQL
+            env=os.environ.copy()  # Copia variáveis de ambiente
         )
+        
+        print("─" * 60)
         
         if resultado.returncode == 0:
             print(f"✅ {descricao} executado com sucesso")
-            return resultado.stdout.strip()
+            return f"Script {descricao} executado com sucesso (código {resultado.returncode})"
         else:
             print(f"⚠️ {descricao} retornou código {resultado.returncode}")
-            return f"Erro na execução de {descricao}: {resultado.stderr.strip()}"
+            return f"Erro na execução de {descricao} (código {resultado.returncode})"
             
     except subprocess.TimeoutExpired:
-        print(f"⏰ Timeout ao executar {descricao}")
-        return f"Timeout ao executar {descricao}"
+        print(f"⏰ Timeout ao executar {descricao} (60 minutos)")
+        return f"Timeout ao executar {descricao} - script demorou mais de 60 minutos"
     except Exception as e:
         print(f"❌ Erro ao executar {descricao}: {e}")
         return f"Erro ao executar {descricao}: {str(e)}"
+
+def testar_execucao_script(script_path, descricao):
+    """
+    Testa a execução de um script específico com timeout reduzido para diagnóstico.
+    
+    Args:
+        script_path (str): Caminho para o script a ser testado
+        descricao (str): Descrição do script para logs
+        
+    Returns:
+        bool: True se o script executou com sucesso, False caso contrário
+    """
+    try:
+        print(f"🧪 Testando execução de {descricao}...")
+        print(f"   📁 Script: {script_path}")
+        
+        # Testa com timeout reduzido para diagnóstico
+        resultado = subprocess.run(
+            [sys.executable, script_path],
+            capture_output=False,  # Permite que a saída apareça no terminal
+            text=True,
+            cwd=project_root,
+            timeout=60,  # 1 minuto para teste
+            env=os.environ.copy()
+        )
+        
+        if resultado.returncode == 0:
+            print(f"✅ {descricao} executou com sucesso no teste")
+            return True
+        else:
+            print(f"❌ {descricao} falhou no teste (código {resultado.returncode})")
+            return False
+            
+    except subprocess.TimeoutExpired:
+        print(f"⏰ {descricao} demorou mais de 1 minuto no teste")
+        return False
+    except Exception as e:
+        print(f"❌ Erro ao testar {descricao}: {e}")
+        return False
 
 def executar_scripts_pysql():
     """
@@ -149,17 +301,38 @@ def executar_scripts_pysql():
     
     print(f"📄 Encontrados {len(scripts_python)} scripts Python")
     
-    # Executa cada script
+    # Primeiro testa cada script com timeout reduzido
+    print("\n🧪 TESTANDO EXECUÇÃO DOS SCRIPTS (timeout: 1 minuto)...")
+    scripts_ok = []
     for script in scripts_python:
         script_path = os.path.join(pysql_dir, script)
         descricao = f"Script {script}"
         
-        resultado = executar_script_pysql(script_path, descricao)
+        if testar_execucao_script(script_path, descricao):
+            scripts_ok.append(script)
+        else:
+            print(f"⚠️ {script} falhou no teste - será executado com timeout completo")
+    
+    print(f"\n📊 Resultado dos testes: {len(scripts_ok)}/{len(scripts_python)} scripts OK")
+    
+    # Executa cada script com execução interativa
+    for i, script in enumerate(scripts_python, 1):
+        script_path = os.path.join(pysql_dir, script)
+        descricao = f"Script {script}"
+        
+        print(f"\n{'='*60}")
+        print(f"🔄 EXECUTANDO SCRIPT {i}/{len(scripts_python)}: {script}")
+        print(f"{'='*60}")
+        
+        # Usa execução interativa para mostrar saída em tempo real
+        resultado = executar_script_interativo(script_path, descricao)
         resultados[script] = resultado
         
         # Aguarda um pouco entre execuções para não sobrecarregar
-        import time
-        time.sleep(2)
+        if i < len(scripts_python):  # Não aguarda após o último script
+            print(f"⏳ Aguardando 3 segundos antes do próximo script...")
+            import time
+            time.sleep(3)
     
     return resultados
 
@@ -521,37 +694,43 @@ def main():
     print(f"📁 Pasta de scripts PySQL: {pysql_dir}")
     
     try:
-        # 1. Executa scripts PySQL
+        # 1. Verifica dependências PySQL
+        print("\n" + "="*60)
+        print("🔍 VERIFICAÇÃO DE DEPENDÊNCIAS PYSQL")
+        print("="*60)
+        verificar_dependencias_pysql()
+
+        # 2. Executa scripts PySQL
         print("\n" + "="*60)
         print("🔄 EXECUÇÃO DE SCRIPTS PYSQL")
         print("="*60)
         resultados_execucao = executar_scripts_pysql()
         
-        # 2. Envia resumos de tempos de execução
+        # 3. Envia resumos de tempos de execução
         print("\n" + "="*60)
         print("📊 ENVIO DE RESUMOS DE TEMPOS")
         print("="*60)
         enviar_resumos_tempo()
         
-        # 3. Envia relatórios PDF
+        # 4. Envia relatórios PDF
         print("\n" + "="*60)
         print("📄 ENVIO DE RELATÓRIOS PDF")
         print("="*60)
         enviar_relatorios_pdf()
         
-        # 4. Envia arquivos de tempo (JSON)
+        # 5. Envia arquivos de tempo (JSON)
         print("\n" + "="*60)
         print("📊 ENVIO DE ARQUIVOS DE TEMPO")
         print("="*60)
         enviar_arquivos_tempo()
         
-        # 5. Envia logs de erro
+        # 6. Envia logs de erro
         print("\n" + "="*60)
         print("📋 ENVIO DE LOGS DE ERRO")
         print("="*60)
         enviar_logs_erro()
         
-        # 6. Limpa as pastas após envio (preservando JSONs)
+        # 7. Limpa as pastas após envio (preservando JSONs)
         print("\n" + "="*60)
         print("🧹 LIMPEZA DAS PASTAS")
         print("="*60)
