@@ -144,7 +144,7 @@ def executar_com_progresso(nome, query, cursor, tempos_medios):
     cursor.execute(query)
     
     # Processa o resultado
-    if nome in ["Homicídios Comparativo por Município", "Homicídios Comparativo por 2 Anos","Homicídios Comparativo por Todos os Anos","Homicídios Comparativo por Regiões","Homicídios Comparativo por Regiões dia atual","Homicídios Comparativo por Dia","Homicídios Comparativo por Dia por Regiões","Homicídios Comparativo por Mes por Regiões","Homicídios Comparativo por Semana por Regiões","Homicídios em Presídios","Homicídios Comparativo por Município Top 20","Homicídios Comparativo por Risp","Homicídios Comparativo por Aisp"]:
+    if nome in ["Feminicídios Comparativo por Município", "Feminicídios Comparativo por 2 Anos","Feminicídios Comparativo por Todos os Anos","Feminicídios Comparativo por Regiões","Feminicídios Comparativo por Regiões dia atual","Feminicídios Comparativo por Dia","Feminicídios Comparativo por Dia por Regiões","Feminicídios Comparativo por Mes por Regiões","Feminicídios Comparativo por Semana por Regiões","Feminicídios em Presídios","Feminicídios Comparativo por Município Top 20","Feminicídios Comparativo por Risp","Feminicídios Comparativo por Aisp"]:
         columns = [str(col[0]) for col in cursor.description]
         rows = [list(row) for row in cursor.fetchall()]
         resultado = (columns, rows)
@@ -278,7 +278,7 @@ WHERE ende.estado_sigla = 'GO'
 '''
 
 # Query de homicídio por município (tabela)
-query_homicidios_comparativo_municipios = '''
+query_feminicidio_comparativo_municipios = '''
 SELECT
   NVL(cid.nome, 'NÃO INFORMADO') AS municipio_nome,
   oc.id AS id_rai,
@@ -322,15 +322,7 @@ INNER JOIN spi.qualificacao_categorias qcap ON qcap.qualificacao_categoria = qa.
 WHERE ende.estado_sigla = 'GO'
   AND TRUNC(oc.datafato) IN(TRUNC(SYSDATE-1),TRUNC(SYSDATE))
   AND oc.statusocorrencia = 'OCORRENCIA'
-  AND (
-    UPPER(nat_tip_pes.GRUPO) = 'HOMICÍDIO' OR nat_pes.naturezaid IN (
-      '500001', '500002', '500003', '500004', '500005', '500006', '500007', '500011',
-      '400711', '400712', '400001', '400002', '501199', '501200', '501201', '501202',
-      '501203', '501204', '501220', '501136', '501137', '501138', '501139', '501140',
-      '501141', '501288', '520269', '520323', '521062', '522242', '522243', '522262',
-      '523006', '523007', '523008', '523009', '523010', '523011', '522745'
-    )
-  )
+  AND (UPPER(nat_tip_pes.GRUPO) = 'FEMINICÍDIO' OR nat_pes.naturezaid IN ('501138', '501139', '501199', '501201', '501204', '520269', '520323','523011','523006'))
   AND nat_pes.consumacaoenum = 'CONSUMADO'
   AND ope.tipopessoaenum = 'FISICA'
   AND qcap.nome = 'VÍTIMA'
@@ -341,7 +333,7 @@ ORDER BY
 '''
 
 # Query de homicídio comparativo dois anos (gráfico)
-query_homicidios_comparativo_dois_anos = '''
+query_feminicidio_comparativo_dois_anos = '''
 SELECT
   *
 FROM (
@@ -372,7 +364,7 @@ ON oc.id = ope.ocorrencia_id
 WHERE ende.estado_sigla = 'GO'
 AND (EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM ADD_MONTHS(SYSDATE, -12)) OR (EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM SYSDATE)AND TRUNC(oc.datafato) <= TRUNC(SYSDATE - 1)))
 AND oc.statusocorrencia = 'OCORRENCIA'
-AND (UPPER(nat_tip_pes.GRUPO) = 'HOMICÍDIO' OR nat_pes.naturezaid IN ('500001', '500002', '500003', '500004', '500005', '500006', '500007', '500011', '400711', '400712', '400001', '400002', '501199', '501200', '501201', '501202', '501203', '501204', '501220', '501136', '501137', '501138', '501139', '501140', '501141', '501288', '520269', '520323', '521062', '522242', '522243', '522262', '523006', '523007', '523008', '523009', '523010', '523011', '522745'))
+AND (UPPER(nat_tip_pes.GRUPO) = 'FEMINICÍDIO' OR nat_pes.naturezaid IN ('501138', '501139', '501199', '501201', '501204', '520269', '520323','523011','523006'))
 AND nat_pes.consumacaoenum = 'CONSUMADO'
 AND ope.tipopessoaenum = 'FISICA'
 AND qcap.nome = 'VÍTIMA'
@@ -384,7 +376,7 @@ ORDER BY
   ano_fato 
 '''
 
-query_homicidios_comparativo_todos_anos ='''
+query_feminicidio_comparativo_todos_anos ='''
 SELECT 
   *
 FROM (
@@ -422,7 +414,7 @@ AND TRUNC(oc.datafato) BETWEEN TO_DATE('01/01/2016', 'DD/MM/YYYY') AND TRUNC(SYS
 --AND oc.datafato >= TRUNC(SYSDATE - 1)
 AND oc.statusocorrencia = 'OCORRENCIA'
 --FILTRO
-AND (UPPER(nat_tip_pes.GRUPO) = 'HOMICÍDIO' OR nat_pes.naturezaid IN ('500001', '500002', '500003', '500004', '500005', '500006', '500007', '500011', '400711', '400712', '400001', '400002', '501199', '501200', '501201', '501202', '501203', '501204', '501220', '501136', '501137', '501138', '501139', '501140', '501141', '501288', '520269', '520323', '521062', '522242', '522243', '522262', '523006', '523007', '523008', '523009', '523010', '523011', '522745'))
+AND (UPPER(nat_tip_pes.GRUPO) = 'FEMINICÍDIO' OR nat_pes.naturezaid IN ('501138', '501139', '501199', '501201', '501204', '520269', '520323','523011','523006'))
 AND nat_pes.consumacaoenum = 'CONSUMADO'
 AND ope.tipopessoaenum = 'FISICA' 
 AND qcap.nome = 'VÍTIMA'
@@ -434,7 +426,7 @@ ORDER BY
   ano_fato
 '''
 
-query_homicidios_comparativo_regioes ='''
+query_feminicidio_comparativo_regioes ='''
 SELECT
 CASE
     WHEN cid.uf <> 'GO' THEN NULL
@@ -483,15 +475,7 @@ INNER JOIN spi.qualificacao_categorias qcap ON qcap.qualificacao_categoria = qa.
 WHERE ende.estado_sigla = 'GO'
 AND (EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM ADD_MONTHS(SYSDATE, -12)) OR (EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM SYSDATE)AND TRUNC(oc.datafato) <= TRUNC(SYSDATE - 1)))
 AND oc.statusocorrencia = 'OCORRENCIA'
-AND (
-    UPPER(nat_tip_pes.GRUPO) = 'HOMICÍDIO' OR nat_pes.naturezaid IN (
-      '500001', '500002', '500003', '500004', '500005', '500006', '500007', '500011',
-      '400711', '400712', '400001', '400002', '501199', '501200', '501201', '501202',
-      '501203', '501204', '501220', '501136', '501137', '501138', '501139', '501140',
-      '501141', '501288', '520269', '520323', '521062', '522242', '522243', '522262',
-      '523006', '523007', '523008', '523009', '523010', '523011', '522745'
-    )
-  )
+AND (UPPER(nat_tip_pes.GRUPO) = 'FEMINICÍDIO' OR nat_pes.naturezaid IN ('501138', '501139', '501199', '501201', '501204', '520269', '520323','523011','523006'))
 AND nat_pes.consumacaoenum = 'CONSUMADO'
 AND ope.tipopessoaenum = 'FISICA'
 AND qcap.nome = 'VÍTIMA'
@@ -504,7 +488,7 @@ ELSE 'INTERIOR'
 END
 '''
 
-query_homicidios_comparativo_regioes_dia_atual ='''
+query_feminicidio_comparativo_regioes_dia_atual ='''
 SELECT
 CASE
     WHEN cid.uf <> 'GO' THEN NULL
@@ -553,7 +537,7 @@ INNER JOIN spi.qualificacao_categorias qcap ON qcap.qualificacao_categoria = qa.
 WHERE ende.estado_sigla = 'GO'
 AND (EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM ADD_MONTHS(SYSDATE, -12)) OR (EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM SYSDATE) AND TRUNC(oc.datafato) <= TRUNC(SYSDATE)))
 AND oc.statusocorrencia = 'OCORRENCIA'
-AND (UPPER(nat_tip_pes.GRUPO) = 'HOMICÍDIO' OR nat_pes.naturezaid IN ('500001', '500002', '500003', '500004', '500005', '500006', '500007', '500011','400711', '400712', '400001', '400002', '501199', '501200', '501201', '501202','501203', '501204', '501220', '501136', '501137', '501138', '501139', '501140','501141', '501288', '520269', '520323', '521062', '522242', '522243', '522262','523006', '523007', '523008', '523009', '523010', '523011', '522745'))
+AND (UPPER(nat_tip_pes.GRUPO) = 'FEMINICÍDIO' OR nat_pes.naturezaid IN ('501138', '501139', '501199', '501201', '501204', '520269', '520323','523011','523006'))
 AND nat_pes.consumacaoenum = 'CONSUMADO'
 AND ope.tipopessoaenum = 'FISICA'
 AND qcap.nome = 'VÍTIMA'
@@ -566,7 +550,7 @@ ELSE 'INTERIOR'
 END
 '''
 
-query_homicidios_comparativo_dia ='''
+query_feminicidio_comparativo_dia ='''
 SELECT
   TO_CHAR(oc.datafato, 'DD') || '/' || INITCAP(TO_CHAR(oc.datafato, 'Mon', 'NLS_DATE_LANGUAGE=PORTUGUESE')) AS data,
   EXTRACT(YEAR FROM oc.datafato) AS ano,
@@ -601,7 +585,7 @@ INNER JOIN spi.qalificacao qa ON qa.codigo_qualificacao = qua.qualificacaoid
 INNER JOIN spi.qualificacao_categorias qcap ON qcap.qualificacao_categoria = qa.qualificacao_categoria
 WHERE ende.estado_sigla = 'GO'
   AND oc.statusocorrencia = 'OCORRENCIA'
-  AND (UPPER(nat_tip_pes.GRUPO) = 'HOMICÍDIO' OR nat_pes.naturezaid IN ('500001', '500002', '500003', '500004', '500005', '500006', '500007', '500011', '400711', '400712', '400001', '400002', '501199', '501200', '501201', '501202', '501203', '501204', '501220', '501136', '501137', '501138', '501139', '501140', '501141', '501288', '520269', '520323', '521062', '522242', '522243', '522262', '523006', '523007', '523008', '523009', '523010', '523011', '522745'))
+  AND (UPPER(nat_tip_pes.GRUPO) = 'FEMINICÍDIO' OR nat_pes.naturezaid IN ('501138', '501139', '501199', '501201', '501204', '520269', '520323','523011','523006'))
   AND nat_pes.consumacaoenum = 'CONSUMADO'
   AND ope.tipopessoaenum = 'FISICA'
   AND qcap.nome = 'VÍTIMA'
@@ -616,7 +600,7 @@ ORDER BY
   TO_NUMBER(TO_CHAR(oc.datafato, 'DD')), ano
 '''
 
-query_homicidios_comparativo_regioes_dia ='''
+query_feminicidio_comparativo_regioes_dia ='''
 SELECT
   CASE
 	  WHEN cid.uf <> 'GO' THEN NULL
@@ -657,7 +641,7 @@ INNER JOIN spi.qalificacao qa ON qa.codigo_qualificacao = qua.qualificacaoid
 INNER JOIN spi.qualificacao_categorias qcap ON qcap.qualificacao_categoria = qa.qualificacao_categoria
 WHERE ende.estado_sigla = 'GO'
   AND oc.statusocorrencia = 'OCORRENCIA'
-  AND (UPPER(nat_tip_pes.GRUPO) = 'HOMICÍDIO' OR nat_pes.naturezaid IN ('500001', '500002', '500003', '500004', '500005', '500006', '500007', '500011', '400711', '400712', '400001', '400002', '501199', '501200', '501201', '501202', '501203', '501204', '501220', '501136', '501137', '501138', '501139', '501140', '501141', '501288', '520269', '520323', '521062', '522242', '522243', '522262', '523006', '523007', '523008', '523009', '523010', '523011', '522745'))
+  AND (UPPER(nat_tip_pes.GRUPO) = 'FEMINICÍDIO' OR nat_pes.naturezaid IN ('501138', '501139', '501199', '501201', '501204', '520269', '520323','523011','523006'))
   AND nat_pes.consumacaoenum = 'CONSUMADO'
   AND ope.tipopessoaenum = 'FISICA'
   AND qcap.nome = 'VÍTIMA'
@@ -678,7 +662,7 @@ ORDER BY
   TO_NUMBER(TO_CHAR(oc.datafato, 'DD')), ano
 '''
 
-query_homicidios_comparativo_regioes_mes ='''
+query_feminicidio_comparativo_regioes_mes ='''
 SELECT
   CASE
 	  WHEN cid.uf <> 'GO' THEN NULL
@@ -719,7 +703,7 @@ INNER JOIN spi.qalificacao qa ON qa.codigo_qualificacao = qua.qualificacaoid
 INNER JOIN spi.qualificacao_categorias qcap ON qcap.qualificacao_categoria = qa.qualificacao_categoria
 WHERE ende.estado_sigla = 'GO'
   AND oc.statusocorrencia = 'OCORRENCIA'
-  AND (UPPER(nat_tip_pes.GRUPO) = 'HOMICÍDIO' OR nat_pes.naturezaid IN ('500001', '500002', '500003', '500004', '500005', '500006', '500007', '500011', '400711', '400712', '400001', '400002', '501199', '501200', '501201', '501202', '501203', '501204', '501220', '501136', '501137', '501138', '501139', '501140', '501141', '501288', '520269', '520323', '521062', '522242', '522243', '522262', '523006', '523007', '523008', '523009', '523010', '523011', '522745'))
+  AND (UPPER(nat_tip_pes.GRUPO) = 'FEMINICÍDIO' OR nat_pes.naturezaid IN ('501138', '501139', '501199', '501201', '501204', '520269', '520323','523011','523006'))
   AND nat_pes.consumacaoenum = 'CONSUMADO'
   AND ope.tipopessoaenum = 'FISICA'
   AND qcap.nome = 'VÍTIMA'
@@ -738,7 +722,7 @@ ORDER BY
   EXTRACT(MONTH FROM oc.datafato) 
 '''
 
-query_homicidios_comparativo_regioes_semana ='''
+query_feminicidio_comparativo_regioes_semana ='''
 SELECT
   CASE
 	  WHEN cid.uf <> 'GO' THEN NULL
@@ -779,7 +763,7 @@ INNER JOIN spi.qalificacao qa ON qa.codigo_qualificacao = qua.qualificacaoid
 INNER JOIN spi.qualificacao_categorias qcap ON qcap.qualificacao_categoria = qa.qualificacao_categoria
 WHERE ende.estado_sigla = 'GO'
   AND oc.statusocorrencia = 'OCORRENCIA'
-  AND (UPPER(nat_tip_pes.GRUPO) = 'HOMICÍDIO' OR nat_pes.naturezaid IN ('500001', '500002', '500003', '500004', '500005', '500006', '500007', '500011', '400711', '400712', '400001', '400002', '501199', '501200', '501201', '501202', '501203', '501204', '501220', '501136', '501137', '501138', '501139', '501140', '501141', '501288', '520269', '520323', '521062', '522242', '522243', '522262', '523006', '523007', '523008', '523009', '523010', '523011', '522745'))
+  AND (UPPER(nat_tip_pes.GRUPO) = 'FEMINICÍDIO' OR nat_pes.naturezaid IN ('501138', '501139', '501199', '501201', '501204', '520269', '520323','523011','523006'))
   AND nat_pes.consumacaoenum = 'CONSUMADO'
   AND ope.tipopessoaenum = 'FISICA'
   AND qcap.nome = 'VÍTIMA'
@@ -798,7 +782,7 @@ ORDER BY
   TO_CHAR(oc.datafato, 'D')
 '''
 
-query_homicidios_em_presidios ='''
+query_feminicidio_em_presidios ='''
 SELECT
   NVL(cid.nome, 'NÃO INFORMADO') AS municipio_nome,
   oc.id AS id_rai,
@@ -855,7 +839,7 @@ ende.estado_sigla = 'GO'
 AND EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM SYSDATE)
 AND oc.statusocorrencia = 'OCORRENCIA'
 --FILTRO 
-AND (UPPER(nat_tip_pes.GRUPO) = 'HOMICÍDIO' OR nat_pes.naturezaid IN ('500001', '500002', '500003', '500004', '500005', '500006', '500007', '500011', '400711', '400712', '400001', '400002', '501199', '501200', '501201', '501202', '501203', '501204', '501220', '501136', '501137', '501138', '501139', '501140', '501141', '501288', '520269', '520323', '521062', '522242', '522243', '522262', '523006', '523007', '523008', '523009', '523010', '523011', '522745'))
+AND (UPPER(nat_tip_pes.GRUPO) = 'FEMINICÍDIO' OR nat_pes.naturezaid IN ('501138', '501139', '501199', '501201', '501204', '520269', '520323','523011','523006'))
 AND nat_pes.consumacaoenum = 'CONSUMADO'
 AND ope.tipopessoaenum = 'FISICA' 
 AND qcap.nome = 'VÍTIMA'
@@ -866,7 +850,7 @@ ORDER BY
   municipio_nome, id_rai, oc.datafato
 '''	
 
-query_homicidios_comparativo_municipios_top_20 = '''
+query_feminicidio_comparativo_municipios_top_20 = '''
 SELECT
 NVL(cid.nome, 'NÃO INFORMADO') AS municipio_nome,
 COUNT(DISTINCT CASE WHEN oc.datafato >= TRUNC(ADD_MONTHS(SYSDATE, -12), 'MM') AND oc.datafato <  TRUNC(ADD_MONTHS(SYSDATE, -11), 'MM') THEN pes.id END) AS mes_anterior_fechado,
@@ -910,7 +894,7 @@ INNER JOIN spi.qualificacao_categorias qcap ON qcap.qualificacao_categoria = qa.
 WHERE ende.estado_sigla = 'GO'
 AND (EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM ADD_MONTHS(SYSDATE, -12)) OR (EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM SYSDATE)AND TRUNC(oc.datafato) <= TRUNC(SYSDATE - 1)))
 AND oc.statusocorrencia = 'OCORRENCIA'
-AND (UPPER(nat_tip_pes.GRUPO) = 'HOMICÍDIO' OR nat_pes.naturezaid IN ('500001', '500002', '500003', '500004', '500005', '500006', '500007', '500011','400711', '400712', '400001', '400002', '501199', '501200', '501201', '501202','501203', '501204', '501220', '501136', '501137', '501138', '501139', '501140','501141', '501288', '520269', '520323', '521062', '522242', '522243', '522262','523006', '523007', '523008', '523009', '523010', '523011', '522745'))
+AND (UPPER(nat_tip_pes.GRUPO) = 'FEMINICÍDIO' OR nat_pes.naturezaid IN ('501138', '501139', '501199', '501201', '501204', '520269', '520323','523011','523006'))
 AND nat_pes.consumacaoenum = 'CONSUMADO'
 AND ope.tipopessoaenum = 'FISICA'
 AND qcap.nome = 'VÍTIMA'
@@ -919,7 +903,7 @@ ORDER BY 7 DESC
 FETCH FIRST 38 ROWS ONLY
 '''
 
-query_homicidios_comparativo_risp = '''
+query_feminicidio_comparativo_risp = '''
 SELECT
 ris.nome AS risp,
 COUNT(DISTINCT CASE WHEN oc.datafato >= TRUNC(ADD_MONTHS(SYSDATE, -12), 'MM') AND oc.datafato <  TRUNC(ADD_MONTHS(SYSDATE, -11), 'MM') THEN pes.id END) AS mes_anterior_fechado,
@@ -963,7 +947,7 @@ INNER JOIN spi.qualificacao_categorias qcap ON qcap.qualificacao_categoria = qa.
 WHERE ende.estado_sigla = 'GO'
 AND (EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM ADD_MONTHS(SYSDATE, -12)) OR (EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM SYSDATE)AND TRUNC(oc.datafato) <= TRUNC(SYSDATE - 1)))
 AND oc.statusocorrencia = 'OCORRENCIA'
-AND (UPPER(nat_tip_pes.GRUPO) = 'HOMICÍDIO' OR nat_pes.naturezaid IN ('500001', '500002', '500003', '500004', '500005', '500006', '500007', '500011','400711', '400712', '400001', '400002', '501199', '501200', '501201', '501202','501203', '501204', '501220', '501136', '501137', '501138', '501139', '501140','501141', '501288', '520269', '520323', '521062', '522242', '522243', '522262','523006', '523007', '523008', '523009', '523010', '523011', '522745'))
+AND (UPPER(nat_tip_pes.GRUPO) = 'FEMINICÍDIO' OR nat_pes.naturezaid IN ('501138', '501139', '501199', '501201', '501204', '520269', '520323','523011','523006'))
 AND nat_pes.consumacaoenum = 'CONSUMADO'
 AND ope.tipopessoaenum = 'FISICA'
 AND qcap.nome = 'VÍTIMA'
@@ -972,7 +956,7 @@ GROUP BY ris.nome
 ORDER BY 7 DESC
 '''
 
-query_homicidios_comparativo_aisp = '''
+query_feminicidio_comparativo_aisp = '''
 SELECT
 CASE
 	WHEN ais.aisp = 8 THEN '08ª AISP - ÁREA CENT DE AP GYN'	
@@ -1025,7 +1009,7 @@ INNER JOIN spi.qualificacao_categorias qcap ON qcap.qualificacao_categoria = qa.
 WHERE ende.estado_sigla = 'GO'
 AND (EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM ADD_MONTHS(SYSDATE, -12)) OR (EXTRACT(YEAR FROM oc.datafato) = EXTRACT(YEAR FROM SYSDATE)AND TRUNC(oc.datafato) <= TRUNC(SYSDATE - 1)))
 AND oc.statusocorrencia = 'OCORRENCIA'
-AND (UPPER(nat_tip_pes.GRUPO) = 'HOMICÍDIO' OR nat_pes.naturezaid IN ('500001', '500002', '500003', '500004', '500005', '500006', '500007', '500011','400711', '400712', '400001', '400002', '501199', '501200', '501201', '501202','501203', '501204', '501220', '501136', '501137', '501138', '501139', '501140','501141', '501288', '520269', '520323', '521062', '522242', '522243', '522262','523006', '523007', '523008', '523009', '523010', '523011', '522745'))
+AND (UPPER(nat_tip_pes.GRUPO) = 'FEMINICÍDIO' OR nat_pes.naturezaid IN ('501138', '501139', '501199', '501201', '501204', '520269', '520323','523011','523006'))
 AND nat_pes.consumacaoenum = 'CONSUMADO'
 AND ope.tipopessoaenum = 'FISICA'
 AND qcap.nome = 'VÍTIMA'
@@ -1036,19 +1020,19 @@ ORDER BY 7 DESC
 
 queries = [
     ("Feminicídios", query_feminicidios),
-    ("Homicídios Comparativo por Município", query_homicidios_comparativo_municipios),
-    ("Homicídios Comparativo por 2 Anos", query_homicidios_comparativo_dois_anos),
-    ("Homicídios Comparativo por Todos os Anos", query_homicidios_comparativo_todos_anos),
-    ("Homicídios Comparativo por Dia", query_homicidios_comparativo_dia),
-    ("Homicídios Comparativo por Regiões dia atual", query_homicidios_comparativo_regioes_dia_atual),
-    ("Homicídios Comparativo por Regiões", query_homicidios_comparativo_regioes),
-    ("Homicídios Comparativo por Dia por Regiões", query_homicidios_comparativo_regioes_dia),
-    ("Homicídios Comparativo por Mes por Regiões", query_homicidios_comparativo_regioes_mes),
-    ("Homicídios Comparativo por Semana por Regiões", query_homicidios_comparativo_regioes_semana),
-    ("Homicídios em Presídios", query_homicidios_em_presidios),
-    ("Homicídios Comparativo por Município Top 20", query_homicidios_comparativo_municipios_top_20),
-    ("Homicídios Comparativo por Risp", query_homicidios_comparativo_risp),
-    ("Homicídios Comparativo por Aisp", query_homicidios_comparativo_aisp)
+    ("Feminicídios Comparativo por Município", query_feminicidio_comparativo_municipios),
+    ("Feminicídios Comparativo por 2 Anos", query_feminicidio_comparativo_dois_anos),
+    ("Feminicídios Comparativo por Todos os Anos", query_feminicidio_comparativo_todos_anos),
+    ("Feminicídios Comparativo por Dia", query_feminicidio_comparativo_dia),
+    ("Feminicídios Comparativo por Regiões dia atual", query_feminicidio_comparativo_regioes_dia_atual),
+    ("Feminicídios Comparativo por Regiões", query_feminicidio_comparativo_regioes),
+    ("Feminicídios Comparativo por Dia por Regiões", query_feminicidio_comparativo_regioes_dia),
+    ("Feminicídios Comparativo por Mes por Regiões", query_feminicidio_comparativo_regioes_mes),
+    ("Feminicídios Comparativo por Semana por Regiões", query_feminicidio_comparativo_regioes_semana),
+    ("Feminicídios em Presídios", query_feminicidio_em_presidios),
+    ("Feminicídios Comparativo por Município Top 20", query_feminicidio_comparativo_municipios_top_20),
+    ("Feminicídios Comparativo por Risp", query_feminicidio_comparativo_risp),
+    ("Feminicídios Comparativo por Aisp", query_feminicidio_comparativo_aisp)
 ]
 
 # Carrega tempos médios de execução históricos
@@ -1191,13 +1175,13 @@ columns_regiao_observatorio_atualizada = [
     "Índice por 100K hab."
 ]
 
-columns_regiao_observatorio, rows_regiao_observatorio = resultados["Homicídios Comparativo por Regiões dia atual"]
+columns_regiao_observatorio, rows_regiao_observatorio = resultados["Feminicídios Comparativo por Regiões dia atual"]
 
 
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)  # Preto
-titulo_regiao_observatorio = f'Homicídios por regiões - comparativo dia atual e acumulado :'
+titulo_regiao_observatorio = f'Feminicídios por regiões - comparativo dia atual e acumulado :'
 pdf.cell(0, 10, titulo_regiao_observatorio, ln=1, align='L')
 
 col_widths_regiao_observatorio = [25, 20, 20, 20, 15, 23, 23, 15, 23]  # 9 colunas
@@ -1318,7 +1302,7 @@ pdf.cell(0, 8, f'Até {hoje.strftime("%d/%m/%Y %H:%M:%S")}', ln=1, align='L')
 # ------------------------------------------------- TABELA DE HOMICÍDIOS POR MUNICÍPIO DIÁRIO-------------------------------------------------
 # Gera a tabela de homicídios por município
 
-columns_homicidio_municipio, rows_homicidio_municipio = resultados["Homicídios Comparativo por Município"]  
+columns_homicidio_municipio, rows_homicidio_municipio = resultados["Feminicídios Comparativo por Município"]  
 
 # Espaço antes da tabela
 pdf.ln(1)
@@ -1326,7 +1310,7 @@ pdf.ln(1)
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)  # Preto
-titulo_municipio = f'Homicídios - até dia atual por município :'
+titulo_municipio = f'Feminicídios - até dia atual por município :'
 pdf.cell(0, 10, titulo_municipio, ln=1, align='L')
 
 # Cabeçalho da tabela de município
@@ -1352,12 +1336,12 @@ pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, f'Até {hoje.strftime("%d/%m/%Y %H:%M:%S")}', ln=1, align='L')
 # ------------------------------------------------- GRAFICO DE HOMICÍDIOS ÚLTIMOS 2 ANOS -------------------------------------------------
 # Gera o gráfico de linhas comparando homicídios mês a mês dos dois últimos anos
-colunas_homicidio_2anos, linhas_homicidio_2anos = resultados["Homicídios Comparativo por 2 Anos"]
+colunas_homicidio_2anos, linhas_homicidio_2anos = resultados["Feminicídios Comparativo por 2 Anos"]
 
 # Título do grafico
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)
-titulo_homicidio_2anos = f'Homicídios - Comparativo ano atual com os últimos dois anos :'
+titulo_homicidio_2anos = f'Feminicídios - Comparativo ano atual com os últimos dois anos :'
 pdf.cell(0, 10, titulo_homicidio_2anos, ln=1, align='L')
 
 # Cria o DataFrame
@@ -1395,22 +1379,22 @@ plt.xlabel('')
 
 # Salva o gráfico com tratamento de erro
 try:
-    plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidio_2anos.png'), dpi=150, bbox_inches='tight')
+    plt.savefig(os.path.join(relatorio_dir, 'grafico_feminicidio_2anos.png'), dpi=150, bbox_inches='tight')
 except Exception as e:
     print(f"Erro ao salvar gráfico: {e}")
     # Tenta salvar com configurações mais básicas
     try:
-        plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidio_2anos.png'), format='png', dpi=100)
+        plt.savefig(os.path.join(relatorio_dir, 'grafico_feminicidio_2anos.png'), format='png', dpi=100)
     except Exception as e2:
         print(f"Erro ao salvar com configurações básicas: {e2}")
         # Cria um gráfico simples como fallback
         plt.figure(figsize=(10, 2.0))
         plt.text(0.5, 0.5, 'Gráfico não disponível', ha='center', va='center', transform=plt.gca().transAxes)
-        plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidio_2anos.png'), format='png', dpi=100)
+        plt.savefig(os.path.join(relatorio_dir, 'grafico_feminicidio_2anos.png'), format='png', dpi=100)
 plt.close()
 
 # Adiciona o DataFrame ao PDF
-pdf.image(os.path.join(relatorio_dir, 'grafico_homicidio_2anos.png'), x=5, w=200)
+pdf.image(os.path.join(relatorio_dir, 'grafico_feminicidio_2anos.png'), x=5, w=200)
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 6, f'Até {ontem_data}', ln=1, align='L')
 
@@ -1418,7 +1402,7 @@ pdf.cell(0, 6, f'Até {ontem_data}', ln=1, align='L')
 pdf.add_page()
 # ------------------------------------------------- TABELA DE HOMICÍDIOS POR MESES/ANOS  -------------------------------------------------
 # Monta a tabela comparativa de homicídios por mês e ano
-colunas_homicidio_todos_anos, linhas_homicidio_todos_anos = resultados["Homicídios Comparativo por Todos os Anos"]
+colunas_homicidio_todos_anos, linhas_homicidio_todos_anos = resultados["Feminicídios Comparativo por Todos os Anos"]
 df_homicidio_todos_anos = pd.DataFrame(linhas_homicidio_todos_anos, columns=colunas_homicidio_todos_anos)
 
 # Espaço antes da tabela (reduzido)
@@ -1427,7 +1411,7 @@ pdf.ln(0.5)
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)  # Preto
-titulo_homicidio_todos_anos = f'Homicidios comparativo por ano :'
+titulo_homicidio_todos_anos = f'Feminicídios comparativo por ano :'
 pdf.cell(0, 10, titulo_homicidio_todos_anos, ln=1, align='L')
 
 # Cabeçalho da tabela de meses/anos
@@ -1463,14 +1447,14 @@ pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 
 # ------------------------------------------------- GRAFICO COMPARATIVO POR DIA -------------------------------------------------
 # Gera o gráfico comparativo de homicídios por dia
-columns_dia, rows_dia = resultados["Homicídios Comparativo por Dia"]
+columns_dia, rows_dia = resultados["Feminicídios Comparativo por Dia"]
 
 pdf.ln(3)
 
 # Título do grafico
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)  # Preto
-titulo_mes_atual = f'Homicídios - Comparativo por dia no mês atual: {hoje.strftime("%b/%Y")}'
+titulo_mes_atual = f'Feminicídios - Comparativo por dia no mês atual: {hoje.strftime("%b/%Y")}'
 pdf.cell(0, 10, titulo_mes_atual, ln=1, align='L')
 
 # Cria o DataFrame
@@ -1513,20 +1497,20 @@ if not df_dia.empty:
     
     # Salva o gráfico com tratamento de erro
     try:
-        plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_dia.png'), dpi=150, bbox_inches='tight')
+        plt.savefig(os.path.join(relatorio_dir, 'grafico_feminicidio_dia.png'), dpi=150, bbox_inches='tight')
     except Exception as e:
         print(f"Erro ao salvar gráfico: {e}")
         try:
-            plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_dia.png'), format='png', dpi=100)
+            plt.savefig(os.path.join(relatorio_dir, 'grafico_feminicidio_dia.png'), format='png', dpi=100)
         except Exception as e2:
             print(f"Erro ao salvar com configurações básicas: {e2}")
             plt.figure(figsize=(10, 3.0))
             plt.text(0.5, 0.5, 'Gráfico não disponível', ha='center', va='center', transform=plt.gca().transAxes)
-            plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_dia.png'), format='png', dpi=100)
+            plt.savefig(os.path.join(relatorio_dir, 'grafico_feminicidio_dia.png'), format='png', dpi=100)
     plt.close()
 
 # Adiciona o DataFrame ao PDF 
-pdf.image(os.path.join(relatorio_dir, 'grafico_homicidios_dia.png'), x=5, w=200)
+pdf.image(os.path.join(relatorio_dir, 'grafico_feminicidio_dia.png'), x=5, w=200)
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 
@@ -1536,7 +1520,7 @@ pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)  # Preto
-titulo_por_dia = f'Homicídios comparativo por dia no mês atual :'
+titulo_por_dia = f'Feminicídios comparativo por dia no mês atual :'
 pdf.cell(0, 10, titulo_por_dia, ln=1, align='L')
 
 # Transpõe para: colunas = dias, linhas = anos
@@ -1583,7 +1567,7 @@ columns_regiao_observatorio_atualizada = [
     "Índice por 100K hab."
 ]
 
-columns_regiao_observatorio, rows_regiao_observatorio = resultados["Homicídios Comparativo por Regiões"]
+columns_regiao_observatorio, rows_regiao_observatorio = resultados["Feminicídios Comparativo por Regiões"]
 
 # Espaço antes da tabela
 pdf.ln(0.5)
@@ -1591,7 +1575,7 @@ pdf.ln(0.5)
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)  # Preto
-titulo_regiao_observatorio = f'Homicídios por regiões comparativo dia anterior e acumulado :'
+titulo_regiao_observatorio = f'Feminicídios por regiões comparativo dia anterior e acumulado :'
 pdf.cell(0, 10, titulo_regiao_observatorio, ln=1, align='L')
 
 col_widths_regiao_observatorio = [25, 20, 20, 20, 15, 23, 23, 15, 23]  # 9 colunas
@@ -1714,12 +1698,12 @@ pdf.add_page()
 
 # ------------------------------------------------- GRAFICO COMPARATIVO POR DIA POR REGIÃO -------------------------------------------------
 # Gera o gráfico comparativo de homicídios por dia por região
-columns_dia_regioes, rows_dia_regioes = resultados["Homicídios Comparativo por Dia por Regiões"]
+columns_dia_regioes, rows_dia_regioes = resultados["Feminicídios Comparativo por Dia por Regiões"]
 
 # Título do grafico
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)
-titulo_mes_regiao = f'Homicídios por dia por Região no mês atual: {hoje.strftime("%b/%Y")}'
+titulo_mes_regiao = f'Feminicídios por dia por Região no mês atual: {hoje.strftime("%b/%Y")}'
 pdf.cell(0, 10, titulo_mes_regiao, ln=1, align='L')
 
 # Cria o DataFrame
@@ -1760,31 +1744,31 @@ if not df_comparativo_dia.empty:
 
     # Salva o gráfico com tratamento de erro
     try:
-        plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_dia_regiao.png'), dpi=150, bbox_inches='tight')
+        plt.savefig(os.path.join(relatorio_dir, 'grafico_feminicidio_dia_regiao.png'), dpi=150, bbox_inches='tight')
     except Exception as e:
         print(f"Erro ao salvar gráfico: {e}")
         try:
-            plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_dia_regiao.png'), format='png', dpi=100)
+            plt.savefig(os.path.join(relatorio_dir, 'grafico_feminicidio_dia_regiao.png'), format='png', dpi=100)
         except Exception as e2:
             print(f"Erro ao salvar com configurações básicas: {e2}")
             plt.figure(figsize=(10, 3.0))
             plt.text(0.5, 0.5, 'Gráfico não disponível', ha='center', va='center', transform=plt.gca().transAxes)
-            plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_dia_regiao.png'), format='png', dpi=100)
+            plt.savefig(os.path.join(relatorio_dir, 'grafico_feminicidio_dia_regiao.png'), format='png', dpi=100)
     plt.close()
 
 # Adiciona o DataFrame ao PDF
-pdf.image(os.path.join(relatorio_dir, 'grafico_homicidios_dia_regiao.png'), x=5, w=200)
+pdf.image(os.path.join(relatorio_dir, 'grafico_feminicidio_dia_regiao.png'), x=5, w=200)
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 
 # ------------------------------------------------- GRAFICO COMPARATIVO POR MES POR REGIÃO -------------------------------------------------
 # Gera o gráfico comparativo de homicídios por mês por região
-columns_mes_regioes, rows_mes_regioes = resultados["Homicídios Comparativo por Mes por Regiões"]
+columns_mes_regioes, rows_mes_regioes = resultados["Feminicídios Comparativo por Mes por Regiões"]
 
 # Título do grafico
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)
-titulo_mes_regiao = f'Homicídios - Mês a mês por Região no ano {hoje.year}:'
+titulo_mes_regiao = f'Feminicídios - Mês a mês por Região no ano {hoje.year}:'
 pdf.cell(0, 10, titulo_mes_regiao, ln=1, align='L')
 
 # Cria o DataFrame
@@ -1865,20 +1849,20 @@ if not df_comparativo_mes.empty:
     
     # Salva o gráfico com tratamento de erro
     try:
-        plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_mes_regiao.png'), dpi=150, bbox_inches='tight')
+        plt.savefig(os.path.join(relatorio_dir, 'grafico_feminicidio_mes_regiao.png'), dpi=150, bbox_inches='tight')
     except Exception as e:
         print(f"Erro ao salvar gráfico: {e}")
         try:
-            plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_mes_regiao.png'), format='png', dpi=100)
+            plt.savefig(os.path.join(relatorio_dir, 'grafico_feminicidio_mes_regiao.png'), format='png', dpi=100)
         except Exception as e2:
             print(f"Erro ao salvar com configurações básicas: {e2}")
             plt.figure(figsize=(10, 3.0))
             plt.text(0.5, 0.5, 'Gráfico não disponível', ha='center', va='center', transform=plt.gca().transAxes)
-            plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_mes_regiao.png'), format='png', dpi=100)
+            plt.savefig(os.path.join(relatorio_dir, 'grafico_feminicidio_mes_regiao.png'), format='png', dpi=100)
     plt.close()
 
 # Adiciona o DataFrame ao PDF
-pdf.image(os.path.join(relatorio_dir, 'grafico_homicidios_mes_regiao.png'), x=5, w=200)
+pdf.image(os.path.join(relatorio_dir, 'grafico_feminicidio_mes_regiao.png'), x=5, w=200)
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 
@@ -1888,7 +1872,7 @@ pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)
-titulo_tabela = f'Homicídios - Mês a mês por Região no ano {hoje.year}:'
+titulo_tabela = f'Feminicídios - Mês a mês por Região no ano {hoje.year}:'
 pdf.cell(0, 10, titulo_tabela, ln=1, align='L')
 
 # Cria a tabela com os dados
@@ -1944,7 +1928,7 @@ pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 
 # ------------------------------------------------- GRAFICO COMPARATIVO POR SEMANA POR REGIÃO -------------------------------------------------
 # Gera o gráfico comparativo de homicídios por semana por região
-columns_semana_regioes, rows_semana_regioes = resultados["Homicídios Comparativo por Semana por Regiões"]
+columns_semana_regioes, rows_semana_regioes = resultados["Feminicídios Comparativo por Semana por Regiões"]
 
 # Título do grafico
 pdf.set_font('Arial', 'B', 12)
@@ -1991,31 +1975,31 @@ if not df_comparativo_semana.empty:
     
     # Salva o gráfico com tratamento de erro
     try:
-        plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_semana_regiao.png'), dpi=150, bbox_inches='tight')
+        plt.savefig(os.path.join(relatorio_dir, 'grafico_feminicidio_semana_regiao.png'), dpi=150, bbox_inches='tight')
     except Exception as e:
         print(f"Erro ao salvar gráfico: {e}")
         try:
-            plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_semana_regiao.png'), format='png', dpi=100)
+            plt.savefig(os.path.join(relatorio_dir, 'grafico_feminicidio_semana_regiao.png'), format='png', dpi=100)
         except Exception as e2:
             print(f"Erro ao salvar com configurações básicas: {e2}")
             plt.figure(figsize=(10, 3.0))
             plt.text(0.5, 0.5, 'Gráfico não disponível', ha='center', va='center', transform=plt.gca().transAxes)
-            plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_semana_regiao.png'), format='png', dpi=100)
+            plt.savefig(os.path.join(relatorio_dir, 'grafico_feminicidio_semana_regiao.png'), format='png', dpi=100)
     plt.close()
 
 # Adiciona o DataFrame ao PDF
-pdf.image(os.path.join(relatorio_dir, 'grafico_homicidios_semana_regiao.png'), x=5, w=200)
+pdf.image(os.path.join(relatorio_dir, 'grafico_feminicidio_semana_regiao.png'), x=5, w=200)
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 
 # ------------------------------------------------- GRAFICO DE HOMICÍDIOS EM PRESIDIOS -------------------------------------------------
 # Gera tabela com dados do gráfico comparativo de homicídios por mês por região
-columns_grafico_presidios, rows_grafico_presidios = resultados["Homicídios em Presídios"]
+columns_grafico_presidios, rows_grafico_presidios = resultados["Feminicídios em Presídios"]
 
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)
-titulo_tabela = f'Homicídios - Presídios'
+titulo_tabela = f'Feminicídios - Presídios'
 pdf.cell(0, 10, titulo_tabela, ln=1, align='L')
 
 # Cria o DataFrame
@@ -2057,20 +2041,20 @@ if not df_grafico_presidios.empty:
     
     # Salva o gráfico com tratamento de erro
     try:
-        plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_presidios.png'), dpi=150, bbox_inches='tight')
+        plt.savefig(os.path.join(relatorio_dir, 'grafico_feminicidio_presidios.png'), dpi=150, bbox_inches='tight')
     except Exception as e:
         print(f"Erro ao salvar gráfico: {e}")
         try:
-            plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_presidios.png'), format='png', dpi=100)
+            plt.savefig(os.path.join(relatorio_dir, 'grafico_feminicidio_presidios.png'), format='png', dpi=100)
         except Exception as e2:
             print(f"Erro ao salvar com configurações básicas: {e2}")
             plt.figure(figsize=(10, 3.0))
             plt.text(0.5, 0.5, 'Gráfico não disponível', ha='center', va='center', transform=plt.gca().transAxes)
-            plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_presidios.png'), format='png', dpi=100)
+            plt.savefig(os.path.join(relatorio_dir, 'grafico_feminicidio_presidios.png'), format='png', dpi=100)
     plt.close()
 
     # Adiciona o gráfico ao PDF
-    pdf.image(os.path.join(relatorio_dir, 'grafico_homicidios_presidios.png'), x=5, w=200)
+    pdf.image(os.path.join(relatorio_dir, 'grafico_feminicidio_presidios.png'), x=5, w=200)
     pdf.set_font('Arial', 'I', 9)
     pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')    
 
@@ -2091,12 +2075,12 @@ columns_municipio_top20_atualizada = [
     "Índice por 100K hab."
 ]
 
-columns_municipio_top20, rows_municipio_top20 = resultados["Homicídios Comparativo por Município Top 20"]
+columns_municipio_top20, rows_municipio_top20 = resultados["Feminicídios Comparativo por Município Top 20"]
 
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)  # Preto
-titulo_municipio_top20 = f'Homicídios por municípios - comparativo dia anterior e acumulado :'
+titulo_municipio_top20 = f'Feminicídios por municípios - comparativo dia anterior e acumulado :'
 pdf.cell(0, 10, titulo_municipio_top20, ln=1, align='L')
 
 col_widths_municipio_top20 = [60, 17, 17, 17, 12, 22, 22, 12, 15]  # 9 colunas
@@ -2210,7 +2194,7 @@ columns_risp_atualizada = [
     "Índice por 100K hab."
 ]
 
-columns_risp, rows_risp = resultados["Homicídios Comparativo por Risp"]
+columns_risp, rows_risp = resultados["Feminicídios Comparativo por Risp"]
 
 # Espaço antes da tabela
 pdf.ln(1)
@@ -2218,7 +2202,7 @@ pdf.ln(1)
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)  # Preto
-titulo_risp = f'Homicídios por Risp - comparativo dia anterior e acumulado :'
+titulo_risp = f'Feminicídios por Risp - comparativo dia anterior e acumulado :'
 pdf.cell(0, 10, titulo_risp, ln=1, align='L')
 
 col_widths_risp = [60, 17, 17, 17, 12, 22, 22, 12, 15]  
@@ -2333,7 +2317,7 @@ columns_aisp_atualizada = [
     "Índice por 100K hab."
 ]
 
-columns_aisp, rows_aisp = resultados["Homicídios Comparativo por Aisp"]
+columns_aisp, rows_aisp = resultados["Feminicídios Comparativo por Aisp"]
 
 # Espaço antes da tabela
 pdf.ln(1)
@@ -2341,7 +2325,7 @@ pdf.ln(1)
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)  # Preto
-titulo_aisp = f'Homicídios por Aisp - comparativo dia anterior e acumulado :'
+titulo_aisp = f'Feminicídios por Aisp - comparativo dia anterior e acumulado :'
 pdf.cell(0, 10, titulo_aisp, ln=1, align='L')
 
 col_widths_aisp = [60, 17, 17, 17, 12, 22, 22, 12, 15]  # 9 colunas
