@@ -48,7 +48,26 @@ def ensure_dir(path: Path) -> None:
         path.mkdir(parents=True, exist_ok=True)
     except OSError as e:
         if e.errno != errno.EEXIST:
-            raise
+            # Tratamento específico para erros de autenticação de rede
+            if e.winerror == 1326:  # Nome de usuário ou senha incorretos
+                print(f"⚠️ Erro de autenticação ao acessar pasta de rede: {path}")
+                print("   A pasta requer credenciais específicas de rede.")
+                print("   Pulando esta pasta e continuando...")
+                return
+            elif e.winerror == 53:  # Caminho de rede não encontrado
+                print(f"⚠️ Caminho de rede não encontrado: {path}")
+                print("   Verifique se o servidor está acessível.")
+                print("   Pulando esta pasta e continuando...")
+                return
+            elif e.winerror == 5:  # Acesso negado
+                print(f"⚠️ Acesso negado à pasta: {path}")
+                print("   Verifique as permissões de acesso.")
+                print("   Pulando esta pasta e continuando...")
+                return
+            else:
+                print(f"⚠️ Erro ao acessar pasta {path}: {e}")
+                print("   Pulando esta pasta e continuando...")
+                return
 
 def sanitize_filename(name: str) -> str:
     return re.sub(r'[<>:\"/\\|?*\x00-\x1F]', "_", (name or "")).strip()
@@ -208,6 +227,21 @@ def process_release_assets(release: dict, version_folder_name: str, subfolder_na
         print("Nenhum asset publicado nesta release.")
         return
 
+    # Filtra apenas os diretórios de destino acessíveis
+    accessible_dirs = []
+    for base in DESTINATION_BASE_DIRS:
+        base_path = Path(base)
+        if is_network_path_accessible(base_path):
+            accessible_dirs.append(base_path)
+            print(f"✅ Diretório acessível: {base}")
+        else:
+            print(f"❌ Diretório inacessível: {base}")
+    
+    if not accessible_dirs:
+        print("⚠️ Nenhum diretório de destino está acessível.")
+        print("   Verifique as credenciais de rede e conectividade.")
+        return
+
     for asset in assets:
         name = sanitize_filename(asset.get("name") or "asset.bin")
         url = asset.get("browser_download_url")
@@ -218,16 +252,23 @@ def process_release_assets(release: dict, version_folder_name: str, subfolder_na
             print(f"- {name}: asset sem URL de download; pulando.")
             continue
 
-        # Calcula destinos
+        # Calcula destinos apenas para diretórios acessíveis
         dest_paths: List[Path] = []
-        for base in DESTINATION_BASE_DIRS:
-            base_path = Path(base)
-            version_dir = base_path / version_folder_name
-            ensure_dir(version_dir)
-            if subfolder_name:
-                version_dir = version_dir / subfolder_name
+        for base in accessible_dirs:
+            version_dir = base / version_folder_name
+            try:
                 ensure_dir(version_dir)
-            dest_paths.append(version_dir / name)
+                if subfolder_name:
+                    version_dir = version_dir / subfolder_name
+                    ensure_dir(version_dir)
+                dest_paths.append(version_dir / name)
+            except Exception as e:
+                print(f"⚠️ Erro ao preparar destino {base}: {e}")
+                continue
+
+        if not dest_paths:
+            print(f"⚠️ Nenhum destino válido para {name}; pulando.")
+            continue
 
         if force:
             tmp = http_download_to_temp(url, remote_updated_at, name)
@@ -279,6 +320,55 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--initial-only", action="store_true", help="Processa apenas a Initial Release (padrão é Initial + Latest).")
     p.add_argument("--force", action="store_true", help="Rebaixa e sobrescreve todos os destinos.")
     return p.parse_args()
+
+def is_network_path_accessible(path: Path) -> bool:
+    """
+    Verifica se um caminho de rede é acessível sem tentar criar diretórios.
+    
+    Args:
+        path (Path): Caminho a ser verificado
+        
+    Returns:
+        bool: True se acessível, False caso contrário
+    """
+    try:
+        # Tenta apenas verificar se o caminho existe ou pode ser acessado
+        if path.exists():
+            return True
+        
+        # Se não existe, tenta verificar o diretório pai
+        parent = path.parent
+        if parent.exists():
+            return True
+            
+        # Para caminhos UNC, tenta verificar se o servidor responde
+        path_str = str(path)
+        if path_str.startswith(r"\\"):
+            # Tenta listar o diretório pai para verificar conectividade
+            try:
+                parent_str = str(parent)
+                if os.path.exists(parent_str):
+                    return True
+            except OSError:
+                pass
+                
+        return False
+        
+    except OSError as e:
+        if e.winerror == 1326:  # Nome de usuário ou senha incorretos
+            print(f"⚠️ Erro de autenticação ao verificar pasta: {path}")
+            return False
+        elif e.winerror == 53:  # Caminho de rede não encontrado
+            print(f"⚠️ Caminho de rede não encontrado: {path}")
+            return False
+        elif e.winerror == 5:  # Acesso negado
+            print(f"⚠️ Acesso negado ao verificar pasta: {path}")
+            return False
+        else:
+            print(f"⚠️ Erro ao verificar pasta {path}: {e}")
+            return False
+    except Exception:
+        return False
 
 def main():
     print_header()

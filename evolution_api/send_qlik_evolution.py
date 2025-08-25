@@ -18,6 +18,7 @@ try:
     from evolutionapi.client import EvolutionClient
     from evolutionapi.models.message import TextMessage, MediaMessage
     from crawler_qlik.status_qlik_task import (coletar_status_nprinting, coletar_status_qmc)
+    from crawler_qlik.network_config import setup_network_credentials, get_accessible_paths
 except ImportError as e:
     print(f"❌ Erro ao importar módulos: {e}")
     print("💡 Certifique-se de que todas as dependências estão instaladas:")
@@ -487,6 +488,10 @@ def main():
     print(f"📁 Pasta de relatórios: {os.path.join(project_root, 'crawler_qlik', 'reports_qlik')}")
     print(f"📁 Pasta de logs de erro: {os.path.join(project_root, 'crawler_qlik', 'errorlogs')}")
     print(f"📁 Pasta compartilhada: {pasta_compartilhada}")
+    
+    # Configura credenciais de rede se disponíveis
+    print("🌐 Configurando acesso de rede...")
+    setup_network_credentials()
     
     try:
         # 1. Envia resumos de status (incluindo Desktop e ETLs)

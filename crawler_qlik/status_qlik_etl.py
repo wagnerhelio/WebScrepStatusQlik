@@ -37,15 +37,79 @@ def ensure_dir(path: Path) -> None:
         if e.errno != errno.EEXIST:
             raise
 
+def is_network_path_accessible(path: Path) -> bool:
+    """
+    Verifica se um caminho de rede é acessível.
+    
+    Args:
+        path (Path): Caminho a ser verificado
+        
+    Returns:
+        bool: True se acessível, False caso contrário
+    """
+    try:
+        return path.exists() and path.is_dir()
+    except OSError as e:
+        if e.winerror == 1326:  # Nome de usuário ou senha incorretos
+            print(f"⚠️ Erro de autenticação ao verificar pasta: {path}")
+            return False
+        elif e.winerror == 53:  # Caminho de rede não encontrado
+            print(f"⚠️ Caminho de rede não encontrado: {path}")
+            return False
+        elif e.winerror == 5:  # Acesso negado
+            print(f"⚠️ Acesso negado ao verificar pasta: {path}")
+            return False
+        else:
+            print(f"⚠️ Erro ao verificar pasta {path}: {e}")
+            return False
+    except Exception:
+        return False
+
 def list_files_recursive(root: Path):
-    if not root.exists() or not root.is_dir():
+    try:
+        if not root.exists() or not root.is_dir():
+            return None
+        return [p for p in root.rglob("*") if p.is_file()]
+    except OSError as e:
+        if e.winerror == 1326:  # Nome de usuário ou senha incorretos
+            print(f"⚠️ Erro de autenticação ao acessar pasta: {root}")
+            print("   A pasta requer credenciais específicas de rede.")
+            return None
+        elif e.winerror == 53:  # Caminho de rede não encontrado
+            print(f"⚠️ Caminho de rede não encontrado: {root}")
+            return None
+        elif e.winerror == 5:  # Acesso negado
+            print(f"⚠️ Acesso negado à pasta: {root}")
+            return None
+        else:
+            print(f"⚠️ Erro ao acessar pasta {root}: {e}")
+            return None
+    except Exception as e:
+        print(f"⚠️ Erro inesperado ao acessar pasta {root}: {e}")
         return None
-    return [p for p in root.rglob("*") if p.is_file()]
 
 def list_files_top_level(root: Path):
-    if not root.exists() or not root.is_dir():
+    try:
+        if not root.exists() or not root.is_dir():
+            return None
+        return [p for p in root.iterdir() if p.is_file()]
+    except OSError as e:
+        if e.winerror == 1326:  # Nome de usuário ou senha incorretos
+            print(f"⚠️ Erro de autenticação ao acessar pasta: {root}")
+            print("   A pasta requer credenciais específicas de rede.")
+            return None
+        elif e.winerror == 53:  # Caminho de rede não encontrado
+            print(f"⚠️ Caminho de rede não encontrado: {root}")
+            return None
+        elif e.winerror == 5:  # Acesso negado
+            print(f"⚠️ Acesso negado à pasta: {root}")
+            return None
+        else:
+            print(f"⚠️ Erro ao acessar pasta {root}: {e}")
+            return None
+    except Exception as e:
+        print(f"⚠️ Erro inesperado ao acessar pasta {root}: {e}")
         return None
-    return [p for p in root.iterdir() if p.is_file()]
 
 def is_updated_today(file_path: Path, today) -> bool:
     try:
@@ -80,8 +144,19 @@ def main():
     totals = []            # (folder, total, ok, not_ok)
     missing = []           # pastas inexistentes/inacessíveis
 
+    print("🔍 Verificando acessibilidade dos diretórios...")
+    
     for d in args.dirs:
         folder = Path(d)
+        
+        # Verifica se o diretório é acessível antes de tentar listar arquivos
+        if not is_network_path_accessible(folder):
+            print(f"❌ Diretório inacessível: {folder}")
+            missing.append(str(folder))
+            totals.append((str(folder), 0, 0, 0))
+            continue
+        
+        print(f"✅ Diretório acessível: {folder}")
         files = list_files_top_level(folder) if args.no_recursive else list_files_recursive(folder)
 
         if files is None:
@@ -114,40 +189,48 @@ def main():
         print(f"Pasta: {folder}")
         print(f"  Arquivos encontrados : {total}")
         print(f"  Atualizados hoje     : {ok}")
-        print(f"  NÃO atualizados      : {not_ok}")
-        print("-" * 64)
+        print(f"  Não atualizados      : {not_ok}")
+        print()
 
     if missing:
-        print("Pastas inexistentes ou inacessíveis:")
+        print("⚠️ Pastas inacessíveis:")
         for m in missing:
             print(f"  - {m}")
-        print("-" * 64)
+        print()
 
     if all_not_updated:
-        # grava arquivo de log detalhado (com caminhos completos)
+        print("📋 Arquivos não atualizados hoje:")
+        for path, mtime in all_not_updated:
+            print(f"  - {path} (última modificação: {mtime})")
+        print()
+
+    # Gera log de erro se necessário
+    if all_not_updated:
         ensure_dir(ERROR_LOG_DIR)
         with open(ERROR_LOG_PATH, "w", encoding="utf-8") as f:
-            f.write(f"Arquivos NÃO atualizados em {today.strftime('%Y-%m-%d')}\n")
-            f.write("=" * 64 + "\n")
-            for path_str, mtime in all_not_updated:
-                f.write(f"{path_str} ; modificado em: {mtime}\n")
-
-        print(f"ATENÇÃO: {len(all_not_updated)} arquivo(s) não foram atualizados hoje.")
-        print(f"Detalhes em: {ERROR_LOG_PATH}")
-
-        # ===== RESUMO DEDUPLICADO POR NOME =====
-        unique_names = {}
-        for path_str, _ in all_not_updated:
-            name = Path(path_str).name
-            key = name.lower()  # dedupe case-insensitive (Windows)
-            if key not in unique_names:
-                unique_names[key] = name  # preserva a 1ª grafia
-
-        print(f"Resumo por NOME (único): {len(unique_names)} arquivo(s) não atualizados:")
-        for name in sorted(unique_names.values(), key=str.lower):
-            print(f"  - {name}")
+            f.write(f"Log gerado em: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+            f.write(f"Data de referência: {today.strftime('%Y-%m-%d')}\n")
+            f.write("=" * 50 + "\n")
+            for path, mtime in all_not_updated:
+                f.write(f"{path} | {mtime}\n")
+        print(f"📄 Log de erro salvo em: {ERROR_LOG_PATH}")
     else:
-        print("Tudo OK: todos os arquivos analisados foram atualizados hoje.")
+        # Remove log anterior se não há erros
+        if ERROR_LOG_PATH.exists():
+            ERROR_LOG_PATH.unlink()
+            print("✅ Log de erro anterior removido (não há arquivos desatualizados).")
+
+    # Resumo final
+    total_files = sum(t[1] for t in totals)
+    total_ok = sum(t[2] for t in totals)
+    total_not_ok = sum(t[3] for t in totals)
+    
+    print("=" * 64)
+    print("RESUMO FINAL:")
+    print(f"  Total de arquivos verificados: {total_files}")
+    print(f"  Arquivos atualizados hoje: {total_ok}")
+    print(f"  Arquivos não atualizados: {total_not_ok}")
+    print(f"  Pastas inacessíveis: {len(missing)}")
     print("=" * 64)
 
 if __name__ == "__main__":
