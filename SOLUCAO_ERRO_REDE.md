@@ -4,6 +4,9 @@
 
 O erro `[WinError 1326] Nome de usuário ou senha incorretos` ocorre quando o script tenta acessar pastas de rede (UNC paths) que requerem credenciais específicas de autenticação.
 
+### Problema Adicional: Interpretação Incorreta de Caminhos UNC
+Em algumas máquinas, os caminhos UNC estavam sendo interpretados incorretamente com barras duplas extras (`\\\\`), causando erros de acesso.
+
 ### Pastas afetadas:
 - `\\10.242.251.28\SSPForcas$\SSP_FORCAS_BI`
 - `\\Arquivos-02\Business Intelligence\Qlik Sense Desktop`
@@ -20,6 +23,11 @@ O erro `[WinError 1326] Nome de usuário ou senha incorretos` ocorre quando o sc
 - Novo módulo `network_config.py` para gerenciar credenciais
 - Suporte a variáveis de ambiente para configuração segura
 - Teste automático de conectividade de rede
+
+### 3. Normalização de Caminhos UNC
+- Função `normalize_unc_path()` para corrigir interpretação de caminhos
+- Conversão automática de barras duplas para formato correto
+- Compatibilidade entre diferentes sistemas operacionais
 
 ## 🚀 Como Resolver
 
@@ -126,6 +134,11 @@ python crawler_qlik/status_qlik_etl.py
 - Confirme se a conta não está bloqueada
 - Teste login em outras máquinas
 
+### Problema: Caminhos com barras duplas extras (`\\\\`)
+- **SOLUCIONADO**: Implementada normalização automática de caminhos
+- Os scripts agora corrigem automaticamente a interpretação de caminhos UNC
+- Compatível com diferentes versões do Windows
+
 ## 📞 Suporte
 
 Se o problema persistir:
@@ -152,3 +165,28 @@ Se o problema persistir:
 - ✅ Teste de conectividade integrado
 - ✅ Mensagens informativas em português
 - ✅ Continuação do processo mesmo com falhas de rede
+- ✅ **NOVO**: Normalização automática de caminhos UNC
+- ✅ **NOVO**: Correção de interpretação de barras duplas
+- ✅ **NOVO**: Compatibilidade entre diferentes sistemas
+
+## 🔧 Correções Técnicas Implementadas
+
+### Normalização de Caminhos UNC
+```python
+def normalize_unc_path(path_str: str) -> str:
+    # Remove barras extras e normaliza
+    path_str = path_str.replace("\\\\", "\\").replace("//", "/")
+    
+    # Garante que caminhos UNC tenham exatamente duas barras no início
+    if path_str.startswith("\\"):
+        if not path_str.startswith("\\\\"):
+            path_str = "\\" + path_str
+    
+    return path_str
+```
+
+### Aplicação em Todos os Scripts
+- `status_qlik_desktop.py`: Normalização antes de acessar pastas
+- `status_qlik_etl.py`: Normalização antes de listar arquivos
+- `network_config.py`: Normalização antes de testar conectividade
+- `send_qlik_evolution.py`: Integração com configuração de rede
