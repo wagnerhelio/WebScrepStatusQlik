@@ -21,6 +21,27 @@ venv/
 !img/WebScrep_QMC.jpg
 !Relatório Técnico/WebScrepStatusQlik__Monitoramento_Automatizado_de_Tarefas_do_Qlik_Sense_com_Envio_de_Alertas_via_WhatsApp.pdf
 
+# Permitir pastas específicas do projeto (apenas estrutura)
+!pysql/img_reports/
+!pysql/reports_pysql/
+!pysql/errorlogs/
+!crawler_qlik/reports_qlik/
+!crawler_qlik/errorlogs/
+
+# Mas ignorar o conteúdo dessas pastas
+pysql/img_reports/*
+pysql/reports_pysql/*
+pysql/errorlogs/*
+crawler_qlik/reports_qlik/*
+crawler_qlik/errorlogs/*
+
+# Exceto arquivos .gitkeep para manter a estrutura
+!pysql/img_reports/.gitkeep
+!pysql/reports_pysql/.gitkeep
+!pysql/errorlogs/.gitkeep
+!crawler_qlik/reports_qlik/.gitkeep
+!crawler_qlik/errorlogs/.gitkeep
+
 # (opcional) ignorar pastas específicas
 img/**/*.png
 img/**/*.jpg
