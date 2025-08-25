@@ -14,11 +14,37 @@ import json
 import sys
 import threading
 
+# Configuração de encoding para evitar problemas no Windows
+if sys.platform.startswith('win'):
+    try:
+        import codecs
+        sys.stdout = codecs.getwriter('utf-8')(sys.stdout.detach())
+        sys.stderr = codecs.getwriter('utf-8')(sys.stderr.detach())
+    except:
+        # Se falhar, mantém o stdout original
+        pass
+
 load_dotenv()
 matplotlib.use('Agg')  # Configura o backend antes de importar pyplot
 
 def safe_str(item):
     return str(item) if item is not None else ''
+
+def safe_print_progress(text):
+    """Função segura para imprimir progresso no Windows"""
+    try:
+        sys.stdout.write(text)
+        sys.stdout.flush()
+    except UnicodeEncodeError:
+        # Fallback para ASCII se UTF-8 falhar
+        try:
+            safe_text = text.encode('ascii', 'replace').decode('ascii')
+            sys.stdout.write(safe_text)
+            sys.stdout.flush()
+        except:
+            # Último fallback - apenas mostra uma mensagem simples
+            sys.stdout.write('\rProgresso...')
+            sys.stdout.flush()
 
 def salvar_tempos_execucao(tempos_execucao, arquivo='pysql/reports_pysql/homicidios_tempos_execucao.json'):
     """Salva os tempos de execução em um arquivo JSON"""
@@ -97,13 +123,12 @@ def mostrar_progresso_tempo(nome_consulta, tempo_inicio, tempo_medio_esperado):
     # Cria uma barra de progresso simples
     largura_barra = 50
     posicao = int(progresso * largura_barra)
-    
     barra = '█' * posicao + '░' * (largura_barra - posicao)
     percentual = progresso * 100
     
     # Limpa a linha atual e mostra o progresso
-    sys.stdout.write(f'\r{nome_consulta}: [{barra}] {percentual:.1f}% ({tempo_atual:.1f}s/{tempo_medio_esperado:.1f}s)')
-    sys.stdout.flush()
+    progress_text = f'\r{nome_consulta}: [{barra}] {percentual:.1f}% ({tempo_atual:.1f}s/{tempo_medio_esperado:.1f}s)'
+    safe_print_progress(progress_text)
     
     if progresso >= 1.0:
         print()  # Nova linha quando terminar
@@ -128,8 +153,8 @@ def executar_com_progresso(nome, query, cursor, tempos_medios):
                 barra = '█' * posicao + '░' * (largura_barra - posicao)
                 percentual = progresso * 100
                 
-                sys.stdout.write(f'\r{nome}: [{barra}] {percentual:.1f}% ({tempo_atual:.1f}s/{tempo_medio_esperado:.1f}s)')
-                sys.stdout.flush()
+                progress_text = f'\r{nome}: [{barra}] {percentual:.1f}% ({tempo_atual:.1f}s/{tempo_medio_esperado:.1f}s)'
+                safe_print_progress(progress_text)
                 
                 if progresso >= 1.0:
                     break
