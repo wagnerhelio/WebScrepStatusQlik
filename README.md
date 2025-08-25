@@ -46,6 +46,7 @@ python -m venv venv
 
 Para usuários Windows:
 ```bash
+C:\Users\wagner.filho\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
 ```
 
