@@ -23,14 +23,38 @@ NETWORK_DOMAIN = os.getenv("NETWORK_DOMAIN", "")
 
 # Pastas de rede que requerem autenticação
 NETWORK_PATHS = [
-    r"\\10.242.251.28\SSPForcas$\SSP_FORCAS_BI",
-    r"\\Arquivos-02\Business Intelligence\Qlik Sense Desktop",
-    r"\\estatistica\Repositorio\ETL",
+    "\\\\10.242.251.28\\SSPForcas$\\SSP_FORCAS_BI",
+    "\\\\Arquivos-02\\Business Intelligence\\Qlik Sense Desktop",
+    "\\\\estatistica\\Repositorio\\ETL",
 ]
 
 # =============================================================================
 # FUNÇÕES DE AUTENTICAÇÃO
 # =============================================================================
+
+def normalize_unc_path(path_str: str) -> str:
+    """
+    Normaliza um caminho UNC para garantir que seja interpretado corretamente.
+    
+    Args:
+        path_str (str): Caminho UNC como string
+        
+    Returns:
+        str: Caminho UNC normalizado
+    """
+    # Remove barras extras e normaliza
+    path_str = path_str.replace("\\\\", "\\").replace("//", "/")
+    
+    # Garante que caminhos UNC tenham exatamente duas barras no início
+    if path_str.startswith("\\"):
+        # Se já tem uma barra, adiciona mais uma
+        if not path_str.startswith("\\\\"):
+            path_str = "\\" + path_str
+    elif path_str.startswith("/"):
+        # Se tem barra normal, converte para barra invertida
+        path_str = "\\" + path_str.replace("/", "\\")
+    
+    return path_str
 
 def setup_network_credentials():
     """
@@ -47,10 +71,13 @@ def setup_network_credentials():
     try:
         # Tenta configurar credenciais de rede usando net use
         for path in NETWORK_PATHS:
-            if path.startswith(r"\\"):
-                server_share = path.split(r"\\")[2]  # Extrai servidor\share
+            # Normaliza o caminho antes de usar
+            normalized_path = normalize_unc_path(path)
+            
+            if normalized_path.startswith("\\\\"):
+                server_share = normalized_path.split("\\")[2]  # Extrai servidor\share
                 cmd = [
-                    "net", "use", path, 
+                    "net", "use", normalized_path, 
                     f"/user:{NETWORK_DOMAIN}\\{NETWORK_USERNAME}" if NETWORK_DOMAIN else f"/user:{NETWORK_USERNAME}",
                     NETWORK_PASSWORD
                 ]
@@ -63,9 +90,9 @@ def setup_network_credentials():
                 )
                 
                 if result.returncode == 0:
-                    print(f"✅ Credenciais configuradas para: {path}")
+                    print(f"✅ Credenciais configuradas para: {normalized_path}")
                 else:
-                    print(f"⚠️ Erro ao configurar credenciais para {path}: {result.stderr.strip()}")
+                    print(f"⚠️ Erro ao configurar credenciais para {normalized_path}: {result.stderr.strip()}")
                     
         return True
         
@@ -83,16 +110,19 @@ def test_network_access():
     inaccessible_paths = []
     
     for path in NETWORK_PATHS:
+        # Normaliza o caminho antes de testar
+        normalized_path = normalize_unc_path(path)
+        
         try:
-            if Path(path).exists():
-                accessible_paths.append(path)
-                print(f"✅ Acessível: {path}")
+            if Path(normalized_path).exists():
+                accessible_paths.append(normalized_path)
+                print(f"✅ Acessível: {normalized_path}")
             else:
-                inaccessible_paths.append(path)
-                print(f"❌ Inacessível: {path}")
+                inaccessible_paths.append(normalized_path)
+                print(f"❌ Inacessível: {normalized_path}")
         except Exception as e:
-            inaccessible_paths.append(path)
-            print(f"❌ Erro ao acessar {path}: {e}")
+            inaccessible_paths.append(normalized_path)
+            print(f"❌ Erro ao acessar {normalized_path}: {e}")
     
     print(f"\n📊 Resumo:")
     print(f"  Pastas acessíveis: {len(accessible_paths)}")
@@ -107,9 +137,12 @@ def get_accessible_paths() -> List[str]:
     accessible = []
     
     for path in NETWORK_PATHS:
+        # Normaliza o caminho antes de testar
+        normalized_path = normalize_unc_path(path)
+        
         try:
-            if Path(path).exists():
-                accessible.append(path)
+            if Path(normalized_path).exists():
+                accessible.append(normalized_path)
         except Exception:
             continue
     

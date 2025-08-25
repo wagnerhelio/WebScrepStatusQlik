@@ -16,9 +16,9 @@ REPO_ROOT = Path(__file__).resolve().parent
 
 # Diretórios A PARTIR DA RAIZ DO PROJETO (relativos). Altere se quiser.
 DEFAULT_DIRS = [
-    r"\\10.242.251.28\SSPForcas$\SSP_FORCAS_BI\ETLDesktop",
-    r"\\Arquivos-02\Business Intelligence\Qlik Sense Desktop\ETLDesktop",
-    r"\\estatistica\Repositorio\ETL",
+    "\\\\10.242.251.28\\SSPForcas$\\SSP_FORCAS_BI\\ETLDesktop",
+    "\\\\Arquivos-02\\Business Intelligence\\Qlik Sense Desktop\\ETLDesktop",
+    "\\\\estatistica\\Repositorio\\ETL",
 ]
 
 # Pasta/arquivo de log de erro (relativos ao projeto)
@@ -37,6 +37,30 @@ def ensure_dir(path: Path) -> None:
         if e.errno != errno.EEXIST:
             raise
 
+def normalize_unc_path(path_str: str) -> str:
+    """
+    Normaliza um caminho UNC para garantir que seja interpretado corretamente.
+    
+    Args:
+        path_str (str): Caminho UNC como string
+        
+    Returns:
+        str: Caminho UNC normalizado
+    """
+    # Remove barras extras e normaliza
+    path_str = path_str.replace("\\\\", "\\").replace("//", "/")
+    
+    # Garante que caminhos UNC tenham exatamente duas barras no início
+    if path_str.startswith("\\"):
+        # Se já tem uma barra, adiciona mais uma
+        if not path_str.startswith("\\\\"):
+            path_str = "\\" + path_str
+    elif path_str.startswith("/"):
+        # Se tem barra normal, converte para barra invertida
+        path_str = "\\" + path_str.replace("/", "\\")
+    
+    return path_str
+
 def is_network_path_accessible(path: Path) -> bool:
     """
     Verifica se um caminho de rede é acessível.
@@ -48,6 +72,11 @@ def is_network_path_accessible(path: Path) -> bool:
         bool: True se acessível, False caso contrário
     """
     try:
+        # Normaliza o caminho antes de verificar
+        path_str = str(path)
+        normalized_path = normalize_unc_path(path_str)
+        path = Path(normalized_path)
+        
         return path.exists() and path.is_dir()
     except OSError as e:
         if e.winerror == 1326:  # Nome de usuário ou senha incorretos
@@ -67,6 +96,11 @@ def is_network_path_accessible(path: Path) -> bool:
 
 def list_files_recursive(root: Path):
     try:
+        # Normaliza o caminho antes de verificar
+        root_str = str(root)
+        normalized_root = normalize_unc_path(root_str)
+        root = Path(normalized_root)
+        
         if not root.exists() or not root.is_dir():
             return None
         return [p for p in root.rglob("*") if p.is_file()]
@@ -90,6 +124,11 @@ def list_files_recursive(root: Path):
 
 def list_files_top_level(root: Path):
     try:
+        # Normaliza o caminho antes de verificar
+        root_str = str(root)
+        normalized_root = normalize_unc_path(root_str)
+        root = Path(normalized_root)
+        
         if not root.exists() or not root.is_dir():
             return None
         return [p for p in root.iterdir() if p.is_file()]
@@ -147,16 +186,18 @@ def main():
     print("🔍 Verificando acessibilidade dos diretórios...")
     
     for d in args.dirs:
-        folder = Path(d)
+        # Normaliza o caminho antes de criar o Path
+        normalized_d = normalize_unc_path(d)
+        folder = Path(normalized_d)
         
         # Verifica se o diretório é acessível antes de tentar listar arquivos
         if not is_network_path_accessible(folder):
-            print(f"❌ Diretório inacessível: {folder}")
-            missing.append(str(folder))
-            totals.append((str(folder), 0, 0, 0))
+            print(f"❌ Diretório inacessível: {normalized_d}")
+            missing.append(normalized_d)
+            totals.append((normalized_d, 0, 0, 0))
             continue
         
-        print(f"✅ Diretório acessível: {folder}")
+        print(f"✅ Diretório acessível: {normalized_d}")
         files = list_files_top_level(folder) if args.no_recursive else list_files_recursive(folder)
 
         if files is None:

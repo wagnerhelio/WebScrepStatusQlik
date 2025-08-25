@@ -25,8 +25,8 @@ REPO_NAME = "qlik-sense-desktop"
 
 # Caminhos de destino (UNC) — verificação e gravação DIRETA aqui
 DESTINATION_BASE_DIRS = [
-    r"\\10.242.251.28\SSPForcas$\SSP_FORCAS_BI",
-    r"\\Arquivos-02\Business Intelligence\Qlik Sense Desktop",
+    "\\\\10.242.251.28\\SSPForcas$\\SSP_FORCAS_BI",
+    "\\\\Arquivos-02\\Business Intelligence\\Qlik Sense Desktop",
 ]
 
 HTTP_TIMEOUT = 60
@@ -230,12 +230,14 @@ def process_release_assets(release: dict, version_folder_name: str, subfolder_na
     # Filtra apenas os diretórios de destino acessíveis
     accessible_dirs = []
     for base in DESTINATION_BASE_DIRS:
-        base_path = Path(base)
+        # Normaliza o caminho antes de criar o Path
+        normalized_base = normalize_unc_path(base)
+        base_path = Path(normalized_base)
         if is_network_path_accessible(base_path):
             accessible_dirs.append(base_path)
-            print(f"✅ Diretório acessível: {base}")
+            print(f"✅ Diretório acessível: {normalized_base}")
         else:
-            print(f"❌ Diretório inacessível: {base}")
+            print(f"❌ Diretório inacessível: {normalized_base}")
     
     if not accessible_dirs:
         print("⚠️ Nenhum diretório de destino está acessível.")
@@ -321,6 +323,30 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--force", action="store_true", help="Rebaixa e sobrescreve todos os destinos.")
     return p.parse_args()
 
+def normalize_unc_path(path_str: str) -> str:
+    """
+    Normaliza um caminho UNC para garantir que seja interpretado corretamente.
+    
+    Args:
+        path_str (str): Caminho UNC como string
+        
+    Returns:
+        str: Caminho UNC normalizado
+    """
+    # Remove barras extras e normaliza
+    path_str = path_str.replace("\\\\", "\\").replace("//", "/")
+    
+    # Garante que caminhos UNC tenham exatamente duas barras no início
+    if path_str.startswith("\\"):
+        # Se já tem uma barra, adiciona mais uma
+        if not path_str.startswith("\\\\"):
+            path_str = "\\" + path_str
+    elif path_str.startswith("/"):
+        # Se tem barra normal, converte para barra invertida
+        path_str = "\\" + path_str.replace("/", "\\")
+    
+    return path_str
+
 def is_network_path_accessible(path: Path) -> bool:
     """
     Verifica se um caminho de rede é acessível sem tentar criar diretórios.
@@ -332,6 +358,11 @@ def is_network_path_accessible(path: Path) -> bool:
         bool: True se acessível, False caso contrário
     """
     try:
+        # Normaliza o caminho antes de verificar
+        path_str = str(path)
+        normalized_path = normalize_unc_path(path_str)
+        path = Path(normalized_path)
+        
         # Tenta apenas verificar se o caminho existe ou pode ser acessado
         if path.exists():
             return True
@@ -343,7 +374,7 @@ def is_network_path_accessible(path: Path) -> bool:
             
         # Para caminhos UNC, tenta verificar se o servidor responde
         path_str = str(path)
-        if path_str.startswith(r"\\"):
+        if path_str.startswith("\\\\"):
             # Tenta listar o diretório pai para verificar conectividade
             try:
                 parent_str = str(parent)
