@@ -1,25 +1,83 @@
-# Ignore variáveis de ambiente
-.env
+# ========================================
+# CONFIGURAÇÃO DE AMBIENTE
+# ========================================
 
-# Ambientes virtuais
+# Variáveis de ambiente
+.env
+.env.local
+.env.*.local
+
+# Ambientes virtuais Python
 .venv/
 venv/
+env/
+ENV/
 
-# Arquivos por extensão
+# Cache Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# ========================================
+# ARQUIVOS POR EXTENSÃO (IGNORAR POR PADRÃO)
+# ========================================
+
+# Documentos e relatórios gerados
 *.pdf
 *.txt
 *.log
+*.json
+
+# Imagens geradas pelos scripts
 *.png
 *.jpg
 *.jpeg
-*.json
+*.gif
+*.bmp
+*.tiff
+*.svg
 
-# Permitir estes arquivos específicos serem versionados
+# ========================================
+# EXCEÇÕES - ARQUIVOS IMPORTANTES PARA VERSIONAR
+# ========================================
+
+# Documentação técnica (sempre versionar)
+!technical_documentation/**/*.pdf
+!technical_documentation/**/*.png
+!technical_documentation/**/*.jpg
+!technical_documentation/**/*.jpeg
+!technical_documentation/**/*.tex
+
+# Imagens específicas do projeto
 !img/Docker.png
 !img/LogoRelatorio.jpg
 !img/WebScrep_QMC.drawio.png
 !img/WebScrep_QMC.jpg
+!pysql/img_reports/LogoRelatorio.jpg
+
+# Relatórios técnicos específicos
 !Relatório Técnico/WebScrepStatusQlik__Monitoramento_Automatizado_de_Tarefas_do_Qlik_Sense_com_Envio_de_Alertas_via_WhatsApp.pdf
+
+# ========================================
+# ESTRUTURA DE PASTAS DO PROJETO
+# ========================================
 
 # Permitir pastas específicas do projeto (apenas estrutura)
 !pysql/img_reports/
@@ -42,7 +100,51 @@ crawler_qlik/errorlogs/*
 !crawler_qlik/reports_qlik/.gitkeep
 !crawler_qlik/errorlogs/.gitkeep
 
-# (opcional) ignorar pastas específicas
-img/**/*.png
-img/**/*.jpg
-task/**/*.pdf
+# Exceto arquivos específicos importantes
+!pysql/img_reports/LogoRelatorio.jpg
+
+# ========================================
+# ARQUIVOS DE SISTEMA E EDITORES
+# ========================================
+
+# IDEs e editores
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Sistema operacional
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ========================================
+# LOGS E ARQUIVOS TEMPORÁRIOS
+# ========================================
+
+# Logs
+logs/
+*.log
+
+# Arquivos temporários
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# ========================================
+# CONFIGURAÇÕES ESPECÍFICAS
+# ========================================
+
+# ChromeDriver (se necessário)
+# chromedriver/
+# *.exe
+
+# Arquivos de configuração local
+config.local.ini
+settings.local.py
