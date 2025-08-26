@@ -131,9 +131,9 @@ Thumbs.db
 logs/
 *.log
 
-# Exceto logs do scheduler (importantes para monitoramento)
+# Exceto pasta do scheduler (apenas estrutura)
 !scheduler_logs/
-!scheduler_logs/*.log
+!scheduler_logs/.gitkeep
 
 # Arquivos temporários
 *.tmp
