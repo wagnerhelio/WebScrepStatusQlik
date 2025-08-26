@@ -17,9 +17,19 @@ import threading
 # Configuração de encoding para evitar problemas no Windows
 if sys.platform.startswith('win'):
     try:
-        import codecs
-        sys.stdout = codecs.getwriter('utf-8')(sys.stdout.detach())
-        sys.stderr = codecs.getwriter('utf-8')(sys.stderr.detach())
+        # Configura o console para UTF-8
+        os.system('chcp 65001 > nul')
+        
+        # Força UTF-8 para stdout e stderr
+        if hasattr(sys.stdout, 'reconfigure'):
+            sys.stdout.reconfigure(encoding='utf-8')
+        if hasattr(sys.stderr, 'reconfigure'):
+            sys.stderr.reconfigure(encoding='utf-8')
+        else:
+            # Fallback para versões mais antigas do Python
+            import codecs
+            sys.stdout = codecs.getwriter('utf-8')(sys.stdout.detach())
+            sys.stderr = codecs.getwriter('utf-8')(sys.stderr.detach())
     except:
         # Se falhar, mantém o stdout original
         pass
@@ -33,6 +43,7 @@ def safe_str(item):
 def safe_print_progress(text):
     """Função segura para imprimir progresso no Windows"""
     try:
+        # Tenta imprimir com UTF-8
         sys.stdout.write(text)
         sys.stdout.flush()
     except UnicodeEncodeError:
@@ -43,6 +54,16 @@ def safe_print_progress(text):
             sys.stdout.flush()
         except:
             # Último fallback - apenas mostra uma mensagem simples
+            sys.stdout.write('\rProgresso...')
+            sys.stdout.flush()
+    except Exception as e:
+        # Fallback genérico para qualquer erro
+        try:
+            # Remove caracteres problemáticos
+            safe_text = text.replace('█', '#').replace('░', '-').replace('í', 'i').replace('ó', 'o')
+            sys.stdout.write(safe_text)
+            sys.stdout.flush()
+        except:
             sys.stdout.write('\rProgresso...')
             sys.stdout.flush()
 

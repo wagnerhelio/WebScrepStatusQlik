@@ -34,6 +34,7 @@ except ImportError as e:
 load_dotenv()
 
 # Configurações da Evolution API
+evo_base_url = os.getenv("EVOLUTION_BASE_URL", "http://localhost:8080")  # URL base da Evolution API
 evo_api_token = os.getenv("EVOLUTION_API_TOKEN")
 evo_instance_id = os.getenv("EVOLUTION_INSTANCE_NAME")
 evo_instance_token = os.getenv("EVOLUTION_INSTANCE_ID")
@@ -108,7 +109,7 @@ evo_grupo = str(evo_grupo).strip() if evo_grupo else ""
 
 # Inicializa o cliente da Evolution API
 client = EvolutionClient(
-    base_url="http://localhost:8080",
+    base_url=evo_base_url,
     api_token=evo_api_token
 )
 

@@ -11,6 +11,19 @@ import json
 from datetime import datetime
 from dotenv import load_dotenv
 
+# Configuração para Windows - suporte a UTF-8
+if os.name == 'nt':  # Windows
+    try:
+        # Tenta configurar o console para UTF-8
+        os.system('chcp 65001 > nul')
+        # Força UTF-8 para stdout e stderr
+        if hasattr(sys.stdout, 'reconfigure'):
+            sys.stdout.reconfigure(encoding='utf-8')
+        if hasattr(sys.stderr, 'reconfigure'):
+            sys.stderr.reconfigure(encoding='utf-8')
+    except:
+        pass
+
 # Adiciona o diretório raiz do projeto ao sys.path para resolver imports
 current_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.dirname(current_dir)
@@ -33,6 +46,7 @@ except ImportError as e:
 load_dotenv()
 
 # Configurações da Evolution API
+evo_base_url = os.getenv("EVOLUTION_BASE_URL", "http://localhost:8080")  # URL base da Evolution API
 evo_api_token = os.getenv("EVOLUTION_API_TOKEN")
 evo_instance_id = os.getenv("EVOLUTION_INSTANCE_NAME")
 evo_instance_token = os.getenv("EVOLUTION_INSTANCE_ID")
@@ -77,7 +91,7 @@ evo_grupo = str(evo_grupo).strip() if evo_grupo else ""
 
 # Inicializa o cliente da Evolution API
 client = EvolutionClient(
-    base_url="http://localhost:8080",
+    base_url=evo_base_url,
     api_token=evo_api_token
 )
 
@@ -147,14 +161,21 @@ def executar_script_interativo(script_path, descricao):
         print(f"🔄 EXECUTANDO: {descricao}")
         print(f"{'='*60}")
         
-        # Executa o script de forma interativa
+        # Configura ambiente com codificação UTF-8
+        env = os.environ.copy()
+        env['PYTHONIOENCODING'] = 'utf-8'
+        env['PYTHONUTF8'] = '1'
+        
+        # Executa o script de forma interativa com codificação UTF-8
         processo = subprocess.Popen(
             [sys.executable, script_path],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
+            encoding='utf-8',
+            errors='replace',
             cwd=project_root,
-            env=os.environ.copy(),
+            env=env,
             bufsize=1,
             universal_newlines=True
         )
@@ -209,14 +230,21 @@ def executar_script_pysql(script_path, descricao):
         print(f"🚀 Iniciando execução de {descricao}...")
         print("─" * 60)
         
+        # Configura ambiente com codificação UTF-8
+        env = os.environ.copy()
+        env['PYTHONIOENCODING'] = 'utf-8'
+        env['PYTHONUTF8'] = '1'
+        
         # Executa o script SEM capturar saída para mostrar em tempo real
         resultado = subprocess.run(
             [sys.executable, script_path],
             capture_output=False,  # Permite que a saída apareça no terminal
             text=True,
+            encoding='utf-8',
+            errors='replace',
             cwd=project_root,
             timeout=3600,  # 60 minutos de timeout para scripts PySQL
-            env=os.environ.copy()  # Copia variáveis de ambiente
+            env=env  # Copia variáveis de ambiente
         )
         
         print("─" * 60)
@@ -250,14 +278,21 @@ def testar_execucao_script(script_path, descricao):
         print(f"🧪 Testando execução de {descricao}...")
         print(f"   📁 Script: {script_path}")
         
+        # Configura ambiente com codificação UTF-8
+        env = os.environ.copy()
+        env['PYTHONIOENCODING'] = 'utf-8'
+        env['PYTHONUTF8'] = '1'
+        
         # Testa com timeout reduzido para diagnóstico
         resultado = subprocess.run(
             [sys.executable, script_path],
             capture_output=False,  # Permite que a saída apareça no terminal
             text=True,
+            encoding='utf-8',
+            errors='replace',
             cwd=project_root,
             timeout=60,  # 1 minuto para teste
-            env=os.environ.copy()
+            env=env
         )
         
         if resultado.returncode == 0:
@@ -301,21 +336,7 @@ def executar_scripts_pysql():
     
     print(f"📄 Encontrados {len(scripts_python)} scripts Python")
     
-    # Primeiro testa cada script com timeout reduzido
-    print("\n🧪 TESTANDO EXECUÇÃO DOS SCRIPTS (timeout: 1 minuto)...")
-    scripts_ok = []
-    for script in scripts_python:
-        script_path = os.path.join(pysql_dir, script)
-        descricao = f"Script {script}"
-        
-        if testar_execucao_script(script_path, descricao):
-            scripts_ok.append(script)
-        else:
-            print(f"⚠️ {script} falhou no teste - será executado com timeout completo")
-    
-    print(f"\n📊 Resultado dos testes: {len(scripts_ok)}/{len(scripts_python)} scripts OK")
-    
-    # Executa cada script com execução interativa
+    # Executa cada script usando a mesma lógica da função de teste que funciona
     for i, script in enumerate(scripts_python, 1):
         script_path = os.path.join(pysql_dir, script)
         descricao = f"Script {script}"
@@ -324,9 +345,40 @@ def executar_scripts_pysql():
         print(f"🔄 EXECUTANDO SCRIPT {i}/{len(scripts_python)}: {script}")
         print(f"{'='*60}")
         
-        # Usa execução interativa para mostrar saída em tempo real
-        resultado = executar_script_interativo(script_path, descricao)
-        resultados[script] = resultado
+        try:
+            print(f"🚀 Executando {descricao}...")
+            print(f"   📁 Script: {script_path}")
+            
+            # Configura ambiente com codificação UTF-8 (mesma lógica da função de teste)
+            env = os.environ.copy()
+            env['PYTHONIOENCODING'] = 'utf-8'
+            env['PYTHONUTF8'] = '1'
+            
+            # Executa o script com a mesma configuração da função de teste que funciona
+            resultado = subprocess.run(
+                [sys.executable, script_path],
+                capture_output=False,  # Permite que a saída apareça no terminal
+                text=True,
+                encoding='utf-8',
+                errors='replace',
+                cwd=project_root,
+                timeout=3600,  # 60 minutos de timeout para scripts PySQL
+                env=env
+            )
+            
+            if resultado.returncode == 0:
+                print(f"✅ {descricao} executado com sucesso")
+                resultados[script] = f"Script {descricao} executado com sucesso (código {resultado.returncode})"
+            else:
+                print(f"⚠️ {descricao} retornou código {resultado.returncode}")
+                resultados[script] = f"Erro na execução de {descricao} (código {resultado.returncode})"
+                
+        except subprocess.TimeoutExpired:
+            print(f"⏰ Timeout ao executar {descricao} (60 minutos)")
+            resultados[script] = f"Timeout ao executar {descricao} - script demorou mais de 60 minutos"
+        except Exception as e:
+            print(f"❌ Erro ao executar {descricao}: {e}")
+            resultados[script] = f"Erro ao executar {descricao}: {str(e)}"
         
         # Aguarda um pouco entre execuções para não sobrecarregar
         if i < len(scripts_python):  # Não aguarda após o último script
