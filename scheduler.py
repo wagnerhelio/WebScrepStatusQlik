@@ -32,6 +32,14 @@ from pathlib import Path
 from typing import Dict, List, Optional
 from dataclasses import dataclass
 
+# Configuração para Windows - suporte a UTF-8
+if os.name == 'nt':  # Windows
+    try:
+        # Tenta configurar o console para UTF-8
+        os.system('chcp 65001 > nul')
+    except:
+        pass
+
 # =============================================================================
 # CONFIGURAÇÃO DAS TAREFAS
 # =============================================================================
@@ -81,7 +89,7 @@ TASKS = {
 # =============================================================================
 
 # Configurações de logging
-LOG_DIR = "logs"
+LOG_DIR = "scheduler_logs"
 LOG_LEVEL = "INFO"
 LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 
@@ -146,6 +154,46 @@ class TaskExecutor:
         self.project_root = Path(__file__).parent
         self.execution_history: List[Dict] = []
     
+    def check_script_encoding(self, script_path: str) -> bool:
+        """
+        Verifica se o script tem problemas de codificação.
+        
+        Args:
+            script_path: Caminho do script a ser verificado
+            
+        Returns:
+            bool: True se o script está OK, False se há problemas
+        """
+        try:
+            # Converte o caminho do módulo para caminho de arquivo
+            module_parts = script_path.split('.')
+            script_file = self.project_root / '/'.join(module_parts) + '.py'
+            
+            if not script_file.exists():
+                self.logger.warning(f"   ⚠️ Arquivo não encontrado: {script_file}")
+                return False
+            
+            # Tenta ler o arquivo com diferentes codificações
+            encodings = ['utf-8', 'cp1252', 'latin-1']
+            
+            for encoding in encodings:
+                try:
+                    with open(script_file, 'r', encoding=encoding) as f:
+                        content = f.read()
+                        # Verifica se há emojis problemáticos
+                        if any(ord(char) > 127 for char in content):
+                            self.logger.info(f"   📝 Script usa caracteres especiais (codificação: {encoding})")
+                        return True
+                except UnicodeDecodeError:
+                    continue
+            
+            self.logger.warning(f"   ⚠️ Não foi possível ler o arquivo com nenhuma codificação")
+            return False
+            
+        except Exception as e:
+            self.logger.warning(f"   ⚠️ Erro ao verificar codificação: {e}")
+            return True  # Assume que está OK se não conseguir verificar
+    
     def execute_task(self, task_key: str) -> bool:
         """
         Executa uma tarefa específica com retry e logging.
@@ -166,6 +214,9 @@ class TaskExecutor:
         self.logger.info(f"   📁 Script: {task.script_path}")
         self.logger.info(f"   ⏰ Timeout: {task.timeout}s")
         
+        # Verifica codificação do script
+        self.check_script_encoding(task.script_path)
+        
         start_time = datetime.now()
         success = False
         error_message = ""
@@ -175,13 +226,18 @@ class TaskExecutor:
             try:
                 self.logger.info(f"   🔄 Tentativa {attempt + 1}/{task.retry_count}")
                 
-                # Executa o script
+                # Executa o script com codificação UTF-8 para evitar problemas com emojis
+                env = os.environ.copy()
+                env['PYTHONIOENCODING'] = 'utf-8'
+                
                 result = subprocess.run(
                     [self.python_exec, "-m", task.script_path],
                     capture_output=True,
                     text=True,
+                    encoding='utf-8',
                     timeout=task.timeout,
-                    cwd=self.project_root
+                    cwd=self.project_root,
+                    env=env
                 )
                 
                 if result.returncode == 0:
@@ -191,8 +247,15 @@ class TaskExecutor:
                         self.logger.debug(f"   📤 Saída: {result.stdout.strip()}")
                     break
                 else:
-                    error_message = f"Código de retorno {result.returncode}: {result.stderr.strip()}"
-                    self.logger.warning(f"   ⚠️ Tentativa {attempt + 1} falhou: {error_message}")
+                    # Trata erros de codificação especificamente
+                    stderr_output = result.stderr.strip()
+                    if "UnicodeEncodeError" in stderr_output or "charmap" in stderr_output:
+                        error_message = f"Erro de codificação Unicode - verifique se o script suporta UTF-8"
+                        self.logger.warning(f"   ⚠️ Tentativa {attempt + 1} falhou: {error_message}")
+                        self.logger.debug(f"   📋 Detalhes: {stderr_output[:200]}...")
+                    else:
+                        error_message = f"Código de retorno {result.returncode}: {stderr_output}"
+                        self.logger.warning(f"   ⚠️ Tentativa {attempt + 1} falhou: {error_message}")
                     
             except subprocess.TimeoutExpired:
                 error_message = f"Timeout após {task.timeout}s"
