@@ -340,7 +340,7 @@ class WebScrapScheduler:
         now = datetime.now()
         
         # Executa às 12:00
-        if now.hour == 13 and now.minute == 22:
+        if now.hour == 12 and now.minute == 00:
             # Verifica se já executou hoje
             if self.last_daily_run is None or self.last_daily_run.date() != now.date():
                 return True
