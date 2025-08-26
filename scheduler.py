@@ -7,7 +7,7 @@ de relatórios do sistema WebScrapStatusQlik.
 
 Cronograma:
 - A cada hora: Monitoramento de status Qlik (QMC, NPrinting)
-- 12:00 PM: Envio de relatórios Qlik via Evolution API
+- 08:00 AM: Envio de relatórios Qlik via Evolution API
 - Após envio Qlik: Envio de relatórios PySQL via Evolution API
 
 Funcionalidades:
@@ -339,8 +339,8 @@ class WebScrapScheduler:
         """
         now = datetime.now()
         
-        # Executa às 12:00
-        if now.hour == 12 and now.minute == 00:
+        # Executa às 08:00
+        if now.hour == 08 and now.minute == 00:
             # Verifica se já executou hoje
             if self.last_daily_run is None or self.last_daily_run.date() != now.date():
                 return True
