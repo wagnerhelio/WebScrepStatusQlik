@@ -1,16 +1,21 @@
 #!/usr/bin/env python3
 """
-Scheduler para automação de tarefas WebScrapStatusQlik
+Scheduler Simplificado para WebScrapStatusQlik
 
 Este módulo gerencia a execução automática de scripts de monitoramento e envio
 de relatórios do sistema WebScrapStatusQlik.
 
+Cronograma:
+- A cada hora: Monitoramento de status Qlik (QMC, NPrinting)
+- 08:00 AM: Envio de relatórios Qlik via Evolution API
+- Após envio Qlik: Envio de relatórios PySQL via Evolution API
+
 Funcionalidades:
-- Monitoramento de status Qlik (QMC, NPrinting, Desktop, ETL) a cada hora
-- Geração de relatórios PySQL diários
+- Execução sequencial de tarefas (sem horários fixos)
+- Monitoramento de status Qlik a cada hora
 - Envio automático de relatórios via Evolution API
 - Logging detalhado de execução
-- Configuração centralizada de horários
+- Retry automático em caso de falhas
 
 Autor: Sistema WebScrapStatusQlik
 Data: 2024
@@ -24,11 +29,65 @@ import sys
 import os
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, List, Optional, Callable
-import glob
+from typing import Dict, List, Optional
+from dataclasses import dataclass
 
-# Importa configurações
-from scheduler_config import TASKS_CONFIG, LOGGING_CONFIG, EXECUTION_CONFIG
+# =============================================================================
+# CONFIGURAÇÃO DAS TAREFAS
+# =============================================================================
+
+@dataclass
+class TaskConfig:
+    """Configuração de uma tarefa agendada."""
+    name: str
+    description: str
+    script_path: str
+    enabled: bool = True
+    timeout: int = 300  # 5 minutos padrão
+    retry_count: int = 3
+
+# Configuração das tarefas
+TASKS = {
+    # Monitoramento de status Qlik (executa a cada hora)
+    "status_qlik": TaskConfig(
+        name="Status Qlik",
+        description="Monitoramento de status Qlik (QMC, NPrinting)",
+        script_path="crawler_qlik.status_qlik_task",
+        timeout=600,  # 10 minutos
+        retry_count=3
+    ),
+    
+    # Envio de relatórios Qlik (08:00)
+    "send_qlik": TaskConfig(
+        name="Envio Qlik",
+        description="Envio de relatórios Qlik via Evolution API",
+        script_path="evolution_api.send_qlik_evolution",
+        timeout=900,  # 15 minutos
+        retry_count=2
+    ),
+    
+    # Envio de relatórios PySQL (após Qlik)
+    "send_pysql": TaskConfig(
+        name="Envio PySQL",
+        description="Envio de relatórios PySQL via Evolution API",
+        script_path="evolution_api.send_pysql_evolution",
+        timeout=900,  # 15 minutos
+        retry_count=2
+    )
+}
+
+# =============================================================================
+# CONFIGURAÇÕES GERAIS
+# =============================================================================
+
+# Configurações de logging
+LOG_DIR = "logs"
+LOG_LEVEL = "INFO"
+LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+# Configurações de execução
+CHECK_INTERVAL = 30  # Segundos entre verificações
+STATUS_INTERVAL = 5  # Minutos entre exibições de status
 
 # =============================================================================
 # CONFIGURAÇÃO DE LOGGING
@@ -42,12 +101,12 @@ def setup_logging() -> logging.Logger:
         logging.Logger: Logger configurado
     """
     # Cria diretório de logs se não existir
-    log_dir = Path(LOGGING_CONFIG["log_dir"])
+    log_dir = Path(LOG_DIR)
     log_dir.mkdir(exist_ok=True)
     
     # Configura o logger
     logger = logging.getLogger("WebScrapScheduler")
-    logger.setLevel(getattr(logging, LOGGING_CONFIG["log_level"]))
+    logger.setLevel(getattr(logging, LOG_LEVEL))
     
     # Limpa handlers existentes
     logger.handlers.clear()
@@ -57,14 +116,14 @@ def setup_logging() -> logging.Logger:
         log_dir / f"scheduler_{datetime.now().strftime('%Y%m%d')}.log",
         encoding='utf-8'
     )
-    file_handler.setLevel(getattr(logging, LOGGING_CONFIG["log_level"]))
+    file_handler.setLevel(getattr(logging, LOG_LEVEL))
     
     # Handler para console
     console_handler = logging.StreamHandler()
-    console_handler.setLevel(getattr(logging, LOGGING_CONFIG["log_level"]))
+    console_handler.setLevel(getattr(logging, LOG_LEVEL))
     
     # Formato das mensagens
-    formatter = logging.Formatter(LOGGING_CONFIG["log_format"])
+    formatter = logging.Formatter(LOG_FORMAT)
     file_handler.setFormatter(formatter)
     console_handler.setFormatter(formatter)
     
@@ -97,7 +156,7 @@ class TaskExecutor:
         Returns:
             bool: True se executou com sucesso, False caso contrário
         """
-        task = TASKS_CONFIG.get(task_key)
+        task = TASKS.get(task_key)
         if not task or not task.enabled:
             self.logger.warning(f"Tarefa {task_key} não encontrada ou desabilitada")
             return False
@@ -172,87 +231,132 @@ class WebScrapScheduler:
         self.logger = setup_logging()
         self.executor = TaskExecutor(self.logger)
         self.running = False
+        self.last_hourly_run = None
+        self.last_daily_run = None
         
         self.logger.info("🔧 Inicializando WebScrapScheduler")
         self.logger.info(f"   🐍 Python: {self.executor.python_exec}")
         self.logger.info(f"   📁 Projeto: {self.executor.project_root}")
     
-    def setup_schedule(self):
-        """Configura o agendamento das tarefas."""
-        self.logger.info("📅 Configurando agendamento das tarefas...")
+    def should_run_hourly_task(self) -> bool:
+        """
+        Verifica se deve executar a tarefa horária (status Qlik).
         
-        for task_key, task in TASKS_CONFIG.items():
-            if not task.enabled:
-                self.logger.info(f"   ⏸️ {task.name} - DESABILITADA")
-                continue
-            
-            # Cria função wrapper para a tarefa
-            def create_task_wrapper(task_key):
-                def task_wrapper():
-                    self.executor.execute_task(task_key)
-                task_wrapper.__name__ = f"task_wrapper_{task_key}"
-                return task_wrapper
-            
-            # Configura o agendamento
-            if task.schedule_time.startswith(":"):
-                # A cada hora
-                schedule.every().hour.at(task.schedule_time).do(create_task_wrapper(task_key))
-                self.logger.info(f"   🔄 {task.name} - A cada hora às {task.schedule_time}")
-            else:
-                # Horário específico
-                schedule.every().day.at(task.schedule_time).do(create_task_wrapper(task_key))
-                self.logger.info(f"   📅 {task.name} - Diário às {task.schedule_time}")
+        Returns:
+            bool: True se deve executar, False caso contrário
+        """
+        now = datetime.now()
+        
+        # Se nunca executou, executa imediatamente
+        if self.last_hourly_run is None:
+            return True
+        
+        # Verifica se passou pelo menos 1 hora desde a última execução
+        time_diff = now - self.last_hourly_run
+        return time_diff.total_seconds() >= 3600  # 1 hora
     
-    def get_next_runs(self) -> Dict[str, str]:
-        """Obtém os próximos horários de execução de todas as tarefas."""
-        next_runs = {}
+    def should_run_daily_tasks(self) -> bool:
+        """
+        Verifica se deve executar as tarefas diárias (envio de relatórios).
         
-        for task_key, task in TASKS_CONFIG.items():
-            if not task.enabled:
-                next_runs[task_key] = "DESABILITADA"
-                continue
+        Returns:
+            bool: True se deve executar, False caso contrário
+        """
+        now = datetime.now()
+        
+        # Executa às 08:00
+        if now.hour == 8 and now.minute == 0:
+            # Verifica se já executou hoje
+            if self.last_daily_run is None or self.last_daily_run.date() != now.date():
+                return True
+        
+        return False
+    
+    def run_hourly_task(self):
+        """Executa a tarefa horária (status Qlik)."""
+        self.logger.info("🕐 Executando tarefa horária: Status Qlik")
+        success = self.executor.execute_task("status_qlik")
+        if success:
+            self.last_hourly_run = datetime.now()
+            self.logger.info("✅ Tarefa horária concluída com sucesso")
+        else:
+            self.logger.error("❌ Tarefa horária falhou")
+    
+    def run_daily_tasks(self):
+        """Executa as tarefas diárias sequencialmente."""
+        self.logger.info("🌅 Executando tarefas diárias: Envio de relatórios")
+        
+        # 1. Envia relatórios Qlik
+        self.logger.info("📤 Iniciando envio de relatórios Qlik...")
+        success_qlik = self.executor.execute_task("send_qlik")
+        
+        if success_qlik:
+            self.logger.info("✅ Envio Qlik concluído, iniciando PySQL...")
             
-            jobs = [job for job in schedule.get_jobs() 
-                   if getattr(job.job_func, "__name__", "") == f"task_wrapper_{task_key}"]
+            # 2. Envia relatórios PySQL (após Qlik)
+            self.logger.info("📤 Iniciando envio de relatórios PySQL...")
+            success_pysql = self.executor.execute_task("send_pysql")
             
-            if jobs and jobs[0].next_run:
-                next_runs[task_key] = jobs[0].next_run.strftime("%H:%M:%S")
+            if success_pysql:
+                self.logger.info("✅ Todas as tarefas diárias concluídas com sucesso")
+                self.last_daily_run = datetime.now()
             else:
-                next_runs[task_key] = "N/A"
-        
-        return next_runs
+                self.logger.error("❌ Envio PySQL falhou")
+        else:
+            self.logger.error("❌ Envio Qlik falhou, PySQL não será executado")
     
     def print_status(self):
         """Imprime o status atual do scheduler."""
         now = datetime.now().strftime("%H:%M:%S")
-        next_runs = self.get_next_runs()
         
         print(f"\n{'='*80}")
         print(f"📊 STATUS DO SCHEDULER - {now}")
         print(f"{'='*80}")
         
-        for task_key, task in TASKS_CONFIG.items():
+        # Status das tarefas
+        for task_key, task in TASKS.items():
             status = "✅" if task.enabled else "⏸️"
-            next_run = next_runs.get(task_key, "N/A")
-            print(f"{status} {task.name:<20} | Próxima execução: {next_run}")
+            print(f"{status} {task.name:<20} | {task.description}")
+        
+        # Status das execuções
+        print(f"\n📈 ÚLTIMAS EXECUÇÕES:")
+        if self.last_hourly_run:
+            print(f"   🕐 Status Qlik: {self.last_hourly_run.strftime('%d/%m/%Y %H:%M:%S')}")
+        else:
+            print(f"   🕐 Status Qlik: Nunca executado")
+            
+        if self.last_daily_run:
+            print(f"   🌅 Relatórios: {self.last_daily_run.strftime('%d/%m/%Y %H:%M:%S')}")
+        else:
+            print(f"   🌅 Relatórios: Nunca executado")
         
         print(f"{'='*80}")
     
     def run(self):
         """Executa o scheduler principal."""
         self.logger.info("🚀 Iniciando WebScrapScheduler")
-        self.setup_schedule()
+        self.logger.info("📅 Cronograma configurado:")
+        self.logger.info("   🕐 A cada hora: Status Qlik")
+        self.logger.info("   🌅 08:00 AM: Envio Qlik → Envio PySQL")
         
         self.running = True
         self.logger.info("✅ Scheduler iniciado. Pressione Ctrl+C para sair.")
         
         try:
             while self.running:
-                schedule.run_pending()
-                time.sleep(EXECUTION_CONFIG["check_interval"])
+                # Verifica tarefa horária
+                if self.should_run_hourly_task():
+                    self.run_hourly_task()
+                
+                # Verifica tarefas diárias
+                if self.should_run_daily_tasks():
+                    self.run_daily_tasks()
+                
+                # Aguarda próximo ciclo
+                time.sleep(CHECK_INTERVAL)
                 
                 # Mostra status a cada X minutos
-                if (datetime.now().minute % EXECUTION_CONFIG["status_interval"] == 0 and 
+                if (datetime.now().minute % STATUS_INTERVAL == 0 and 
                     datetime.now().second < 30):
                     self.print_status()
                     
