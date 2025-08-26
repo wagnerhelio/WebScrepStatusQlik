@@ -1,0 +1,17 @@
+2025-08-26 07:54:04,917 - WebScrapScheduler - INFO - 🔧 Inicializando WebScrapScheduler
+2025-08-26 07:54:04,918 - WebScrapScheduler - INFO -    🐍 Python: C:\Users\wagner.filho\Documents\GitHub\WebScrepStatusQlik\.venv\Scripts\python.exe
+2025-08-26 07:54:04,918 - WebScrapScheduler - INFO -    📁 Projeto: C:\Users\wagner.filho\Documents\GitHub\WebScrepStatusQlik
+2025-08-26 07:54:04,918 - WebScrapScheduler - INFO - 🚀 Iniciando WebScrapScheduler
+2025-08-26 07:54:04,918 - WebScrapScheduler - INFO - 📅 Cronograma configurado:
+2025-08-26 07:54:04,918 - WebScrapScheduler - INFO -    🕐 A cada hora: Status Qlik
+2025-08-26 07:54:04,919 - WebScrapScheduler - INFO -    🌅 08:00 AM: Envio Qlik → Envio PySQL
+2025-08-26 07:54:04,919 - WebScrapScheduler - INFO - ✅ Scheduler iniciado. Pressione Ctrl+C para sair.
+2025-08-26 07:54:04,919 - WebScrapScheduler - INFO - 🕐 Executando tarefa horária: Status Qlik
+2025-08-26 07:54:04,919 - WebScrapScheduler - INFO - 🚀 Iniciando execução: Status Qlik
+2025-08-26 07:54:04,919 - WebScrapScheduler - INFO -    📝 Descrição: Monitoramento de status Qlik (QMC, NPrinting)
+2025-08-26 07:54:04,919 - WebScrapScheduler - INFO -    📁 Script: crawler_qlik.status_qlik_task
+2025-08-26 07:54:04,919 - WebScrapScheduler - INFO -    ⏰ Timeout: 600s
+2025-08-26 07:54:04,920 - WebScrapScheduler - WARNING -    ⚠️ Erro ao verificar codificação: unsupported operand type(s) for +: 'WindowsPath' and 'str'
+2025-08-26 07:54:04,920 - WebScrapScheduler - INFO -    🔄 Tentativa 1/3
+2025-08-26 07:54:18,768 - WebScrapScheduler - INFO - 🛑 Scheduler interrompido pelo usuário
+2025-08-26 07:54:18,769 - WebScrapScheduler - INFO - 🏁 Scheduler finalizado

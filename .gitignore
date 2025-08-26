@@ -131,6 +131,10 @@ Thumbs.db
 logs/
 *.log
 
+# Exceto logs do scheduler (importantes para monitoramento)
+!scheduler_logs/
+!scheduler_logs/*.log
+
 # Arquivos temporários
 *.tmp
 *.temp
