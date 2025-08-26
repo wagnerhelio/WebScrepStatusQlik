@@ -131,21 +131,33 @@ def executar_script_status(script_path, descricao):
     try:
         print(f"🔄 Executando {descricao}...")
         
+        # Configura ambiente com codificação UTF-8
+        env = os.environ.copy()
+        env['PYTHONIOENCODING'] = 'utf-8'
+        env['PYTHONUTF8'] = '1'
+        
         # Executa o script e captura a saída
         resultado = subprocess.run(
             [sys.executable, script_path],
             capture_output=True,
             text=True,
+            encoding='utf-8',
+            errors='replace',  # Substitui caracteres problemáticos
             cwd=project_root,
+            env=env,
             timeout=300  # 5 minutos de timeout
         )
         
         if resultado.returncode == 0:
             print(f"✅ {descricao} executado com sucesso")
-            return resultado.stdout.strip()
+            # Verifica se stdout não é None antes de chamar strip()
+            stdout_output = resultado.stdout.strip() if resultado.stdout else ""
+            return stdout_output
         else:
             print(f"⚠️ {descricao} retornou código {resultado.returncode}")
-            return f"Erro na execução de {descricao}: {resultado.stderr.strip()}"
+            # Verifica se stderr não é None antes de chamar strip()
+            stderr_output = resultado.stderr.strip() if resultado.stderr else "Erro desconhecido"
+            return f"Erro na execução de {descricao}: {stderr_output}"
             
     except subprocess.TimeoutExpired:
         print(f"⏰ Timeout ao executar {descricao}")

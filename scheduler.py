@@ -7,7 +7,7 @@ de relatórios do sistema WebScrapStatusQlik.
 
 Cronograma:
 - A cada hora: Monitoramento de status Qlik (QMC, NPrinting)
-- 08:00 AM: Envio de relatórios Qlik via Evolution API
+- 12:00 PM: Envio de relatórios Qlik via Evolution API
 - Após envio Qlik: Envio de relatórios PySQL via Evolution API
 
 Funcionalidades:
@@ -230,15 +230,27 @@ class TaskExecutor:
                 env = os.environ.copy()
                 env['PYTHONIOENCODING'] = 'utf-8'
                 
-                result = subprocess.run(
-                    [self.python_exec, "-m", task.script_path],
-                    capture_output=True,
-                    text=True,
-                    encoding='utf-8',
-                    timeout=task.timeout,
-                    cwd=self.project_root,
-                    env=env
-                )
+                # Para scripts PySQL e Qlik, não captura saída para mostrar progresso em tempo real
+                if task_key in ["send_pysql", "send_qlik"]:
+                    result = subprocess.run(
+                        [self.python_exec, "-m", task.script_path],
+                        capture_output=False,  # Permite que a saída apareça no terminal
+                        text=True,
+                        encoding='utf-8',
+                        timeout=task.timeout,
+                        cwd=self.project_root,
+                        env=env
+                    )
+                else:
+                    result = subprocess.run(
+                        [self.python_exec, "-m", task.script_path],
+                        capture_output=True,
+                        text=True,
+                        encoding='utf-8',
+                        timeout=task.timeout,
+                        cwd=self.project_root,
+                        env=env
+                    )
                 
                 if result.returncode == 0:
                     success = True
@@ -327,8 +339,8 @@ class WebScrapScheduler:
         """
         now = datetime.now()
         
-        # Executa às 08:00
-        if now.hour == 8 and now.minute == 0:
+        # Executa às 12:00
+        if now.hour == 13 and now.minute == 22:
             # Verifica se já executou hoje
             if self.last_daily_run is None or self.last_daily_run.date() != now.date():
                 return True

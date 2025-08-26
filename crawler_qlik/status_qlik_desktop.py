@@ -16,6 +16,16 @@ from datetime import datetime, timezone
 import shutil
 import tempfile
 
+# Configuração para Windows - suporte a UTF-8
+if os.name == 'nt':  # Windows
+    try:
+        # Tenta configurar o console para UTF-8
+        os.system('chcp 65001 > nul')
+        # Reconfigura stdout para UTF-8
+        sys.stdout.reconfigure(encoding='utf-8')
+    except:
+        pass
+
 # =========================
 # CONFIGURAÇÕES DO USUÁRIO
 # =========================

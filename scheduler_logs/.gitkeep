@@ -1,2 +1,0 @@
-# Este arquivo garante que a pasta scheduler_logs seja versionada no Git
-# mesmo quando estiver vazia, para manter a estrutura do projeto.

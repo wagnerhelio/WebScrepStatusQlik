@@ -93,12 +93,7 @@ pysql/errorlogs/*
 crawler_qlik/reports_qlik/*
 crawler_qlik/errorlogs/*
 
-# Exceto arquivos .gitkeep para manter a estrutura
-!pysql/img_reports/.gitkeep
-!pysql/reports_pysql/.gitkeep
-!pysql/errorlogs/.gitkeep
-!crawler_qlik/reports_qlik/.gitkeep
-!crawler_qlik/errorlogs/.gitkeep
+# Pastas de estrutura do projeto (sem .gitkeep)
 
 # Exceto arquivos específicos importantes
 !pysql/img_reports/LogoRelatorio.jpg
@@ -133,7 +128,6 @@ logs/
 
 # Exceto pasta do scheduler (apenas estrutura)
 !scheduler_logs/
-!scheduler_logs/.gitkeep
 
 # Arquivos temporários
 *.tmp
