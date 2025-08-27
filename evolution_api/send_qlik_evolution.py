@@ -411,11 +411,11 @@ def enviar_logs_erro():
         print(f"⚠️ Pasta de logs de erro não encontrada: {pasta_erro}")
         return
     
-    # Lista todos os arquivos de erro
+    # Lista apenas arquivos .txt de erro
     arquivos_erro = [
         os.path.join(pasta_erro, f) 
         for f in os.listdir(pasta_erro) 
-        if os.path.isfile(os.path.join(pasta_erro, f))
+        if os.path.isfile(os.path.join(pasta_erro, f)) and f.endswith(('.txt', '.pdf'))
     ]
     
     if arquivos_erro:
@@ -440,11 +440,11 @@ def enviar_relatorios_compartilhados():
         print(f"⚠️ Pasta compartilhada não encontrada: {pasta_compartilhada}")
         return
     
-    # Lista todos os arquivos da pasta compartilhada
+    # Lista apenas arquivos .pdf da pasta compartilhada
     arquivos = [
         os.path.join(pasta_compartilhada, f) 
         for f in os.listdir(pasta_compartilhada) 
-        if os.path.isfile(os.path.join(pasta_compartilhada, f))
+        if os.path.isfile(os.path.join(pasta_compartilhada, f)) and f.endswith(('.txt', '.pdf'))
     ]
     
     if not arquivos:
