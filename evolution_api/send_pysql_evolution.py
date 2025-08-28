@@ -50,10 +50,11 @@ evo_destino = os.getenv("EVO_DESTINO")
 # Diretórios PySQL
 reports_pysql_dir = os.path.join(project_root, "pysql", "reports_pysql")
 errorlogs_pysql_dir = os.path.join(project_root, "pysql", "errorlogs")
+img_reports_dir = os.path.join(project_root, "pysql", "img_reports")
 pysql_dir = os.path.join(project_root, "pysql")
 
 # Lista de pastas para envio
-pastas_envio = [reports_pysql_dir, errorlogs_pysql_dir]
+pastas_envio = [reports_pysql_dir, errorlogs_pysql_dir, img_reports_dir]
 
 # =============================================================================
 # VALIDAÇÃO DAS CONFIGURAÇÕES
@@ -445,35 +446,7 @@ def enviar_relatorios_pdf():
         print(f"📤 Enviando: {arquivo}")
         enviar_para_todos_destinos(enviar_arquivo_para, caminho_completo)
 
-# =============================================================================
-# ENVIO DE ARQUIVOS DE TEMPO
-# =============================================================================
 
-def enviar_arquivos_tempo():
-    """Envia arquivos JSON de tempos de execução para análise."""
-    print("📊 Enviando arquivos de tempos de execução...")
-    
-    if not os.path.exists(reports_pysql_dir):
-        print(f"⚠️ Pasta de relatórios não encontrada: {reports_pysql_dir}")
-        return
-    
-    # Busca arquivos JSON de tempos
-    arquivos_json = [
-        f for f in os.listdir(reports_pysql_dir) 
-        if f.endswith('_tempos_execucao.json')
-    ]
-    
-    if not arquivos_json:
-        print(f"📂 Nenhum arquivo de tempo encontrado em {reports_pysql_dir}")
-        return
-    
-    print(f"📊 Encontrados {len(arquivos_json)} arquivos de tempo")
-    
-    # Envia cada arquivo JSON
-    for arquivo in arquivos_json:
-        caminho_completo = os.path.join(reports_pysql_dir, arquivo)
-        print(f"📤 Enviando: {arquivo}")
-        enviar_para_todos_destinos(enviar_arquivo_para, caminho_completo)
 
 # =============================================================================
 # ENVIO DE LOGS DE ERRO
@@ -528,7 +501,7 @@ def limpar_pastas_apos_envio():
             print(f"📂 Nenhum arquivo para limpar em: {pasta}")
             continue
         
-        # Remove apenas arquivos que não são JSON (para preservar histórico)
+        # Remove apenas arquivos que não são JSON (para preservar histórico) e preserva LogoRelatorio.jpg
         arquivos_removidos = 0
         for arquivo in arquivos:
             nome_arquivo = os.path.basename(arquivo)
@@ -536,6 +509,11 @@ def limpar_pastas_apos_envio():
             # Preserva arquivos JSON para manter série histórica
             if nome_arquivo.endswith('.json'):
                 print(f"💾 Preservando arquivo histórico: {nome_arquivo}")
+                continue
+            
+            # Preserva o arquivo LogoRelatorio.jpg
+            if nome_arquivo == 'LogoRelatorio.jpg':
+                print(f"💾 Preservando logo do relatório: {nome_arquivo}")
                 continue
             
             try:
@@ -590,13 +568,7 @@ def main():
         except KeyboardInterrupt:
             print("⚠️ Envio interrompido - continuando...")
         
-        print("\n" + "="*60)
-        print("📊 ENVIO DE ARQUIVOS DE TEMPO")
-        print("="*60)
-        try:
-            enviar_arquivos_tempo()
-        except KeyboardInterrupt:
-            print("⚠️ Envio interrompido - continuando...")
+
         
         print("\n" + "="*60)
         print("📋 ENVIO DE LOGS DE ERRO")
