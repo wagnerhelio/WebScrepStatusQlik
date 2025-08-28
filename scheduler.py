@@ -27,7 +27,7 @@ def executar_tarefa(script, descricao):
             result = subprocess.run(
                 [sys.executable, '-m', script],
                 capture_output=False,
-                timeout=600,
+                # SEM timeout para PySQL - permite que as consultas demorem o tempo necessário
                 cwd=Path(__file__).parent,
                 env={**os.environ, 'PYTHONIOENCODING': 'utf-8'}
             )
@@ -40,6 +40,9 @@ def executar_tarefa(script, descricao):
                 
         except subprocess.TimeoutExpired:
             print(f"⏰ {descricao} expirou")
+        except KeyboardInterrupt:
+            print(f"⚠️ {descricao} foi interrompido pelo usuário - continuando...")
+            return False  # Retorna False mas não para o scheduler
         except Exception as e:
             print(f"❌ {descricao} erro: {e}")
     
@@ -70,10 +73,11 @@ def main():
                 print("🌅 Executando tarefas diárias")
                 
                 # Envio Qlik
-                if executar_tarefa("evolution_api.send_qlik_evolution", "Envio Qlik"):
-                    # Envio PySQL (após Qlik)
-                    executar_tarefa("evolution_api.send_pysql_evolution", "Envio PySQL")
-                    ultimo_dia = agora
+                executar_tarefa("evolution_api.send_qlik_evolution", "Envio Qlik")
+                
+                # Envio PySQL (após Qlik) - sempre executa, mesmo se Qlik falhar
+                executar_tarefa("evolution_api.send_pysql_evolution", "Envio PySQL")
+                ultimo_dia = agora
             
             time.sleep(30)  # Verifica a cada 30 segundos
             

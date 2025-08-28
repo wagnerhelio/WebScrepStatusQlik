@@ -5,24 +5,14 @@ Executa scripts PySQL, coleta resumos de tempos de consulta e envia relatórios 
 
 import os
 import sys
-import shutil
 import subprocess
 import json
 from datetime import datetime
 from dotenv import load_dotenv
 
-# Configuração para Windows - suporte a UTF-8
-if os.name == 'nt':  # Windows
-    try:
-        # Tenta configurar o console para UTF-8
-        os.system('chcp 65001 > nul')
-        # Força UTF-8 para stdout e stderr
-        if hasattr(sys.stdout, 'reconfigure'):
-            sys.stdout.reconfigure(encoding='utf-8')
-        if hasattr(sys.stderr, 'reconfigure'):
-            sys.stderr.reconfigure(encoding='utf-8')
-    except:
-        pass
+# Configuração UTF-8 para Windows
+if os.name == 'nt':
+    os.system('chcp 65001 > nul')
 
 # Adiciona o diretório raiz do projeto ao sys.path para resolver imports
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -46,21 +36,21 @@ except ImportError as e:
 load_dotenv()
 
 # Configurações da Evolution API
-evo_base_url = os.getenv("EVOLUTION_BASE_URL", "http://localhost:8080")  # URL base da Evolution API
+evo_base_url = os.getenv("EVOLUTION_BASE_URL", "http://localhost:8080")
 evo_api_token = os.getenv("EVOLUTION_API_TOKEN")
 evo_instance_id = os.getenv("EVOLUTION_INSTANCE_NAME")
 evo_instance_token = os.getenv("EVOLUTION_INSTANCE_ID")
-evo_grupo = os.getenv("EVO_DESTINO_GRUPO")  # Grupo padrão para envio
-evo_destino = os.getenv("EVO_DESTINO")      # Número individual para envio
+evo_grupo = os.getenv("EVO_DESTINO_GRUPO")
+evo_destino = os.getenv("EVO_DESTINO")
 
 # =============================================================================
 # CONFIGURAÇÃO DOS DIRETÓRIOS
 # =============================================================================
 
-# Diretórios PySQL para envio
-reports_pysql_dir = os.path.join(project_root, "pysql", "reports_pysql")  # @reports_pysql/
-errorlogs_pysql_dir = os.path.join(project_root, "pysql", "errorlogs")    # @errorlogs/
-pysql_dir = os.path.join(project_root, "pysql")                          # @pysql/
+# Diretórios PySQL
+reports_pysql_dir = os.path.join(project_root, "pysql", "reports_pysql")
+errorlogs_pysql_dir = os.path.join(project_root, "pysql", "errorlogs")
+pysql_dir = os.path.join(project_root, "pysql")
 
 # Lista de pastas para envio
 pastas_envio = [reports_pysql_dir, errorlogs_pysql_dir]
@@ -100,214 +90,34 @@ client = EvolutionClient(
 # =============================================================================
 
 def verificar_dependencias_pysql():
-    """
-    Verifica se as dependências necessárias para os scripts PySQL estão disponíveis.
-    """
+    """Verifica dependências PySQL."""
     print("🔍 Verificando dependências PySQL...")
     
-    dependencias = [
-        'oracledb',
-        'pandas', 
-        'matplotlib',
-        'seaborn',
-        'fpdf',
-        'tqdm'
-    ]
-    
-    dependencias_faltando = []
+    dependencias = ['oracledb', 'pandas', 'matplotlib', 'seaborn', 'fpdf', 'tqdm']
+    faltando = []
     
     for dep in dependencias:
         try:
             __import__(dep)
             print(f"   ✅ {dep}")
         except ImportError:
-            print(f"   ❌ {dep} - NÃO ENCONTRADO")
-            dependencias_faltando.append(dep)
+            print(f"   ❌ {dep}")
+            faltando.append(dep)
     
-    if dependencias_faltando:
-        print(f"\n⚠️ Dependências faltando: {', '.join(dependencias_faltando)}")
-        print("💡 Instale com: pip install " + " ".join(dependencias_faltando))
+    if faltando:
+        print(f"⚠️ Faltando: {', '.join(faltando)}")
         return False
-    else:
-        print("✅ Todas as dependências estão disponíveis")
-        return True
+    
+    print("✅ Todas as dependências disponíveis")
+    return True
 
 # =============================================================================
 # EXECUÇÃO DE SCRIPTS PYSQL
 # =============================================================================
 
-def executar_script_interativo(script_path, descricao):
-    """
-    Executa um script PySQL de forma interativa, mostrando progresso em tempo real.
-    
-    Args:
-        script_path (str): Caminho para o script a ser executado
-        descricao (str): Descrição do script para logs
-        
-    Returns:
-        str: Resultado da execução
-    """
-    try:
-        print(f"🚀 Executando {descricao} de forma interativa...")
-        print(f"   📁 Script: {script_path}")
-        print(f"   🐍 Python: {sys.executable}")
-        print(f"   📂 Diretório de trabalho: {project_root}")
-        
-        # Verifica se o script existe
-        if not os.path.exists(script_path):
-            return f"Script não encontrado: {script_path}"
-        
-        print(f"\n{'='*60}")
-        print(f"🔄 EXECUTANDO: {descricao}")
-        print(f"{'='*60}")
-        
-        # Configura ambiente com codificação UTF-8
-        env = os.environ.copy()
-        env['PYTHONIOENCODING'] = 'utf-8'
-        env['PYTHONUTF8'] = '1'
-        
-        # Executa o script de forma interativa com codificação UTF-8
-        processo = subprocess.Popen(
-            [sys.executable, script_path],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True,
-            encoding='utf-8',
-            errors='replace',
-            cwd=project_root,
-            env=env,
-            bufsize=1,
-            universal_newlines=True
-        )
-        
-        # Mostra a saída em tempo real
-        while True:
-            output = processo.stdout.readline()
-            if output == '' and processo.poll() is not None:
-                break
-            if output:
-                print(output.strip())
-        
-        # Aguarda o processo terminar
-        return_code = processo.poll()
-        
-        print(f"\n{'='*60}")
-        print(f"🏁 EXECUÇÃO FINALIZADA: {descricao}")
-        print(f"{'='*60}")
-        
-        if return_code == 0:
-            print(f"✅ {descricao} executado com sucesso")
-            return f"Script {descricao} executado com sucesso (código {return_code})"
-        else:
-            print(f"⚠️ {descricao} retornou código {return_code}")
-            return f"Erro na execução de {descricao} (código {return_code})"
-            
-    except Exception as e:
-        print(f"❌ Erro ao executar {descricao}: {e}")
-        return f"Erro ao executar {descricao}: {str(e)}"
 
-def executar_script_pysql(script_path, descricao):
-    """
-    Executa um script PySQL e captura sua saída.
-    
-    Args:
-        script_path (str): Caminho para o script a ser executado
-        descricao (str): Descrição do script para logs
-        
-    Returns:
-        str: Saída do script ou mensagem de erro
-    """
-    try:
-        print(f"🔄 Executando {descricao}...")
-        print(f"   📁 Script: {script_path}")
-        print(f"   🐍 Python: {sys.executable}")
-        print(f"   📂 Diretório de trabalho: {project_root}")
-        
-        # Verifica se o script existe
-        if not os.path.exists(script_path):
-            return f"Script não encontrado: {script_path}"
-        
-        print(f"🚀 Iniciando execução de {descricao}...")
-        print("─" * 60)
-        
-        # Configura ambiente com codificação UTF-8
-        env = os.environ.copy()
-        env['PYTHONIOENCODING'] = 'utf-8'
-        env['PYTHONUTF8'] = '1'
-        
-        # Executa o script SEM capturar saída para mostrar em tempo real
-        resultado = subprocess.run(
-            [sys.executable, script_path],
-            capture_output=False,  # Permite que a saída apareça no terminal
-            text=True,
-            encoding='utf-8',
-            errors='replace',
-            cwd=project_root,
-            timeout=3600,  # 60 minutos de timeout para scripts PySQL
-            env=env  # Copia variáveis de ambiente
-        )
-        
-        print("─" * 60)
-        
-        if resultado.returncode == 0:
-            print(f"✅ {descricao} executado com sucesso")
-            return f"Script {descricao} executado com sucesso (código {resultado.returncode})"
-        else:
-            print(f"⚠️ {descricao} retornou código {resultado.returncode}")
-            return f"Erro na execução de {descricao} (código {resultado.returncode})"
-            
-    except subprocess.TimeoutExpired:
-        print(f"⏰ Timeout ao executar {descricao} (60 minutos)")
-        return f"Timeout ao executar {descricao} - script demorou mais de 60 minutos"
-    except Exception as e:
-        print(f"❌ Erro ao executar {descricao}: {e}")
-        return f"Erro ao executar {descricao}: {str(e)}"
 
-def testar_execucao_script(script_path, descricao):
-    """
-    Testa a execução de um script específico com timeout reduzido para diagnóstico.
-    
-    Args:
-        script_path (str): Caminho para o script a ser testado
-        descricao (str): Descrição do script para logs
-        
-    Returns:
-        bool: True se o script executou com sucesso, False caso contrário
-    """
-    try:
-        print(f"🧪 Testando execução de {descricao}...")
-        print(f"   📁 Script: {script_path}")
-        
-        # Configura ambiente com codificação UTF-8
-        env = os.environ.copy()
-        env['PYTHONIOENCODING'] = 'utf-8'
-        env['PYTHONUTF8'] = '1'
-        
-        # Testa com timeout reduzido para diagnóstico
-        resultado = subprocess.run(
-            [sys.executable, script_path],
-            capture_output=False,  # Permite que a saída apareça no terminal
-            text=True,
-            encoding='utf-8',
-            errors='replace',
-            cwd=project_root,
-            timeout=60,  # 1 minuto para teste
-            env=env
-        )
-        
-        if resultado.returncode == 0:
-            print(f"✅ {descricao} executou com sucesso no teste")
-            return True
-        else:
-            print(f"❌ {descricao} falhou no teste (código {resultado.returncode})")
-            return False
-            
-    except subprocess.TimeoutExpired:
-        print(f"⏰ {descricao} demorou mais de 1 minuto no teste")
-        return False
-    except Exception as e:
-        print(f"❌ Erro ao testar {descricao}: {e}")
-        return False
+
 
 def executar_scripts_pysql():
     """
@@ -349,33 +159,37 @@ def executar_scripts_pysql():
             print(f"🚀 Executando {descricao}...")
             print(f"   📁 Script: {script_path}")
             
-            # Configura ambiente com codificação UTF-8 (mesma lógica da função de teste)
             env = os.environ.copy()
             env['PYTHONIOENCODING'] = 'utf-8'
             env['PYTHONUTF8'] = '1'
             
-            # Executa o script com a mesma configuração da função de teste que funciona
-            resultado = subprocess.run(
-                [sys.executable, script_path],
-                capture_output=False,  # Permite que a saída apareça no terminal
-                text=True,
-                encoding='utf-8',
-                errors='replace',
-                cwd=project_root,
-                timeout=3600,  # 60 minutos de timeout para scripts PySQL
-                env=env
-            )
-            
-            if resultado.returncode == 0:
-                print(f"✅ {descricao} executado com sucesso")
-                resultados[script] = f"Script {descricao} executado com sucesso (código {resultado.returncode})"
-            else:
-                print(f"⚠️ {descricao} retornou código {resultado.returncode}")
-                resultados[script] = f"Erro na execução de {descricao} (código {resultado.returncode})"
+            try:
+                resultado = subprocess.run(
+                    [sys.executable, script_path],
+                    capture_output=False,
+                    text=True,
+                    encoding='utf-8',
+                    errors='replace',
+                    cwd=project_root,
+                    env=env
+                )
+                
+                if resultado.returncode == 0:
+                    print(f"✅ {descricao} executado com sucesso")
+                    resultados[script] = f"Script {descricao} executado com sucesso (código {resultado.returncode})"
+                else:
+                    print(f"⚠️ {descricao} retornou código {resultado.returncode}")
+                    resultados[script] = f"Erro na execução de {descricao} (código {resultado.returncode})"
+                    
+            except KeyboardInterrupt:
+                print(f"⚠️ {descricao} foi interrompido pelo usuário - continuando...")
+                resultados[script] = f"Script {descricao} foi interrompido pelo usuário"
+                # Continua para o próximo script em vez de parar
+                continue
                 
         except subprocess.TimeoutExpired:
-            print(f"⏰ Timeout ao executar {descricao} (60 minutos)")
-            resultados[script] = f"Timeout ao executar {descricao} - script demorou mais de 60 minutos"
+            print(f"⏰ Timeout ao executar {descricao}")
+            resultados[script] = f"Timeout ao executar {descricao}"
         except Exception as e:
             print(f"❌ Erro ao executar {descricao}: {e}")
             resultados[script] = f"Erro ao executar {descricao}: {str(e)}"
@@ -746,53 +560,73 @@ def main():
     print(f"📁 Pasta de scripts PySQL: {pysql_dir}")
     
     try:
-        # 1. Verifica dependências PySQL
         print("\n" + "="*60)
         print("🔍 VERIFICAÇÃO DE DEPENDÊNCIAS PYSQL")
         print("="*60)
         verificar_dependencias_pysql()
 
-        # 2. Executa scripts PySQL
         print("\n" + "="*60)
         print("🔄 EXECUÇÃO DE SCRIPTS PYSQL")
         print("="*60)
-        resultados_execucao = executar_scripts_pysql()
+        try:
+            resultados_execucao = executar_scripts_pysql()
+        except KeyboardInterrupt:
+            print("⚠️ Execução interrompida - continuando...")
+            resultados_execucao = {"interrompido": "Execução interrompida"}
         
-        # 3. Envia resumos de tempos de execução
         print("\n" + "="*60)
         print("📊 ENVIO DE RESUMOS DE TEMPOS")
         print("="*60)
-        enviar_resumos_tempo()
+        try:
+            enviar_resumos_tempo()
+        except KeyboardInterrupt:
+            print("⚠️ Envio interrompido - continuando...")
         
-        # 4. Envia relatórios PDF
         print("\n" + "="*60)
         print("📄 ENVIO DE RELATÓRIOS PDF")
         print("="*60)
-        enviar_relatorios_pdf()
+        try:
+            enviar_relatorios_pdf()
+        except KeyboardInterrupt:
+            print("⚠️ Envio interrompido - continuando...")
         
-        # 5. Envia arquivos de tempo (JSON)
         print("\n" + "="*60)
         print("📊 ENVIO DE ARQUIVOS DE TEMPO")
         print("="*60)
-        enviar_arquivos_tempo()
+        try:
+            enviar_arquivos_tempo()
+        except KeyboardInterrupt:
+            print("⚠️ Envio interrompido - continuando...")
         
-        # 6. Envia logs de erro
         print("\n" + "="*60)
         print("📋 ENVIO DE LOGS DE ERRO")
         print("="*60)
-        enviar_logs_erro()
+        try:
+            enviar_logs_erro()
+        except KeyboardInterrupt:
+            print("⚠️ Envio interrompido - continuando...")
         
-        # 7. Limpa as pastas após envio (preservando JSONs)
         print("\n" + "="*60)
         print("🧹 LIMPEZA DAS PASTAS")
         print("="*60)
-        limpar_pastas_apos_envio()
+        try:
+            limpar_pastas_apos_envio()
+        except KeyboardInterrupt:
+            print("⚠️ Limpeza interrompida - continuando...")
         
         print("\n✅ Processo PySQL finalizado com sucesso!")
         
+    except KeyboardInterrupt:
+        print("\n⚠️ Processo interrompido pelo usuário")
+        try:
+            enviar_logs_erro()
+        except:
+            pass
+        print("✅ Processo finalizado")
+        
     except Exception as e:
-        print(f"\n❌ Erro durante a execução: {e}")
-        raise
+        print(f"\n❌ Erro: {e}")
+        print("🔄 Continuando...")
 
 # =============================================================================
 # EXECUÇÃO DO SCRIPT
