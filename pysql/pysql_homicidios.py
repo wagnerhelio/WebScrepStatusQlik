@@ -374,8 +374,8 @@ SELECT
   NVL(cid.nome, 'NÃO INFORMADO') AS municipio_nome,
   oc.id AS id_rai,
   TO_CHAR(TRUNC(oc.datafato), 'DD/MM/YYYY') AS datafato,
-  TO_CHAR(TRUNC(oc.datafato), 'HH:MM:SS') AS hora_fato,
-  TO_CHAR(TRUNC(oc.dataultimaatualizacao), 'DD/MM/YYYY HH:MM:SS') AS dataultimaatualizacao,
+  TO_CHAR(oc.datafato, 'HH24:MI:SS') AS hora_fato,
+  TO_CHAR(oc.dataultimaatualizacao, 'DD/MM/YYYY HH24:MI:SS') AS dataultimaatualizacao,
   COUNT(DISTINCT pes.id) AS total,
   COUNT(CASE WHEN pes.sexo_nome = 'FEMININO' THEN 1 END) AS F,
   COUNT(CASE WHEN pes.sexo_nome = 'MASCULINO' THEN 1 END) AS M,
@@ -413,15 +413,7 @@ INNER JOIN spi.qualificacao_categorias qcap ON qcap.qualificacao_categoria = qa.
 WHERE ende.estado_sigla = 'GO'
   AND TRUNC(oc.datafato) IN(TRUNC(SYSDATE-1),TRUNC(SYSDATE))
   AND oc.statusocorrencia = 'OCORRENCIA'
-  AND (
-    UPPER(nat_tip_pes.GRUPO) = 'HOMICÍDIO' OR nat_pes.naturezaid IN (
-      '500001', '500002', '500003', '500004', '500005', '500006', '500007', '500011',
-      '400711', '400712', '400001', '400002', '501199', '501200', '501201', '501202',
-      '501203', '501204', '501220', '501136', '501137', '501138', '501139', '501140',
-      '501141', '501288', '520269', '520323', '521062', '522242', '522243', '522262',
-      '523006', '523007', '523008', '523009', '523010', '523011', '522745'
-    )
-  )
+  AND ( UPPER(nat_tip_pes.GRUPO) = 'HOMICÍDIO' OR nat_pes.naturezaid IN ('500001', '500002', '500003', '500004', '500005', '500006', '500007', '500011','400711', '400712', '400001', '400002', '501199', '501200', '501201', '501202','501203', '501204', '501220', '501136', '501137', '501138', '501139', '501140','501141', '501288', '520269', '520323', '521062', '522242', '522243', '522262','523006', '523007', '523008', '523009', '523010', '523011', '522745'))
   AND nat_pes.consumacaoenum = 'CONSUMADO'
   AND ope.tipopessoaenum = 'FISICA'
   AND qcap.nome = 'VÍTIMA'
