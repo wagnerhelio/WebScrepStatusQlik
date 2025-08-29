@@ -192,37 +192,212 @@ python -m evolution_api.send_pysql_evolution
 - **Logs de Erro**: Arquivos de log para análise
 - **Alertas**: Notificações de falhas críticas
 
-## 📁 Estrutura de Arquivos
+## 📁 Estrutura Detalhada do Projeto
 
+### 📂 **Diretório Raiz**
 ```
 WebScrepStatusQlik/
-├── crawler_qlik/                 # Módulo de monitoramento Qlik
-│   ├── status_qlik_task.py      # Monitoramento principal
-│   ├── status_qlik_desktop.py   # Monitoramento Desktop
-│   ├── status_qlik_etl.py       # Monitoramento ETL
-│   ├── network_config.py        # Configurações de rede
-│   ├── chromedriver/            # WebDriver do Chrome
-│   ├── errorlogs/               # Logs de erro coletados
-│   ├── reports_qlik/            # Relatórios gerados
-│   └── teamplate/               # Templates HTML
-├── pysql/                       # Módulo de relatórios PySQL
-│   ├── pysql_homicidios.py      # Relatórios de homicídios
-│   ├── pysql_feminicidio.py     # Relatórios de feminicídio
-│   ├── img_reports/             # Imagens dos relatórios
-│   ├── reports_pysql/           # Dados de execução
-│   └── errorlogs/               # Logs de erro PySQL
-├── evolution_api/               # Módulo de integração WhatsApp
-│   ├── send_qlik_evolution.py   # Envio relatórios Qlik
-│   ├── send_pysql_evolution.py  # Envio relatórios PySQL
-│   ├── docker-compose.yaml      # Configuração Docker
-│   └── env.docker               # Variáveis Docker
-├── technical_documentation/     # Documentação técnica
-├── scheduler.py                 # Agendador principal
-├── scheduler_config.py          # Configurações do scheduler
-├── requirements.txt             # Dependências Python
-├── .env_exemple                 # Exemplo de configuração
-└── README.md                    # Este arquivo
+├── 📄 scheduler.py                    # Agendador principal do sistema
+├── 📄 requirements.txt                # Dependências Python do projeto
+├── 📄 .env_exemple                    # Exemplo de configuração de variáveis
+├── 📄 LICENSE                         # Licença MIT do projeto
+├── 📄 README.md                       # Documentação principal
+├── 📄 .gitignore                      # Arquivos ignorados pelo Git
+├── 📂 __pycache__/                    # Cache Python (gerado automaticamente)
+└── 📂 .venv/                          # Ambiente virtual Python
 ```
+
+### 📂 **crawler_qlik/** - Módulo de Monitoramento Qlik
+```
+crawler_qlik/
+├── 📄 __init__.py                     # Inicializador do módulo Python
+├── 📄 status_qlik_task.py             # Monitoramento principal de tarefas QMC (QAP e HUB)
+├── 📄 status_qlik_desktop.py          # Monitoramento do Qlik Sense Desktop
+├── 📄 status_qlik_etl.py              # Monitoramento de processos ETL
+├── 📄 network_config.py               # Configurações de rede e conectividade
+├── 📂 __pycache__/                    # Cache Python do módulo
+├── 📂 chromedriver/                   # WebDriver do Chrome
+│   ├── 📄 chromedriver.exe            # Executável do ChromeDriver para Windows
+│   ├── 📄 chromedriver-win64.zip      # Arquivo compactado do ChromeDriver
+│   ├── 📄 LICENSE.chromedriver        # Licença do ChromeDriver
+│   └── 📄 THIRD_PARTY_NOTICES.chromedriver  # Notas de terceiros
+├── 📂 errorlogs/                      # Logs de erro coletados pelo sistema
+├── 📂 reports_qlik/                   # Relatórios gerados pelo monitoramento
+└── 📂 teamplate/                      # Templates HTML para relatórios
+    ├── 📄 template.html               # Template padrão para relatórios
+    └── 📄 template_nprinting.html     # Template específico para NPrinting
+```
+
+### 📂 **pysql/** - Módulo de Relatórios PySQL
+```
+pysql/
+├── 📄 pysql_homicidios.py             # Geração de relatórios de homicídios
+├── 📄 pysql_feminicidio.py            # Geração de relatórios de feminicídio
+├── 📂 img_reports/                    # Imagens e gráficos dos relatórios
+│   └── 📄 LogoRelatorio.jpg           # Logo utilizado nos relatórios
+├── 📂 reports_pysql/                  # Arquivos JSON com tempos de execução
+│   ├── 📄 feminicidios_tempos_execucao.json  # Dados de tempo de execução feminicídios
+│   └── 📄 homicidios_tempos_execucao.json    # Dados de tempo de execução homicídios
+└── 📂 errorlogs/                      # Logs de erro dos scripts PySQL
+```
+
+### 📂 **evolution_api/** - Módulo de Integração WhatsApp
+```
+evolution_api/
+├── 📄 send_qlik_evolution.py          # Envio de relatórios Qlik via WhatsApp
+├── 📄 send_pysql_evolution.py         # Envio de relatórios PySQL via WhatsApp
+├── 📄 docker-compose.yaml             # Configuração Docker para Evolution API
+├── 📄 env.docker                      # Variáveis de ambiente para Docker
+└── 📂 __pycache__/                    # Cache Python do módulo
+```
+
+### 📂 **technical_documentation/** - Documentação Técnica
+```
+technical_documentation/
+├── 📄 relatorio_webscrepstatusqlik.tex  # Documentação em LaTeX
+├── 📄 WebScrepStatusQlik__Monitoramento_Automatizado_de_Tarefas_do_Qlik_Sense_com_Envio_de_Alertas_via_WhatsApp.pdf  # Relatório técnico em PDF
+├── 📂 exemple/                        # Exemplos de código e configuração
+│   ├── 📄 relatorio_homicidios.py     # Exemplo de relatório de homicídios
+│   ├── 📄 scheduler_statusqlik.py     # Exemplo de scheduler
+│   ├── 📄 send_evolution.py           # Exemplo de envio via Evolution API
+│   ├── 📄 send_statusqlik_evolution.py  # Exemplo de envio de status Qlik
+│   ├── 📄 sendgroup_statusqlik_evolution.py  # Exemplo de envio para grupo
+│   ├── 📄 sendnumber_statusqlik_evolution.py  # Exemplo de envio para número
+│   ├── 📄 statusqlik_nprinting.py     # Exemplo de monitoramento NPrinting
+│   ├── 📄 statusqlik_qmc.py           # Exemplo de monitoramento QMC
+│   └── 📄 statusqliksensedesktop.py   # Exemplo de monitoramento Desktop
+└── 📂 img/                            # Imagens e diagramas
+    ├── 📄 Docker.png                  # Imagem relacionada ao Docker
+    ├── 📄 WebScrep_QMC.drawio         # Diagrama do sistema em formato Draw.io
+    ├── 📄 WebScrep_QMC.drawio.png     # Diagrama do sistema em PNG
+    └── 📄 WebScrep_QMC.jpg            # Imagem do sistema QMC
+```
+
+## 📋 Descrição Detalhada dos Arquivos
+
+### 🔧 **Arquivos de Configuração e Sistema**
+
+#### **`scheduler.py`**
+- **Função**: Agendador principal que coordena todas as tarefas do sistema
+- **Recursos**: Execução programada, retry automático, logging detalhado
+- **Horários**: Configuração flexível de execução das tarefas
+
+#### **`requirements.txt`**
+- **Função**: Lista todas as dependências Python necessárias
+- **Inclui**: Selenium, pandas, matplotlib, cx_Oracle, python-dotenv, etc.
+
+#### **`.env_exemple`**
+- **Função**: Template com todas as variáveis de ambiente necessárias
+- **Configurações**: Credenciais Qlik, URLs, Evolution API, banco Oracle
+
+#### **`LICENSE`**
+- **Função**: Licença MIT que permite uso, modificação e distribuição
+
+### 🕷️ **Arquivos de Monitoramento Qlik**
+
+#### **`crawler_qlik/status_qlik_task.py`**
+- **Função**: Monitoramento principal de tarefas QMC (QAP e HUB)
+- **Recursos**: Web scraping, coleta de status, download de logs, reinicialização automática
+- **Saída**: Relatórios PDF e logs de erro
+
+#### **`crawler_qlik/status_qlik_desktop.py`**
+- **Função**: Monitoramento específico do Qlik Sense Desktop
+- **Recursos**: Verificação de aplicações, conectividade, status de serviços
+- **Integração**: Acesso a pastas compartilhadas UNC
+
+#### **`crawler_qlik/status_qlik_etl.py`**
+- **Função**: Monitoramento de processos ETL
+- **Recursos**: Verificação de dependências, integridade de dados, logs de execução
+- **Pastas**: Monitora diretórios ETL em servidores de rede
+
+#### **`crawler_qlik/network_config.py`**
+- **Função**: Configuração de acesso a pastas compartilhadas de rede
+- **Recursos**: Autenticação automática, normalização de caminhos UNC, teste de conectividade
+- **Integração**: Usado pelo `send_qlik_evolution.py`
+
+### 📊 **Arquivos de Relatórios PySQL**
+
+#### **`pysql/pysql_homicidios.py`**
+- **Função**: Geração completa de relatórios de homicídios
+- **Recursos**: Análise temporal, regional, gráficos automáticos, exportação PDF
+- **Dados**: Consultas Oracle, processamento pandas, visualizações matplotlib
+
+#### **`pysql/pysql_feminicidio.py`**
+- **Função**: Geração de relatórios especializados de feminicídio
+- **Recursos**: Análise específica, indicadores, comparações temporais
+- **Saída**: PDFs, imagens e dados JSON de execução
+
+### 📱 **Arquivos de Integração WhatsApp**
+
+#### **`evolution_api/send_qlik_evolution.py`**
+- **Função**: Envio de relatórios Qlik via WhatsApp
+- **Recursos**: Envio individual e em grupo, múltiplos destinos, arquivos PDF
+- **Integração**: Usa `network_config.py` para acesso a pastas compartilhadas
+
+#### **`evolution_api/send_pysql_evolution.py`**
+- **Função**: Envio de relatórios PySQL via WhatsApp
+- **Recursos**: Execução de scripts PySQL, coleta de resumos, envio de relatórios
+- **Dados**: Tempos de execução, logs de erro, arquivos PDF
+
+#### **`evolution_api/docker-compose.yaml`**
+- **Função**: Configuração Docker para Evolution API
+- **Recursos**: Containerização, configuração de rede, volumes persistentes
+
+#### **`evolution_api/env.docker`**
+- **Função**: Variáveis de ambiente para container Docker
+- **Configurações**: URLs, tokens, instâncias da Evolution API
+
+### 📚 **Arquivos de Documentação**
+
+#### **`technical_documentation/relatorio_webscrepstatusqlik.tex`**
+- **Função**: Documentação técnica em LaTeX
+- **Conteúdo**: Arquitetura, implementação, configuração do sistema
+
+#### **`technical_documentation/WebScrepStatusQlik__Monitoramento_Automatizado_de_Tarefas_do_Qlik_Sense_com_Envio_de_Alertas_via_WhatsApp.pdf`**
+- **Função**: Relatório técnico completo em PDF
+- **Conteúdo**: Documentação detalhada do sistema, diagramas, exemplos
+
+### 🎨 **Arquivos de Template e Recursos**
+
+#### **`crawler_qlik/teamplate/template.html`**
+- **Função**: Template HTML padrão para relatórios
+- **Recursos**: Layout responsivo, estilos CSS, estrutura de dados
+
+#### **`crawler_qlik/teamplate/template_nprinting.html`**
+- **Função**: Template específico para relatórios NPrinting
+- **Recursos**: Formatação especializada para dados NPrinting
+
+#### **`pysql/img_reports/LogoRelatorio.jpg`**
+- **Função**: Logo utilizado nos relatórios PySQL
+- **Uso**: Cabeçalho dos relatórios PDF gerados
+
+### 📁 **Pastas de Dados e Logs**
+
+#### **`crawler_qlik/errorlogs/`**
+- **Função**: Armazena logs de erro do monitoramento Qlik
+- **Conteúdo**: Arquivos de log com detalhes de falhas e problemas
+
+#### **`crawler_qlik/reports_qlik/`**
+- **Função**: Armazena relatórios gerados pelo monitoramento
+- **Conteúdo**: PDFs, arquivos HTML, dados de status
+
+#### **`pysql/errorlogs/`**
+- **Função**: Armazena logs de erro dos scripts PySQL
+- **Conteúdo**: Logs de execução, erros de consulta, problemas de conexão
+
+#### **`pysql/reports_pysql/`**
+- **Função**: Armazena dados de execução dos relatórios PySQL
+- **Conteúdo**: JSONs com tempos de execução, métricas de performance
+
+### 🔧 **Arquivos de Exemplo e Configuração**
+
+#### **`technical_documentation/exemple/`**
+- **Função**: Exemplos práticos de uso do sistema
+- **Conteúdo**: Scripts de exemplo, configurações, casos de uso
+
+#### **`technical_documentation/img/`**
+- **Função**: Recursos visuais da documentação
+- **Conteúdo**: Diagramas, screenshots, imagens explicativas
 
 ## ⏰ Cronograma de Execução
 
