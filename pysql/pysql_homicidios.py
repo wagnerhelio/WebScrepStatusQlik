@@ -190,7 +190,7 @@ def executar_com_progresso(nome, query, cursor, tempos_medios):
     cursor.execute(query)
     
     # Processa o resultado
-    if nome in ["Homicídios Comparativo por Município", "Homicídios Comparativo por 2 Anos","Homicídios Comparativo por Todos os Anos","Homicídios Comparativo por Regiões","Homicídios Comparativo por Regiões dia atual","Homicídios Comparativo por Dia","Homicídios Comparativo por Dia por Regiões","Homicídios Comparativo por Mes por Regiões","Homicídios Comparativo por Semana por Regiões","Homicídios em Presídios","Homicídios Comparativo por Município Top 20","Homicídios Comparativo por Risp","Homicídios Comparativo por Aisp"]:
+    if nome in ["Homicídios Comparativo por Município", "Homicídios Comparativo por 2 Anos","Homicídios Comparativo por Todos os Anos","Homicídios Comparativo por Regiões dia anterior","Homicídios Comparativo por Regiões dia atual","Homicídios Comparativo por Dia","Homicídios Comparativo por Dia por Regiões","Homicídios Comparativo por Mes por Regiões","Homicídios Comparativo por Semana por Regiões","Homicídios em Presídios","Homicídios Comparativo por Município Top 20","Homicídios Comparativo por Risp","Homicídios Comparativo por Aisp"]:
         columns = [str(col[0]) for col in cursor.description]
         rows = [list(row) for row in cursor.fetchall()]
         resultado = (columns, rows)
@@ -525,7 +525,7 @@ ORDER BY
   ano_fato
 '''
 
-query_homicidios_comparativo_regioes ='''
+query_homicidios_comparativo_regioes_dia_anterior ='''
 SELECT
 CASE
     WHEN cid.uf <> 'GO' THEN NULL
@@ -1133,7 +1133,7 @@ queries = [
     ("Homicídios Comparativo por Todos os Anos", query_homicidios_comparativo_todos_anos),
     ("Homicídios Comparativo por Dia", query_homicidios_comparativo_dia),
     ("Homicídios Comparativo por Regiões dia atual", query_homicidios_comparativo_regioes_dia_atual),
-    ("Homicídios Comparativo por Regiões", query_homicidios_comparativo_regioes),
+    ("Homicídios Comparativo por Regiões dia anterior", query_homicidios_comparativo_regioes_dia_anterior),
     ("Homicídios Comparativo por Dia por Regiões", query_homicidios_comparativo_regioes_dia),
     ("Homicídios Comparativo por Mes por Regiões", query_homicidios_comparativo_regioes_mes),
     ("Homicídios Comparativo por Semana por Regiões", query_homicidios_comparativo_regioes_semana),
