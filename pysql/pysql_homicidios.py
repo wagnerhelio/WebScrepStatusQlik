@@ -1672,7 +1672,7 @@ columns_regiao_observatorio_atualizada = [
     "Índice por 100K hab."
 ]
 
-columns_regiao_observatorio, rows_regiao_observatorio = resultados["Homicídios Comparativo por Regiões"]
+columns_regiao_observatorio, rows_regiao_observatorio = resultados["Homicídios Comparativo por Regiões dia anterior"]
 
 # Espaço antes da tabela
 pdf.ln(0.5)
