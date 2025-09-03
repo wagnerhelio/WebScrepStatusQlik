@@ -43,7 +43,6 @@ wheels/
 *.pdf
 *.txt
 *.log
-*.json
 
 # Imagens geradas pelos scripts
 *.png
@@ -59,5 +58,4 @@ wheels/
 # Imagens específicas do projeto
 !pysql/img_reports/LogoRelatorio.jpg
 
-# Pasta de relatórios (sempre versionar, mesmo vazia)
-!pysql/reports_pysql/
+pysql/reports_pysql/*
