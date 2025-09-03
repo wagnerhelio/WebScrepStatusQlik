@@ -58,4 +58,6 @@ wheels/
 # Imagens específicas do projeto
 !pysql/img_reports/LogoRelatorio.jpg
 
-pysql/reports_pysql/*
+# Arquivos JSON específicos para ignorar
+pysql/reports_pysql/homicidios_tempos_execucao.json
+pysql/reports_pysql/feminicidios_tempos_execucao.json
