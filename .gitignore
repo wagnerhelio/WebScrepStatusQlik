@@ -14,8 +14,13 @@
 
 # Documentação técnica (sempre versionar)
 !technical_documentation/*
-# Pasta de relatórios (sempre versionar, mesmo vazia)
+# Pastas de relatórios (sempre versionar, mesmo vazias)
 !pysql/reports_pysql/
+!crawler_qlik/reports_qlik/
+
+# Pastas de logs (sempre versionar, mesmo vazias)
+!crawler_qlik/errorlogs/
+!pysql/errorlogs/
 
 # Imagens específicas do projeto
 !pysql/img_reports/LogoRelatorio.jpg
