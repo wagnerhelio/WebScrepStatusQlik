@@ -28,3 +28,10 @@ venv/
 # Arquivos JSON específicos para ignorar
 pysql/reports_pysql/homicidios_tempos_execucao.json
 pysql/reports_pysql/feminicidios_tempos_execucao.json
+
+# Arquivos PDF de relatórios para ignorar
+pysql/reports_pysql/relatorio_homicidios.pdf
+pysql/reports_pysql/relatorio_feminicidios.pdf
+
+# Arquivos PNG gerados para ignorar
+pysql/img_reports/grafico_*.png

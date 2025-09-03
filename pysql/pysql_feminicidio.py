@@ -1443,7 +1443,13 @@ except Exception as e:
 plt.close()
 
 # Adiciona o DataFrame ao PDF
-pdf.image(os.path.join(relatorio_dir, 'grafico_feminicidio_2anos.png'), x=5, w=200)
+# Verifica se o arquivo existe antes de adicionar ao PDF
+grafico_2anos_path = os.path.join(relatorio_dir, 'grafico_feminicidio_2anos.png')
+if os.path.exists(grafico_2anos_path):
+    pdf.image(grafico_2anos_path, x=5, w=200)
+else:
+    pdf.set_font('Arial', 'I', 10)
+    pdf.cell(0, 8, 'Gráfico não disponível', ln=1, align='C')
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 6, f'Até {ontem_data}', ln=1, align='L')
 
@@ -1559,7 +1565,13 @@ if not df_dia.empty:
     plt.close()
 
 # Adiciona o DataFrame ao PDF 
-pdf.image(os.path.join(relatorio_dir, 'grafico_feminicidio_dia.png'), x=5, w=200)
+# Verifica se o arquivo existe antes de adicionar ao PDF
+grafico_dia_path = os.path.join(relatorio_dir, 'grafico_feminicidio_dia.png')
+if os.path.exists(grafico_dia_path):
+    pdf.image(grafico_dia_path, x=5, w=200)
+else:
+    pdf.set_font('Arial', 'I', 10)
+    pdf.cell(0, 8, 'Gráfico não disponível', ln=1, align='C')
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 
@@ -1805,8 +1817,13 @@ if not df_comparativo_dia.empty:
             plt.savefig(os.path.join(relatorio_dir, 'grafico_feminicidio_dia_regiao.png'), format='png', dpi=100)
     plt.close()
 
-# Adiciona o DataFrame ao PDF
-pdf.image(os.path.join(relatorio_dir, 'grafico_feminicidio_dia_regiao.png'), x=5, w=200)
+# Adiciona o DataFrame ao PDF (verifica se o arquivo existe)
+grafico_path = os.path.join(relatorio_dir, 'grafico_feminicidio_dia_regiao.png')
+if os.path.exists(grafico_path):
+    pdf.image(grafico_path, x=5, w=200)
+else:
+    pdf.set_font('Arial', 'I', 10)
+    pdf.cell(0, 8, 'Gráfico não disponível', ln=1, align='C')
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 
@@ -1911,7 +1928,13 @@ if not df_comparativo_mes.empty:
     plt.close()
 
 # Adiciona o DataFrame ao PDF
-pdf.image(os.path.join(relatorio_dir, 'grafico_feminicidio_mes_regiao.png'), x=5, w=200)
+# Verifica se o arquivo existe antes de adicionar ao PDF
+grafico_mes_regiao_path = os.path.join(relatorio_dir, 'grafico_feminicidio_mes_regiao.png')
+if os.path.exists(grafico_mes_regiao_path):
+    pdf.image(grafico_mes_regiao_path, x=5, w=200)
+else:
+    pdf.set_font('Arial', 'I', 10)
+    pdf.cell(0, 8, 'Gráfico não disponível', ln=1, align='C')
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 
@@ -2037,7 +2060,13 @@ if not df_comparativo_semana.empty:
     plt.close()
 
 # Adiciona o DataFrame ao PDF
-pdf.image(os.path.join(relatorio_dir, 'grafico_feminicidio_semana_regiao.png'), x=5, w=200)
+# Verifica se o arquivo existe antes de adicionar ao PDF
+grafico_semana_regiao_path = os.path.join(relatorio_dir, 'grafico_feminicidio_semana_regiao.png')
+if os.path.exists(grafico_semana_regiao_path):
+    pdf.image(grafico_semana_regiao_path, x=5, w=200)
+else:
+    pdf.set_font('Arial', 'I', 10)
+    pdf.cell(0, 8, 'Gráfico não disponível', ln=1, align='C')
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 
@@ -2103,7 +2132,13 @@ if not df_grafico_presidios.empty:
     plt.close()
 
     # Adiciona o gráfico ao PDF
-    pdf.image(os.path.join(relatorio_dir, 'grafico_feminicidio_presidios.png'), x=5, w=200)
+    # Verifica se o arquivo existe antes de adicionar ao PDF
+    grafico_presidios_path = os.path.join(relatorio_dir, 'grafico_feminicidio_presidios.png')
+    if os.path.exists(grafico_presidios_path):
+        pdf.image(grafico_presidios_path, x=5, w=200)
+    else:
+        pdf.set_font('Arial', 'I', 10)
+        pdf.cell(0, 8, 'Gráfico não disponível', ln=1, align='C')
     pdf.set_font('Arial', 'I', 9)
     pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')    
 
