@@ -58,3 +58,6 @@ wheels/
 
 # Imagens específicas do projeto
 !pysql/img_reports/LogoRelatorio.jpg
+
+# Pasta de relatórios (sempre versionar, mesmo vazia)
+!pysql/reports_pysql/
