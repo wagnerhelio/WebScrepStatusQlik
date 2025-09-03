@@ -236,20 +236,23 @@ class PDFComRodape(FPDF):
         self.tempo_municipio = ""
         self.tempo_homicidio_comparativo_dois_anos = ""
         self.tempo_homicidio_comparativo_todos_anos = ""
+        
+        # Configura margens para otimizar espaço
+        self.set_margins(10, 2, 10)
 
     def footer(self):
-        self.set_y(-20)
+        self.set_y(-10)
         self.set_font('Arial', 'I', 8)
         self.set_text_color(80, 80, 80)
         if self.tempo_homicidio and self.tempo_feminicidio:
-            self.cell(0, 8, f'Tempo de execução da consulta Homicídio: {self.tempo_homicidio} segundos', ln=1, align='C')
-            self.cell(0, 8, f'Tempo de execução da consulta Feminicídio: {self.tempo_feminicidio} segundos', ln=1, align='C')
+            self.cell(0, 4, f'Tempo de execução da consulta Homicídio: {self.tempo_homicidio} segundos', ln=1, align='C')
+            self.cell(0, 4, f'Tempo de execução da consulta Feminicídio: {self.tempo_feminicidio} segundos', ln=1, align='C')
         if self.tempo_municipio:
-            self.cell(0, 8, f'Tempo de execução da consulta por município: {self.tempo_municipio} segundos', ln=1, align='C')
+            self.cell(0, 4, f'Tempo de execução da consulta por município: {self.tempo_municipio} segundos', ln=1, align='C')
         if self.tempo_homicidio_comparativo_dois_anos:
-            self.cell(0, 8, f'Tempo de execução da consulta tempo_homicidio_comparativo_dois_anos: {self.tempo_homicidio_comparativo_dois_anos} segundos', ln=1, align='C')
+            self.cell(0, 4, f'Tempo de execução da consulta tempo_homicidio_comparativo_dois_anos: {self.tempo_homicidio_comparativo_dois_anos} segundos', ln=1, align='C')
         if self.tempo_homicidio_comparativo_todos_anos:
-            self.cell(0, 8, f'Tempo de execução da consulta tempo_homicidio_comparativo_todos_anos: {self.tempo_homicidio_comparativo_todos_anos} segundos', ln=1, align='C') 
+            self.cell(0, 4, f'Tempo de execução da consulta tempo_homicidio_comparativo_todos_anos: {self.tempo_homicidio_comparativo_todos_anos} segundos', ln=1, align='C')
 
 # --- CONEXÃO ORACLE ---
 # Ajuste dos tipos para o dsn
@@ -1173,7 +1176,7 @@ pdf = PDFComRodape()
 pdf.add_page()
 
 # --- CABEÇALHO DO PDF (LOGO E TÍTULO INSTITUCIONAL) ---
-pdf.image(os.path.join(logo_dir, 'LogoRelatorio.jpg'), x=10, y=8, w=190)
+pdf.image(os.path.join(logo_dir, 'LogoRelatorio.jpg'), x=10, y=1, w=190)
 pdf.ln(25)
 
 # --- CONTEXTO: CAIXA DE TEXTO COM INDICADORES ---
@@ -1554,7 +1557,7 @@ pdf.cell(0, 8, f'Até {hoje.strftime("%d/%m/%Y %H:%M:%S")}', ln=1, align='L')
 # Gera o gráfico comparativo de homicídios por dia
 columns_dia, rows_dia = resultados["Homicídios Comparativo por Dia"]
 
-pdf.ln(3)
+pdf.ln(1)
 
 # Título do grafico
 pdf.set_font('Arial', 'B', 12)
