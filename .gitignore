@@ -54,6 +54,7 @@ wheels/
 
 # Documentação técnica (sempre versionar)
 !technical_documentation/*
+# Pasta de relatórios (sempre versionar, mesmo vazia)
 !pysql/reports_pysql/
 
 # Imagens específicas do projeto
