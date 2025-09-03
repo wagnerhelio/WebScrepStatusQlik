@@ -48,101 +48,13 @@ wheels/
 # Imagens geradas pelos scripts
 *.png
 *.jpg
-*.jpeg
-*.gif
-*.bmp
-*.tiff
-*.svg
 
 # ========================================
 # EXCEÇÕES - ARQUIVOS IMPORTANTES PARA VERSIONAR
 # ========================================
 
 # Documentação técnica (sempre versionar)
-!technical_documentation/**/*.pdf
-!technical_documentation/**/*.png
-!technical_documentation/**/*.jpg
-!technical_documentation/**/*.jpeg
-!technical_documentation/**/*.tex
+!technical_documentation/*
 
 # Imagens específicas do projeto
-!img/Docker.png
-!img/LogoRelatorio.jpg
-!img/WebScrep_QMC.drawio.png
-!img/WebScrep_QMC.jpg
 !pysql/img_reports/LogoRelatorio.jpg
-
-# Relatórios técnicos específicos
-!Relatório Técnico/WebScrepStatusQlik__Monitoramento_Automatizado_de_Tarefas_do_Qlik_Sense_com_Envio_de_Alertas_via_WhatsApp.pdf
-
-# ========================================
-# ESTRUTURA DE PASTAS DO PROJETO
-# ========================================
-
-# Permitir pastas específicas do projeto (apenas estrutura)
-!pysql/img_reports/
-!pysql/reports_pysql/
-!pysql/errorlogs/
-!crawler_qlik/reports_qlik/
-!crawler_qlik/errorlogs/
-
-# Mas ignorar o conteúdo dessas pastas
-pysql/img_reports/*
-pysql/reports_pysql/*
-pysql/errorlogs/*
-crawler_qlik/reports_qlik/*
-crawler_qlik/errorlogs/*
-
-# Pastas de estrutura do projeto (sem .gitkeep)
-
-# Exceto arquivos específicos importantes
-!pysql/img_reports/LogoRelatorio.jpg
-
-# ========================================
-# ARQUIVOS DE SISTEMA E EDITORES
-# ========================================
-
-# IDEs e editores
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# Sistema operacional
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# ========================================
-# LOGS E ARQUIVOS TEMPORÁRIOS
-# ========================================
-
-# Logs
-logs/
-*.log
-
-# Exceto pasta do scheduler (apenas estrutura)
-!scheduler_logs/
-
-# Arquivos temporários
-*.tmp
-*.temp
-*.bak
-*.backup
-
-# ========================================
-# CONFIGURAÇÕES ESPECÍFICAS
-# ========================================
-
-# ChromeDriver (se necessário)
-# chromedriver/
-# *.exe
-
-# Arquivos de configuração local
-config.local.ini
-settings.local.py
