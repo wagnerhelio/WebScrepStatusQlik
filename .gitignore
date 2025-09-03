@@ -7,7 +7,7 @@
 
 # Ambientes virtuais Python
 .venv/
-
+venv/
 # ========================================
 # EXCEÇÕES - ARQUIVOS IMPORTANTES PARA VERSIONAR
 # ========================================
