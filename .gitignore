@@ -54,7 +54,7 @@ wheels/
 
 # Documentação técnica (sempre versionar)
 !technical_documentation/*
-
+!pysql/reports_pysql/
 # Imagens específicas do projeto
 !pysql/img_reports/LogoRelatorio.jpg
 
