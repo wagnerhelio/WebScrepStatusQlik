@@ -638,9 +638,11 @@ WHERE ende.estado_sigla = 'GO'
   AND nat_pes.consumacaoenum = 'CONSUMADO'
   AND ope.tipopessoaenum = 'FISICA'
   AND qcap.nome = 'VÍTIMA'
-  AND EXTRACT(MONTH FROM oc.datafato) = EXTRACT(MONTH FROM SYSDATE)
-  AND EXTRACT(DAY FROM oc.datafato) <= EXTRACT(DAY FROM SYSDATE - 1)
-  AND EXTRACT(YEAR FROM oc.datafato) IN (EXTRACT(YEAR FROM SYSDATE),EXTRACT(YEAR FROM SYSDATE) - 1)
+  AND ( /* Mês atual até ontem */
+  ( oc.datafato >= TRUNC(SYSDATE, 'MM')AND oc.datafato <  TRUNC(SYSDATE) )
+  OR
+  /* Mesmo mês do ano passado, até a 'data equivalente a ontem' de 1 ano atrás */
+  ( oc.datafato >= ADD_MONTHS(TRUNC(SYSDATE, 'MM'), -12) AND oc.datafato <  ADD_MONTHS(TRUNC(SYSDATE), -12) ))
 GROUP BY
   TO_CHAR(oc.datafato, 'DD'),
   TO_CHAR(oc.datafato, 'Mon', 'NLS_DATE_LANGUAGE=PORTUGUESE'),

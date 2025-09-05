@@ -461,7 +461,7 @@ def enviar_relatorios_compartilhados():
 # =============================================================================
 
 def limpar_pastas_apos_envio():
-    """Limpa as pastas após o envio bem-sucedido dos arquivos."""
+    """Limpa as pastas após o envio bem-sucedido dos arquivos, preservando arquivos .gitkeep."""
     print("🧹 Limpando pastas após envio...")
     
     for pasta in pastas_envio:
@@ -480,15 +480,24 @@ def limpar_pastas_apos_envio():
             print(f"📂 Nenhum arquivo para limpar em: {pasta}")
             continue
         
-        # Remove cada arquivo
+        # Remove apenas arquivos que não são .gitkeep
+        arquivos_removidos = 0
         for arquivo in arquivos:
+            nome_arquivo = os.path.basename(arquivo)
+            
+            # Preserva arquivos .gitkeep para manter estrutura do Git
+            if nome_arquivo == '.gitkeep':
+                print(f"💾 Preservando arquivo .gitkeep: {nome_arquivo}")
+                continue
+            
             try:
                 os.remove(arquivo)
-                print(f"🗑️ Arquivo removido: {os.path.basename(arquivo)}")
+                print(f"🗑️ Arquivo removido: {nome_arquivo}")
+                arquivos_removidos += 1
             except Exception as e:
                 print(f"❌ Erro ao remover {arquivo}: {e}")
         
-        print(f"🧹 Pasta limpa: {pasta}")
+        print(f"🧹 Pasta limpa: {pasta} ({arquivos_removidos} arquivos removidos)")
 
 # =============================================================================
 # FUNÇÃO PRINCIPAL

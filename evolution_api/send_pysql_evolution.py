@@ -501,7 +501,7 @@ def limpar_pastas_apos_envio():
             print(f"📂 Nenhum arquivo para limpar em: {pasta}")
             continue
         
-        # Remove apenas arquivos que não são JSON (para preservar histórico) e preserva LogoRelatorio.jpg
+        # Remove apenas arquivos que não são JSON (para preservar histórico), .gitkeep e LogoRelatorio.jpg
         arquivos_removidos = 0
         for arquivo in arquivos:
             nome_arquivo = os.path.basename(arquivo)
@@ -509,6 +509,11 @@ def limpar_pastas_apos_envio():
             # Preserva arquivos JSON para manter série histórica
             if nome_arquivo.endswith('.json'):
                 print(f"💾 Preservando arquivo histórico: {nome_arquivo}")
+                continue
+            
+            # Preserva arquivos .gitkeep para manter estrutura do Git
+            if nome_arquivo == '.gitkeep':
+                print(f"💾 Preservando arquivo .gitkeep: {nome_arquivo}")
                 continue
             
             # Preserva o arquivo LogoRelatorio.jpg
