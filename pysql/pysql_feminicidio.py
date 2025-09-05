@@ -2523,7 +2523,7 @@ pdf.cell(0, 8, f'TEMPO TOTAL DE EXECUÇÃO DAS CONSULTAS: {tempo_total_formatado
 pdf.set_font('Arial', '', 6)  # Volta para fonte normal
 
 # --- Antes de salvar, defina os tempos: ---
-pdf.output('pysql/reports_pysql/relatorio_feminicidio.pdf')
+pdf.output('pysql/reports_pysql/relatorio_feminicidios.pdf')
 
 # Salva os tempos de execução para uso futuro
 salvar_tempos_execucao(tempos_execucao)
