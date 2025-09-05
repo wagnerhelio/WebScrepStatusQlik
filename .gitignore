@@ -8,6 +8,7 @@
 # Ambientes virtuais Python
 .venv/
 venv/
+__pycache__
 # ========================================
 # EXCEÇÕES - ARQUIVOS IMPORTANTES PARA VERSIONAR
 # ========================================
@@ -32,6 +33,9 @@ pysql/reports_pysql/feminicidios_tempos_execucao.json
 # Arquivos PDF de relatórios para ignorar
 pysql/reports_pysql/relatorio_homicidios.pdf
 pysql/reports_pysql/relatorio_feminicidios.pdf
+crawler_qlik/reports_qlik/status_qlik_paineis_*
+crawler_qlik/reports_qlik/status_qlik_estatistica_*
+crawler_qlik/reports_qlik/status_nprinting_relatorios_*
 
 # Arquivos PNG gerados para ignorar
 pysql/img_reports/grafico_*.png
