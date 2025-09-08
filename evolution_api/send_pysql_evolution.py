@@ -460,11 +460,11 @@ def enviar_logs_erro():
         print(f"⚠️ Pasta de logs de erro não encontrada: {errorlogs_pysql_dir}")
         return
     
-    # Lista todos os arquivos de erro
+    # Lista apenas arquivos .txt e .pdf de erro
     arquivos_erro = [
         os.path.join(errorlogs_pysql_dir, f) 
         for f in os.listdir(errorlogs_pysql_dir) 
-        if os.path.isfile(os.path.join(errorlogs_pysql_dir, f))
+        if os.path.isfile(os.path.join(errorlogs_pysql_dir, f)) and f.endswith(('.txt', '.pdf'))
     ]
     
     if arquivos_erro:
