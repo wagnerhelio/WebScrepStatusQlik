@@ -14,6 +14,11 @@ import json
 import sys
 import threading
 
+# Define o diretório base do script
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)  # Volta um nível para a raiz do projeto
+os.chdir(SCRIPT_DIR)
+
 # Configuração de encoding para evitar problemas no Windows
 if sys.platform.startswith('win'):
     try:
@@ -67,8 +72,10 @@ def safe_print_progress(text):
             sys.stdout.write('\rProgresso...')
             sys.stdout.flush()
 
-def salvar_tempos_execucao(tempos_execucao, arquivo='pysql/reports_pysql/homicidios_tempos_execucao.json'):
+def salvar_tempos_execucao(tempos_execucao, arquivo=None):
     """Salva os tempos de execução em um arquivo JSON"""
+    if arquivo is None:
+        arquivo = os.path.join(PROJECT_ROOT, 'pysql', 'reports_pysql', 'homicidios_tempos_execucao.json')
     try:
         # Cria o diretório se não existir
         os.makedirs(os.path.dirname(arquivo), exist_ok=True)
@@ -102,8 +109,10 @@ def salvar_tempos_execucao(tempos_execucao, arquivo='pysql/reports_pysql/homicid
     except Exception as e:
         print(f"Erro ao salvar tempos de execução: {e}")
 
-def carregar_tempos_execucao(arquivo='pysql/reports_pysql/homicidios_tempos_execucao.json'):
+def carregar_tempos_execucao(arquivo=None):
     """Carrega os tempos de execução históricos e calcula a média"""
+    if arquivo is None:
+        arquivo = os.path.join(PROJECT_ROOT, 'pysql', 'reports_pysql', 'homicidios_tempos_execucao.json')
     try:
         if not os.path.exists(arquivo):
             return {}
@@ -207,8 +216,8 @@ def executar_com_progresso(nome, query, cursor, tempos_medios):
     
     return resultado, tempo_execucao
 
-# Cria a pasta pysql/reports_pysql/img_reports se não existir
-relatorio_dir = 'pysql/img_reports'
+# Cria a pasta pysql/img_reports se não existir
+relatorio_dir = os.path.join(PROJECT_ROOT, 'pysql', 'img_reports')
 if not os.path.exists(relatorio_dir):
     os.makedirs(relatorio_dir)
 
@@ -226,7 +235,7 @@ except Exception as e:
     raise RuntimeError(f"Não é possível escrever no diretório {relatorio_dir}: {e}")
 
 # Define o diretório onde está o logo
-logo_dir = 'pysql/img_reports'
+logo_dir = os.path.join(PROJECT_ROOT, 'pysql', 'img_reports')
 
 class PDFComRodape(FPDF):
     def __init__(self, *args, **kwargs):
@@ -2555,7 +2564,7 @@ pdf.cell(0, 8, f'TEMPO TOTAL DE EXECUÇÃO DAS CONSULTAS: {tempo_total_formatado
 pdf.set_font('Arial', '', 6)  # Volta para fonte normal
 
 # --- Antes de salvar, defina os tempos: ---
-pdf.output('pysql/reports_pysql/relatorio_homicidios.pdf')
+pdf.output(os.path.join(PROJECT_ROOT, 'pysql', 'reports_pysql', 'relatorio_homicidios.pdf'))
 
 # Salva os tempos de execução para uso futuro
 salvar_tempos_execucao(tempos_execucao)
