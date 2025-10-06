@@ -11,6 +11,20 @@ import sys
 from pathlib import Path
 from typing import Optional, Dict, List
 import subprocess
+from dotenv import load_dotenv
+
+# Carrega variáveis de ambiente do arquivo .env
+load_dotenv()
+
+# Configuração para Windows - suporte a UTF-8
+if os.name == 'nt':  # Windows
+    try:
+        # Tenta configurar o console para UTF-8
+        os.system('chcp 65001 > nul')
+        # Reconfigura stdout para UTF-8
+        sys.stdout.reconfigure(encoding='utf-8')
+    except:
+        pass
 
 # =============================================================================
 # CONFIGURAÇÕES DE REDE
@@ -21,11 +35,11 @@ NETWORK_USERNAME = os.getenv("NETWORK_USERNAME", "")
 NETWORK_PASSWORD = os.getenv("NETWORK_PASSWORD", "")
 NETWORK_DOMAIN = os.getenv("NETWORK_DOMAIN", "")
 
-# Pastas de rede que requerem autenticação
+# Pastas de rede que requerem autenticação (lidas do .env)
 NETWORK_PATHS = [
-    "\\\\10.242.251.28\\SSPForcas$\\SSP_FORCAS_BI",
-    "\\\\Arquivos-02\\Business Intelligence\\Qlik Sense Desktop",
-    "\\\\estatistica\\Repositorio\\ETL",
+    os.getenv("NETWORK_PATH_1", ""),
+    os.getenv("NETWORK_PATH_2", ""),
+    os.getenv("NETWORK_PATH_3", ""),
 ]
 
 # =============================================================================
@@ -76,9 +90,13 @@ def setup_network_credentials():
             
             if normalized_path.startswith("\\\\"):
                 server_share = normalized_path.split("\\")[2]  # Extrai servidor\share
+                # Limpa o formato do usuário (remove barras duplas se existirem)
+                clean_username = NETWORK_USERNAME.replace("\\\\", "\\")
+                clean_domain = NETWORK_DOMAIN.replace("\\\\", "\\") if NETWORK_DOMAIN else ""
+                
                 cmd = [
                     "net", "use", normalized_path, 
-                    f"/user:{NETWORK_DOMAIN}\\{NETWORK_USERNAME}" if NETWORK_DOMAIN else f"/user:{NETWORK_USERNAME}",
+                    f"/user:{clean_domain}\\{clean_username}" if clean_domain else f"/user:{clean_username}",
                     NETWORK_PASSWORD
                 ]
                 

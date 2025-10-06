@@ -1635,7 +1635,13 @@ if not df_dia.empty:
     plt.close()
 
 # Adiciona o DataFrame ao PDF 
-# Verifica se o arquivo existe antes de adicionar ao PDFngrafico_dia_path = os.path.join(relatorio_dir, 'grafico_homicidios_dia.png')nif os.path.exists(grafico_dia_path):n    pdf.image(grafico_dia_path, x=5, w=200)nelse:n    pdf.set_font('Arial', 'I', 10)n    pdf.cell(0, 8, 'Gráfico não disponível', ln=1, align='C')
+# Verifica se o arquivo existe antes de adicionar ao PDF
+grafico_dia_path = os.path.join(relatorio_dir, 'grafico_homicidios_dia.png')
+if os.path.exists(grafico_dia_path):
+    pdf.image(grafico_dia_path, x=5, w=200)
+else:
+    pdf.set_font('Arial', 'I', 10)
+    pdf.cell(0, 8, 'Gráfico não disponível', ln=1, align='C')
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 
@@ -1882,7 +1888,13 @@ if not df_comparativo_dia.empty:
     plt.close()
 
 # Adiciona o DataFrame ao PDF
-# Verifica se o arquivo existe antes de adicionar ao PDFngrafico_dia_regiao_path = os.path.join(relatorio_dir, 'grafico_homicidios_dia_regiao.png')nif os.path.exists(grafico_dia_regiao_path):n    pdf.image(grafico_dia_regiao_path, x=5, w=200)nelse:n    pdf.set_font('Arial', 'I', 10)n    pdf.cell(0, 8, 'Gráfico não disponível', ln=1, align='C')
+# Verifica se o arquivo existe antes de adicionar ao PDF
+grafico_dia_regiao_path = os.path.join(relatorio_dir, 'grafico_homicidios_dia_regiao.png')
+if os.path.exists(grafico_dia_regiao_path):
+    pdf.image(grafico_dia_regiao_path, x=5, w=200)
+else:
+    pdf.set_font('Arial', 'I', 10)
+    pdf.cell(0, 8, 'Gráfico não disponível', ln=1, align='C')
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 
@@ -1987,7 +1999,13 @@ if not df_comparativo_mes.empty:
     plt.close()
 
 # Adiciona o DataFrame ao PDF
-# Verifica se o arquivo existe antes de adicionar ao PDFngrafico_mes_regiao_path = os.path.join(relatorio_dir, 'grafico_homicidios_mes_regiao.png')nif os.path.exists(grafico_mes_regiao_path):n    pdf.image(grafico_mes_regiao_path, x=5, w=200)nelse:n    pdf.set_font('Arial', 'I', 10)n    pdf.cell(0, 8, 'Gráfico não disponível', ln=1, align='C')
+# Verifica se o arquivo existe antes de adicionar ao PDF
+grafico_mes_regiao_path = os.path.join(relatorio_dir, 'grafico_homicidios_mes_regiao.png')
+if os.path.exists(grafico_mes_regiao_path):
+    pdf.image(grafico_mes_regiao_path, x=5, w=200)
+else:
+    pdf.set_font('Arial', 'I', 10)
+    pdf.cell(0, 8, 'Gráfico não disponível', ln=1, align='C')
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 
@@ -2113,7 +2131,13 @@ if not df_comparativo_semana.empty:
     plt.close()
 
 # Adiciona o DataFrame ao PDF
-# Verifica se o arquivo existe antes de adicionar ao PDFngrafico_semana_regiao_path = os.path.join(relatorio_dir, 'grafico_homicidios_semana_regiao.png')nif os.path.exists(grafico_semana_regiao_path):n    pdf.image(grafico_semana_regiao_path, x=5, w=200)nelse:n    pdf.set_font('Arial', 'I', 10)n    pdf.cell(0, 8, 'Gráfico não disponível', ln=1, align='C')
+# Verifica se o arquivo existe antes de adicionar ao PDF
+grafico_semana_regiao_path = os.path.join(relatorio_dir, 'grafico_homicidios_semana_regiao.png')
+if os.path.exists(grafico_semana_regiao_path):
+    pdf.image(grafico_semana_regiao_path, x=5, w=200)
+else:
+    pdf.set_font('Arial', 'I', 10)
+    pdf.cell(0, 8, 'Gráfico não disponível', ln=1, align='C')
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')
 
@@ -2179,7 +2203,13 @@ if not df_grafico_presidios.empty:
     plt.close()
 
     # Adiciona o gráfico ao PDF
-    # Verifica se o arquivo existe antes de adicionar ao PDFn    grafico_presidios_path = os.path.join(relatorio_dir, 'grafico_homicidios_presidios.png')n    if os.path.exists(grafico_presidios_path):n        pdf.image(grafico_presidios_path, x=5, w=200)n    else:n        pdf.set_font('Arial', 'I', 10)n        pdf.cell(0, 8, 'Gráfico não disponível', ln=1, align='C')
+    # Verifica se o arquivo existe antes de adicionar ao PDF
+    grafico_presidios_path = os.path.join(relatorio_dir, 'grafico_homicidios_presidios.png')
+    if os.path.exists(grafico_presidios_path):
+        pdf.image(grafico_presidios_path, x=5, w=200)
+    else:
+        pdf.set_font('Arial', 'I', 10)
+        pdf.cell(0, 8, 'Gráfico não disponível', ln=1, align='C')
     pdf.set_font('Arial', 'I', 9)
     pdf.cell(0, 8, f'Até {ontem_data}', ln=1, align='L')    
 

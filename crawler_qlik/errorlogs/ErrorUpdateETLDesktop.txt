@@ -1,0 +1,9 @@
+Log gerado em: 2025-10-05 18:56:23
+Data de referência: 2025-10-05
+==================================================
+\\10.242.255.251\Repositorio\ETL\May 2025 Patch 7\Initial Release\Qlik_Sense_Desktop.unlock | 2025-09-09 09:18:26
+\\10.242.255.251\Repositorio\ETL\May 2025 Patch 7\Initial Release\Qlik_Sense_Desktop_setup.exe | 2025-05-07 10:43:41
+\\10.242.255.251\Repositorio\ETL\May 2025 Patch 7\Initial Release\Qlik_Sense_Desktop_setup.exe.md5 | 2025-05-07 10:43:43
+\\10.242.255.251\Repositorio\ETL\May 2025 Patch 7\Initial Release\Qlik_Sense_Desktop_Unlock_Instructions.txt | 2025-09-09 09:18:16
+\\10.242.255.251\Repositorio\ETL\May 2025 Patch 7\Latest\Qlik_Sense_Desktop_setup.exe | 2025-10-01 09:43:05
+\\10.242.255.251\Repositorio\ETL\May 2025 Patch 7\Latest\Qlik_Sense_Desktop_setup.exe.md5 | 2025-10-01 09:43:07

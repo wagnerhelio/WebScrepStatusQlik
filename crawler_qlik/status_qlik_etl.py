@@ -4,9 +4,14 @@
 import os
 import sys
 import errno
+import subprocess
 from pathlib import Path
 from datetime import datetime
 import argparse
+from dotenv import load_dotenv
+
+# Carrega variáveis de ambiente do arquivo .env
+load_dotenv()
 
 # Configuração para Windows - suporte a UTF-8
 if os.name == 'nt':  # Windows
@@ -25,12 +30,20 @@ if os.name == 'nt':  # Windows
 # Raiz do módulo = pasta do crawler (para usar crawler_qlik/errorlogs)
 REPO_ROOT = Path(__file__).resolve().parent
 
-# Diretórios A PARTIR DA RAIZ DO PROJETO (relativos). Altere se quiser.
+# Credenciais de rede (opcional)
+NETWORK_USERNAME = os.getenv("NETWORK_USERNAME", "")
+NETWORK_PASSWORD = os.getenv("NETWORK_PASSWORD", "")
+NETWORK_DOMAIN = os.getenv("NETWORK_DOMAIN", "")
+
+# Diretórios de rede — lidos do arquivo .env
 DEFAULT_DIRS = [
-    "\\\\10.242.251.28\\SSPForcas$\\SSP_FORCAS_BI\\ETLDesktop",
-    "\\\\Arquivos-02\\Business Intelligence\\Qlik Sense Desktop\\ETLDesktop",
-    "\\\\estatistica\\Repositorio\\ETL",
+    os.getenv("NETWORK_PATH_1", "") + "\\ETLDesktop" if os.getenv("NETWORK_PATH_1", "") else "",
+    os.getenv("NETWORK_PATH_2", "") + "\\ETLDesktop" if os.getenv("NETWORK_PATH_2", "") else "",
+    os.getenv("NETWORK_PATH_3", "") if os.getenv("NETWORK_PATH_3", "") else "",
 ]
+
+# Remove caminhos vazios da lista
+DEFAULT_DIRS = [path for path in DEFAULT_DIRS if path.strip()]
 
 # Pasta/arquivo de log de erro (relativos ao projeto)
 ERROR_LOG_DIR = REPO_ROOT / "errorlogs"
@@ -40,6 +53,56 @@ ERROR_LOG_PATH = ERROR_LOG_DIR / "ErrorUpdateETLDesktop.txt"
 # ======================
 # Utilitários
 # ======================
+
+def setup_network_credentials():
+    """
+    Configura credenciais de rede se fornecidas.
+    """
+    if not NETWORK_USERNAME or not NETWORK_PASSWORD:
+        print("ℹ️ Credenciais de rede não configuradas.")
+        print("   Para configurar, defina as variáveis de ambiente:")
+        print("   - NETWORK_USERNAME")
+        print("   - NETWORK_PASSWORD") 
+        print("   - NETWORK_DOMAIN (opcional)")
+        return False
+    
+    try:
+        # Tenta configurar credenciais de rede usando net use
+        for path in DEFAULT_DIRS:
+            if not path.strip():
+                continue
+                
+            # Normaliza o caminho antes de usar
+            normalized_path = normalize_unc_path(path)
+            
+            if normalized_path.startswith("\\\\"):
+                # Limpa o formato do usuário (remove barras duplas se existirem)
+                clean_username = NETWORK_USERNAME.replace("\\\\", "\\")
+                clean_domain = NETWORK_DOMAIN.replace("\\\\", "\\") if NETWORK_DOMAIN else ""
+                
+                cmd = [
+                    "net", "use", normalized_path, 
+                    f"/user:{clean_domain}\\{clean_username}" if clean_domain else f"/user:{clean_username}",
+                    NETWORK_PASSWORD
+                ]
+                
+                result = subprocess.run(
+                    cmd, 
+                    capture_output=True, 
+                    text=True, 
+                    timeout=30
+                )
+                
+                if result.returncode == 0:
+                    print(f"✅ Credenciais configuradas para: {normalized_path}")
+                else:
+                    print(f"⚠️ Erro ao configurar credenciais para {normalized_path}: {result.stderr.strip()}")
+                    
+        return True
+        
+    except Exception as e:
+        print(f"❌ Erro ao configurar credenciais de rede: {e}")
+        return False
 
 def ensure_dir(path: Path) -> None:
     try:
@@ -189,6 +252,13 @@ def parse_args() -> argparse.Namespace:
 def main():
     args = parse_args()
     today = datetime.now().date()
+
+    # Configura credenciais de rede se disponíveis
+    if NETWORK_USERNAME and NETWORK_PASSWORD:
+        print("🔐 Configurando credenciais de rede...")
+        setup_network_credentials()
+    else:
+        print("ℹ️ Credenciais de rede não configuradas.")
 
     all_not_updated = []   # (path_str, mtime_str)
     totals = []            # (folder, total, ok, not_ok)
