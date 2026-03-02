@@ -51,10 +51,11 @@ git clone https://github.com/wagnerhelio/WebScrepStatusQlik.git
 cd WebScrepStatusQlik
 
 # Crie ambiente virtual
-python -m venv venv
+python -m venv .venv
 
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
 # Ative o ambiente (Windows)
-venv\Scripts\activate
+.venv\Scripts\activate
 
 # Instale dependências
 pip install -r requirements.txt

@@ -1,6 +1,15 @@
 #!/usr/bin/env python3
 """
-Script para listar todos os grupos da instância odisseu com JID e nome
+Script para listar todos os grupos de uma instância Evolution API com JID e nome.
+
+Uso (com a venv do projeto):
+  .venv\\Scripts\\python.exe evolution_api/listar_grupos_odisseu.py
+  ou, com venv ativada: python evolution_api/listar_grupos_odisseu.py
+
+Variáveis de ambiente (.env):
+  EVOLUTION_BASE_URL     - URL da API (default: http://localhost:8080)
+  EVOLUTION_API_TOKEN   - ou AUTHENTICATION_API_KEY (apikey da Evolution API)
+  EVOLUTION_INSTANCE_ID - nome da instância (default: odisseu)
 """
 
 import os
@@ -22,12 +31,12 @@ load_dotenv()
 
 # Configurações da Evolution API
 evo_base_url = os.getenv("EVOLUTION_BASE_URL", "http://localhost:8080")
-evo_api_token = os.getenv("EVOLUTION_API_TOKEN")
-evo_instance_id = "odisseu"
+evo_api_token = os.getenv("EVOLUTION_API_TOKEN") or os.getenv("AUTHENTICATION_API_KEY")
+evo_instance_id = os.getenv("EVOLUTION_INSTANCE_ID", "odisseu")
 
 def listar_grupos_completos():
     """Lista todos os grupos com informações completas."""
-    print("🔍 LISTANDO GRUPOS DA INSTÂNCIA ODISSEU")
+    print(f"🔍 LISTANDO GRUPOS DA INSTÂNCIA '{evo_instance_id.upper()}'")
     print("=" * 70)
     
     url = f"{evo_base_url}/group/fetchAllGroups/{evo_instance_id}?getParticipants=true"
@@ -37,7 +46,7 @@ def listar_grupos_completos():
     }
     
     print(f"🌐 URL: {url}")
-    print(f"🔑 API Token: {evo_api_token[:10]}...")
+    print(f"🔑 API Token: {(evo_api_token or '')[:10]}...")
     print(f"📱 Instância: {evo_instance_id}")
     
     try:
@@ -51,7 +60,7 @@ def listar_grupos_completos():
             print(f"✅ SUCESSO! Total de grupos encontrados: {len(grupos)}")
             
             if len(grupos) == 0:
-                print("⚠️ Nenhum grupo encontrado na instância odisseu")
+                print(f"⚠️ Nenhum grupo encontrado na instância {evo_instance_id}")
                 return
             
             print("\n" + "=" * 70)
@@ -101,6 +110,10 @@ def listar_grupos_completos():
         else:
             print(f"❌ ERRO: {response.status_code}")
             print(f"📄 Resposta: {response.text}")
+            if response.status_code == 404 and "instance does not exist" in response.text:
+                print(f"\n💡 Dica: A instância '{evo_instance_id}' não existe.")
+                print(f"   Defina no .env: EVOLUTION_INSTANCE_ID=nome_da_sua_instancia")
+                print(f"   (ex.: EVOLUTION_INSTANCE_ID=bisspgo)")
             return None
             
     except Exception as e:
@@ -124,7 +137,7 @@ def salvar_grupos_arquivo(grupos):
 
 def main():
     """Função principal."""
-    print("🔍 LISTAGEM COMPLETA DE GRUPOS - INSTÂNCIA ODISSEU")
+    print(f"🔍 LISTAGEM COMPLETA DE GRUPOS - INSTÂNCIA '{evo_instance_id.upper()}'")
     print("=" * 80)
     
     # Verificar configurações
@@ -144,7 +157,7 @@ def main():
         salvar_grupos_arquivo(grupos)
         
         print(f"\n🎉 LISTAGEM CONCLUÍDA COM SUCESSO!")
-        print(f"✅ {len(grupos)} grupos encontrados na instância odisseu")
+        print(f"✅ {len(grupos)} grupos encontrados na instância {evo_instance_id}")
         print(f"💾 Dados salvos em 'grupos_odisseu.json'")
         
         # Instruções de uso
@@ -155,7 +168,7 @@ def main():
         
     else:
         print(f"\n❌ FALHA NA LISTAGEM DE GRUPOS")
-        print(f"🔧 Verifique se a instância odisseu está funcionando")
+        print(f"🔧 Verifique se a instância '{evo_instance_id}' existe e está conectada")
 
 if __name__ == "__main__":
     main()

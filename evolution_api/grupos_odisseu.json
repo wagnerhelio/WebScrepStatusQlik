@@ -1,10 +1,107 @@
 [
   {
+    "id": "120363423793611387@g.us",
+    "subject": "Odisseia - DGPP",
+    "subjectOwner": "129128292466801@lid",
+    "subjectTime": 1766064642,
+    "pictureUrl": "https://pps.whatsapp.net/v/t61.24694-24/597305607_864110966367584_3365682294219502689_n.jpg?ccb=11-4&oh=01_Q5Aa3wGSscjr_grXneEPcqLICFr-vrQb_h91JMvGhbpy9D5OFQ&oe=69B28A49&_nc_sid=5e03e0&_nc_cat=106",
+    "size": 5,
+    "creation": 1766064642,
+    "owner": "129128292466801@lid",
+    "restrict": false,
+    "announce": false,
+    "isCommunity": false,
+    "isCommunityAnnounce": false,
+    "participants": [
+      {
+        "id": "161955264377064@lid",
+        "phoneNumber": "556295071258@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "154949635846149@lid",
+        "phoneNumber": "556294746252@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "129128292466801@lid",
+        "phoneNumber": "556292422540@s.whatsapp.net",
+        "admin": "superadmin"
+      },
+      {
+        "id": "179138908418142@lid",
+        "phoneNumber": "556284583523@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "135527810482229@lid",
+        "phoneNumber": "556281462535@s.whatsapp.net",
+        "admin": "admin"
+      }
+    ]
+  },
+  {
+    "id": "120363405429484112@g.us",
+    "subject": "Odisseu - BM",
+    "subjectOwner": "129128292466801@lid",
+    "subjectTime": 1765918747,
+    "pictureUrl": "https://pps.whatsapp.net/v/t61.24694-24/533817803_1378191783749025_4534827539999534839_n.jpg?ccb=11-4&oh=01_Q5Aa3wHs8QVkIq0gT0_w_caY5kDZJzPRbQbJljx9RngSVwGGfw&oe=69B2A34A&_nc_sid=5e03e0&_nc_cat=103",
+    "size": 8,
+    "creation": 1765912316,
+    "owner": "78095574945906@lid",
+    "restrict": false,
+    "announce": false,
+    "isCommunity": false,
+    "isCommunityAnnounce": false,
+    "participants": [
+      {
+        "id": "161955264377064@lid",
+        "phoneNumber": "556295071258@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "129128292466801@lid",
+        "phoneNumber": "556292422540@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "179138908418142@lid",
+        "phoneNumber": "556284583523@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "78095574945906@lid",
+        "phoneNumber": "556284038519@s.whatsapp.net",
+        "admin": "superadmin"
+      },
+      {
+        "id": "231099439554570@lid",
+        "phoneNumber": "556282756207@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "24863632801976@lid",
+        "phoneNumber": "556281918199@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "242305025970393@lid",
+        "phoneNumber": "556281856262@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "57960617271538@lid",
+        "phoneNumber": "556281628532@s.whatsapp.net",
+        "admin": null
+      }
+    ]
+  },
+  {
     "id": "556285989023-1593113178@g.us",
     "subject": "BI SSP",
     "subjectTime": 1593113375,
-    "pictureUrl": "https://pps.whatsapp.net/v/t61.24694-24/106122147_1120121645025431_892019111028047658_n.jpg?ccb=11-4&oh=01_Q5Aa2gE5cR2m85EmTiaLCXh_1qcFCCW-xIhpbA7a4ZPfISD6zA&oe=68F11323&_nc_sid=5e03e0&_nc_cat=111",
-    "size": 7,
+    "pictureUrl": "https://pps.whatsapp.net/v/t61.24694-24/106122147_1120121645025431_892019111028047658_n.jpg?ccb=11-4&oh=01_Q5Aa3wG7Eawislz3-dOgGAVdL7xqktIlE16XIthpvJHoDoXVsg&oe=69B2A763&_nc_sid=5e03e0&_nc_cat=111",
+    "size": 8,
     "creation": 1593113178,
     "restrict": false,
     "announce": false,
@@ -37,24 +134,444 @@
         "admin": "admin"
       },
       {
+        "id": "179138908418142@lid",
+        "phoneNumber": "556284583523@s.whatsapp.net",
+        "admin": null
+      },
+      {
         "id": "224163017027836@lid",
         "phoneNumber": "556284161907@s.whatsapp.net",
         "admin": "admin"
       },
       {
-        "id": "115173876604970@lid",
-        "phoneNumber": "556281613538@s.whatsapp.net",
+        "id": "188098226974729@lid",
+        "phoneNumber": "556282378633@s.whatsapp.net",
+        "admin": null
+      }
+    ]
+  },
+  {
+    "id": "120363406064853697@g.us",
+    "subject": "Odisseu - GPI",
+    "subjectOwner": "179138908418142@lid",
+    "subjectTime": 1771954525,
+    "pictureUrl": "https://pps.whatsapp.net/v/t61.24694-24/639050423_954582753809123_8650550925278812605_n.jpg?ccb=11-4&oh=01_Q5Aa3wEla1B1Zl7aRdc6NVy36ZqLRFZLgAZH6pA3D0mYqJ1_nQ&oe=69B2C0B9&_nc_sid=5e03e0&_nc_cat=108",
+    "size": 8,
+    "creation": 1771954525,
+    "owner": "179138908418142@lid",
+    "restrict": false,
+    "announce": false,
+    "isCommunity": false,
+    "isCommunityAnnounce": false,
+    "participants": [
+      {
+        "id": "265609384325123@lid",
+        "phoneNumber": "556299630834@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "247158657806438@lid",
+        "phoneNumber": "556299052555@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "43435138506997@lid",
+        "phoneNumber": "556296461509@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "161955264377064@lid",
+        "phoneNumber": "556295071258@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "129128292466801@lid",
+        "phoneNumber": "556292422540@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "19082724282375@lid",
+        "phoneNumber": "556285759707@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "179138908418142@lid",
+        "phoneNumber": "556284583523@s.whatsapp.net",
+        "admin": "superadmin"
+      },
+      {
+        "id": "32766322315387@lid",
+        "phoneNumber": "556281864226@s.whatsapp.net",
+        "admin": null
+      }
+    ]
+  },
+  {
+    "id": "120363423447624394@g.us",
+    "subject": "Odisseu - Gestão",
+    "subjectOwner": "129128292466801@lid",
+    "subjectTime": 1765912031,
+    "pictureUrl": "https://pps.whatsapp.net/v/t61.24694-24/567457387_1545142950061788_1455444900781623971_n.jpg?ccb=11-4&oh=01_Q5Aa3wHRdgBW-8oqjwDQvdFELgQKOVkFB4Zide4_NXbgEF89WA&oe=69B295C4&_nc_sid=5e03e0&_nc_cat=105",
+    "size": 9,
+    "creation": 1763126109,
+    "owner": "99471593615523@lid",
+    "restrict": false,
+    "announce": false,
+    "isCommunity": false,
+    "isCommunityAnnounce": false,
+    "participants": [
+      {
+        "id": "99471593615523@lid",
+        "phoneNumber": "556298364643@s.whatsapp.net",
+        "admin": "superadmin"
+      },
+      {
+        "id": "161955264377064@lid",
+        "phoneNumber": "556295071258@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "129128292466801@lid",
+        "phoneNumber": "556292422540@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "227693513687228@lid",
+        "phoneNumber": "556291113747@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "179138908418142@lid",
+        "phoneNumber": "556284583523@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "266193650897140@lid",
+        "phoneNumber": "556284341960@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "152492948103243@lid",
+        "phoneNumber": "556284168445@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "224163017027836@lid",
+        "phoneNumber": "556284161907@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "188098226974729@lid",
+        "phoneNumber": "556282378633@s.whatsapp.net",
+        "admin": null
+      }
+    ]
+  },
+  {
+    "id": "120363386092158827@g.us",
+    "subject": "Odisseu - SII",
+    "subjectOwner": "129128292466801@lid",
+    "subjectTime": 1765911334,
+    "pictureUrl": "https://pps.whatsapp.net/v/t61.24694-24/576462914_1174542074665851_5373805182070713519_n.jpg?ccb=11-4&oh=01_Q5Aa3wHmZOBXOtg0FwLMSE05ZRXbjjVWpb9o-ymKUTe5YVAukg&oe=69B29A25&_nc_sid=5e03e0&_nc_cat=106",
+    "size": 14,
+    "creation": 1740515240,
+    "owner": "79190791585868@lid",
+    "restrict": false,
+    "announce": false,
+    "isCommunity": false,
+    "isCommunityAnnounce": false,
+    "participants": [
+      {
+        "id": "106927673593866@lid",
+        "phoneNumber": "556299200613@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "99471593615523@lid",
+        "phoneNumber": "556298364643@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "43435138506997@lid",
+        "phoneNumber": "556296461509@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "161955264377064@lid",
+        "phoneNumber": "556295071258@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "129128292466801@lid",
+        "phoneNumber": "556292422540@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "245204045025366@lid",
+        "phoneNumber": "556285797758@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "79190791585868@lid",
+        "phoneNumber": "556285103633@s.whatsapp.net",
+        "admin": "superadmin"
+      },
+      {
+        "id": "247587818963170@lid",
+        "phoneNumber": "556284846886@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "179138908418142@lid",
+        "phoneNumber": "556284583523@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "114138923704508@lid",
+        "phoneNumber": "556284432146@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "224163017027836@lid",
+        "phoneNumber": "556284161907@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "110681391116481@lid",
+        "phoneNumber": "556284020654@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "240174739001494@lid",
+        "phoneNumber": "556282635276@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "276273821679675@lid",
+        "phoneNumber": "556281577615@s.whatsapp.net",
+        "admin": null
+      }
+    ]
+  },
+  {
+    "id": "120363307544894318@g.us",
+    "subject": "Odisseu - SPTC",
+    "subjectOwner": "129128292466801@lid",
+    "subjectTime": 1765911351,
+    "pictureUrl": "https://pps.whatsapp.net/v/t61.24694-24/491878559_831849149682745_548400008577736590_n.jpg?ccb=11-4&oh=01_Q5Aa3wGxLfAzMIvQr7cEEbzfvASgM_74JpAbfgj75qETpYcwxQ&oe=69B2B75C&_nc_sid=5e03e0&_nc_cat=107",
+    "size": 17,
+    "creation": 1717589990,
+    "owner": "129128292466801@lid",
+    "restrict": false,
+    "announce": false,
+    "isCommunity": false,
+    "isCommunityAnnounce": false,
+    "participants": [
+      {
+        "id": "227942588268719@lid",
+        "phoneNumber": "556299575229@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "136537161367558@lid",
+        "phoneNumber": "556299404884@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "99471593615523@lid",
+        "phoneNumber": "556298364643@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "43435138506997@lid",
+        "phoneNumber": "556296461509@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "161955264377064@lid",
+        "phoneNumber": "556295071258@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "84280311050460@lid",
+        "phoneNumber": "556294328282@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "10990922023047@lid",
+        "phoneNumber": "556293181515@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "94034047553704@lid",
+        "phoneNumber": "556292460197@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "129128292466801@lid",
+        "phoneNumber": "556292422540@s.whatsapp.net",
+        "admin": "superadmin"
+      },
+      {
+        "id": "111978387341414@lid",
+        "phoneNumber": "556292007939@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "179138908418142@lid",
+        "phoneNumber": "556284583523@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "75058932392044@lid",
+        "phoneNumber": "556284543455@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "224163017027836@lid",
+        "phoneNumber": "556284161907@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "59309606072401@lid",
+        "phoneNumber": "556283137108@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "186324422246524@lid",
+        "phoneNumber": "556281437542@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "30442812080237@lid",
+        "phoneNumber": "556281200491@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "78851304624322@lid",
+        "phoneNumber": "556199424233@s.whatsapp.net",
+        "admin": "admin"
+      }
+    ]
+  },
+  {
+    "id": "120363305431209644@g.us",
+    "subject": "Odisseu - PC",
+    "subjectOwner": "129128292466801@lid",
+    "subjectTime": 1765911378,
+    "pictureUrl": "https://pps.whatsapp.net/v/t61.24694-24/598362403_26182443481358804_2528058183842762178_n.jpg?ccb=11-4&oh=01_Q5Aa3wHYnuyMaUsZtj8IiLscBHY0HW3nFvdfF9eh0jOCWo2Cpg&oe=69B2A9EA&_nc_sid=5e03e0&_nc_cat=101",
+    "size": 19,
+    "creation": 1722967491,
+    "owner": "129128292466801@lid",
+    "restrict": false,
+    "announce": false,
+    "isCommunity": false,
+    "isCommunityAnnounce": false,
+    "participants": [
+      {
+        "id": "40686325895173@lid",
+        "phoneNumber": "556299302851@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "99471593615523@lid",
+        "phoneNumber": "556298364643@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "43435138506997@lid",
+        "phoneNumber": "556296461509@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "245543364255767@lid",
+        "phoneNumber": "556296038141@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "161955264377064@lid",
+        "phoneNumber": "556295071258@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "223054881919119@lid",
+        "phoneNumber": "556293740039@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "222556783124575@lid",
+        "phoneNumber": "556293246458@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "129128292466801@lid",
+        "phoneNumber": "556292422540@s.whatsapp.net",
+        "admin": "superadmin"
+      },
+      {
+        "id": "227693513687228@lid",
+        "phoneNumber": "556291113747@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "46497466941500@lid",
+        "phoneNumber": "556291042341@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "194974352195736@lid",
+        "phoneNumber": "556285954294@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "179138908418142@lid",
+        "phoneNumber": "556284583523@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "266193650897140@lid",
+        "phoneNumber": "556284341960@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "72542014423240@lid",
+        "phoneNumber": "556284213781@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "224163017027836@lid",
+        "phoneNumber": "556284161907@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "40424265744635@lid",
+        "phoneNumber": "556282346179@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "153171586461820@lid",
+        "phoneNumber": "556281893734@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "184898493124773@lid",
+        "phoneNumber": "556281514435@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "132813407965409@lid",
+        "phoneNumber": "556281172037@s.whatsapp.net",
         "admin": "admin"
       }
     ]
   },
   {
     "id": "120363086277869845@g.us",
-    "subject": "Qlik Sense - Observatório",
+    "subject": "Odisseu - SSP",
     "subjectOwner": "129128292466801@lid",
-    "subjectTime": 1750860700,
-    "pictureUrl": "https://pps.whatsapp.net/v/t61.24694-24/336451799_591769459642736_2183763995272519738_n.jpg?ccb=11-4&oh=01_Q5Aa2gFLLNzcqkdXG48UA4MSC4USmkxMwNq5FJa_ePjLJzMz7w&oe=68F11317&_nc_sid=5e03e0&_nc_cat=109",
-    "size": 23,
+    "subjectTime": 1765911434,
+    "pictureUrl": "https://pps.whatsapp.net/v/t61.24694-24/595498699_873996398434750_8583506308490880642_n.jpg?ccb=11-4&oh=01_Q5Aa3wEHNWVeid5NwKihbs6Y_NZ4f2MwHiNZzAJpYjll-Dwu0g&oe=69B29AAF&_nc_sid=5e03e0&_nc_cat=103",
+    "size": 27,
     "creation": 1679685416,
     "owner": "129128292466801@lid",
     "restrict": false,
@@ -103,6 +620,11 @@
         "admin": null
       },
       {
+        "id": "223054881919119@lid",
+        "phoneNumber": "556293740039@s.whatsapp.net",
+        "admin": null
+      },
+      {
         "id": "222556783124575@lid",
         "phoneNumber": "556293246458@s.whatsapp.net",
         "admin": "admin"
@@ -111,6 +633,16 @@
         "id": "129128292466801@lid",
         "phoneNumber": "556292422540@s.whatsapp.net",
         "admin": "superadmin"
+      },
+      {
+        "id": "194974352195736@lid",
+        "phoneNumber": "556285954294@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "179138908418142@lid",
+        "phoneNumber": "556284583523@s.whatsapp.net",
+        "admin": null
       },
       {
         "id": "175518250991863@lid",
@@ -163,18 +695,316 @@
         "admin": null
       },
       {
-        "id": "115173876604970@lid",
-        "phoneNumber": "556281613538@s.whatsapp.net",
+        "id": "95245295444160@lid",
+        "phoneNumber": "556281626200@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "276273821679675@lid",
+        "phoneNumber": "556281577615@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "132813407965409@lid",
+        "phoneNumber": "556281172037@s.whatsapp.net",
         "admin": null
       },
       {
         "id": "88214501069030@lid",
         "phoneNumber": "556232011093@s.whatsapp.net",
         "admin": null
+      }
+    ]
+  },
+  {
+    "id": "120363030675867445@g.us",
+    "subject": "Inovação Paralela-2024🍺🥩🎊",
+    "subjectOwner": "71889229733999@lid",
+    "subjectTime": 1704208501,
+    "pictureUrl": "https://pps.whatsapp.net/v/t61.24694-24/430056779_1033674148183656_3896118016529834909_n.jpg?ccb=11-4&oh=01_Q5Aa3wF1POdxmqHbw2b9zeqRBFftoPjsRzVQzD7MrLxH_KXIPg&oe=69B2AAFD&_nc_sid=5e03e0&_nc_cat=107",
+    "size": 55,
+    "creation": 1670875328,
+    "owner": "40754978259192@lid",
+    "desc": "*AS REGRAS DO GRUPO.*\n\n*Art. 1º*- O grupo foi feito, basicamente, para criar desavenças, intrigas e destruir a auto-estima dos integrantes;\n\n*Art. 2º*- Sempre que possivel, colocar em xeque a masculinidade dos participantes;\n\n*Art. 3º*- Execrar participantes com posições políticas que não estejam de acordo com a maioria do grupo;\n\n*Art. 4º*- Também é permitido humilhar, ridicularizar, xingar e se utilizar do pior linguajar possível, mas sempre mantendo o respeito;\n\n*Art 5º*- É permitido sair na porrada, desde que seja filmado e postado no grupo. Os que o fizerem, ganharão o respeito dos demais;\n\n*Art. 6º*- O bullying é altamente incentivado, principalmente em relação à feiúra e forma física dos participantes, seus hábitos alimentares, vícios e etc.\n\n*Art. 7º* - É proibido elogiar demasiadamente, serão considerados um casal;\n\n*Art. 8º* - Quando o assunto for sério, toda a humilhação e xingamentos deverão ser imediatamente interrompidos. Depois devem voltar.\n\n*Art. 9º* - Ninguém sai!\n\n*Art. 10°* - Pilha boa é aquela que magoa.\n\n*Art. 11º* - Não dê tapa no cigarro do colega, principalmente se estiver aceso!\n\n*Art. 12º* - Prometeu lanche, churrasco, ou qualquer coisa q queira dar pra galera, tem q cumprir!",
+    "descId": "90275ecb-9cb8-4cb0-9a6c-8be09d6c66c3",
+    "restrict": false,
+    "announce": false,
+    "isCommunity": false,
+    "isCommunityAnnounce": false,
+    "participants": [
+      {
+        "id": "223295500734662@lid",
+        "phoneNumber": "556291344070@s.whatsapp.net",
+        "admin": null
       },
       {
-        "id": "65112324968452@lid",
-        "phoneNumber": "556232011075@s.whatsapp.net",
+        "id": "43435138506997@lid",
+        "phoneNumber": "556296461509@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "83889502564390@lid",
+        "phoneNumber": "556282082321@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "179138908418142@lid",
+        "phoneNumber": "556284583523@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "235274130952251@lid",
+        "phoneNumber": "556284672755@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "146093463601349@lid",
+        "phoneNumber": "556286056374@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "94158702256336@lid",
+        "phoneNumber": "556299107775@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "266193650897140@lid",
+        "phoneNumber": "556284341960@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "255035225190555@lid",
+        "phoneNumber": "556296169330@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "79001813037295@lid",
+        "phoneNumber": "556284893646@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "188098226974729@lid",
+        "phoneNumber": "556282378633@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "195240690491520@lid",
+        "phoneNumber": "556294716262@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "245543364255767@lid",
+        "phoneNumber": "556296038141@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "40754978259192@lid",
+        "phoneNumber": "556282441661@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "161955264377064@lid",
+        "phoneNumber": "556295071258@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "53571244564509@lid",
+        "phoneNumber": "556281100306@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "244714519408719@lid",
+        "phoneNumber": "556282566484@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "115173876604970@lid",
+        "phoneNumber": "556281613538@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "267164296736805@lid",
+        "phoneNumber": "556284990088@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "103946932752619@lid",
+        "phoneNumber": "556286063432@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "59051555704947@lid",
+        "phoneNumber": "556284981875@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "224163017027836@lid",
+        "phoneNumber": "556284161907@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "175518250991863@lid",
+        "phoneNumber": "556284513500@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "131700893946015@lid",
+        "phoneNumber": "556283352211@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "128204874465480@lid",
+        "phoneNumber": "556292241641@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "250499706155078@lid",
+        "phoneNumber": "556299617514@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "129128292466801@lid",
+        "phoneNumber": "556292422540@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "262740480409694@lid",
+        "phoneNumber": "556284095794@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "227693513687228@lid",
+        "phoneNumber": "556291113747@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "114761643643013@lid",
+        "phoneNumber": "556285634681@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "113889782046743@lid",
+        "phoneNumber": "556285280444@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "265442065182912@lid",
+        "phoneNumber": "556282099381@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "252071731306742@lid",
+        "phoneNumber": "556291046208@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "152492948103243@lid",
+        "phoneNumber": "556284168445@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "23493605388382@lid",
+        "phoneNumber": "556283291135@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "222556783124575@lid",
+        "phoneNumber": "556293246458@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "42709205123231@lid",
+        "phoneNumber": "556294672255@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "135527810482229@lid",
+        "phoneNumber": "556281462535@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "167392072208638@lid",
+        "phoneNumber": "556285287244@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "99471593615523@lid",
+        "phoneNumber": "556298364643@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "197413927153828@lid",
+        "phoneNumber": "556284395565@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "34617604202520@lid",
+        "phoneNumber": "556285701054@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "92127132385418@lid",
+        "phoneNumber": "556285571536@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "271863024509152@lid",
+        "phoneNumber": "556296271835@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "25585237626881@lid",
+        "phoneNumber": "556294255778@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "208001105457294@lid",
+        "phoneNumber": "556281058393@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "116939175260171@lid",
+        "phoneNumber": "556292818187@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "115964217684158@lid",
+        "phoneNumber": "556299688776@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "46497466941500@lid",
+        "phoneNumber": "556291042341@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "271429115355172@lid",
+        "phoneNumber": "556281434491@s.whatsapp.net",
+        "admin": "admin"
+      },
+      {
+        "id": "207524246610030@lid",
+        "phoneNumber": "556285176463@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "26573013053676@lid",
+        "phoneNumber": "556282318585@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "272443197419759@lid",
+        "phoneNumber": "556281822700@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "172147255337158@lid",
+        "phoneNumber": "556293057906@s.whatsapp.net",
+        "admin": null
+      },
+      {
+        "id": "66486261514383@lid",
+        "phoneNumber": "556281464510@s.whatsapp.net",
         "admin": null
       }
     ]
