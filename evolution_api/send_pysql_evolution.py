@@ -37,8 +37,9 @@ except ImportError as e:
 # CONFIGURAÇÃO E VARIÁVEIS DE AMBIENTE
 # =============================================================================
 
-# Carrega variáveis do ambiente do arquivo .env
-load_dotenv()
+# Carrega .env da raiz do projeto (necessário para subprocess dos scripts pysql: ORACLE_*, GITLAB_*, etc.)
+load_dotenv(os.path.join(project_root, ".env"))
+load_dotenv()  # Sobrescreve com .env local do evolution_api se existir
 
 # Configurações da Evolution API
 evo_base_url = os.getenv("EVOLUTION_BASE_URL", "http://localhost:8080")
@@ -292,50 +293,36 @@ def analisar_tempos_execucao():
     
     return resumos
 
+def formatar_duracao(segundos):
+    """Converte segundos em formato legível: Xs, X min ou Xh Y min."""
+    if segundos < 60:
+        return f"{segundos:.0f}s"
+    if segundos < 3600:
+        m = segundos / 60
+        return f"{m:.0f} min" if m == int(m) else f"{m:.1f} min"
+    h = int(segundos // 3600)
+    m = (segundos % 3600) / 60
+    if m < 1:
+        return f"{h}h"
+    return f"{h}h {m:.0f} min"
+
+
 def gerar_resumo_tempos(dados, nome_script):
     """
-    Gera um resumo formatado dos tempos de execução.
-    
-    Args:
-        dados (dict): Dados JSON dos tempos de execução
-        nome_script (str): Nome do script analisado
-        
-    Returns:
-        str: Resumo formatado dos tempos
+    Gera um resumo curto: script, última execução e tempo total (em min/h).
     """
     try:
         if not dados:
-            return f"Nenhum dado de tempo disponível para {nome_script}"
-        
-        # Pega a execução mais recente
+            return f"Nenhum dado para {nome_script}"
         timestamps = sorted(dados.keys(), reverse=True)
         if not timestamps:
-            return f"Nenhum timestamp disponível para {nome_script}"
-        
+            return f"Nenhum timestamp para {nome_script}"
         execucao_recente = dados[timestamps[0]]
-        
-        # Calcula estatísticas
-        tempos = list(execucao_recente.values())
-        tempo_total = sum(tempos)
-        tempo_medio = tempo_total / len(tempos) if tempos else 0
-        tempo_max = max(tempos) if tempos else 0
-        tempo_min = min(tempos) if tempos else 0
-        
-        # Formata o resumo
+        tempo_total = sum(execucao_recente.values())
         resumo = f"📊 **{nome_script.upper()}**\n"
         resumo += f"Última execução: {timestamps[0][:19].replace('T', ' ')}\n"
-        resumo += f"Tempo total: {tempo_total:.2f}s\n"
-        resumo += f"Tempo médio: {tempo_medio:.2f}s\n"
-        resumo += f"Tempo máximo: {tempo_max:.2f}s\n"
-        resumo += f"Tempo mínimo: {tempo_min:.2f}s\n"
-        
-        # Detalhes por consulta
-        resumo += "\n**Tempos por consulta:**\n"
-        for consulta, tempo in execucao_recente.items():
-            resumo += f"• {consulta}: {tempo:.2f}s\n"
-        
+        resumo += f"Tempo total: {formatar_duracao(tempo_total)}\n"
         return resumo
-        
     except Exception as e:
         return f"Erro ao gerar resumo para {nome_script}: {str(e)}"
 
@@ -622,20 +609,26 @@ def enviar_resumos_tempo():
     """Envia resumos de tempos de execução para todos os destinos."""
     print("📊 Enviando resumos de tempos de execução...")
     
+    # Tempo sem intercorrências (histórico de envio/execução)
+    try:
+        from pysql.historico_pysql_evolution import texto_tempo_sem_intercorrencias
+        linha_intercorrencias = texto_tempo_sem_intercorrencias()
+    except Exception:
+        linha_intercorrencias = "Tempo sem intercorrências: (histórico indisponível)"
+    
     # Analisa os tempos de execução
     resumos = analisar_tempos_execucao()
     
     if not resumos:
-        mensagem = "Nenhum resumo de tempo de execução disponível no momento."
+        mensagem = "Nenhum resumo de tempo de execução disponível no momento.\n\n" + linha_intercorrencias
         enviar_para_todos_destinos(enviar_mensagem_texto, mensagem)
         return
     
-    # Monta o resumo concatenado
+    # Monta o resumo concatenado (resumido: cabeçalho, tempo sem intercorrências, script, execução, tempo)
     resumo_concat = "⏱️ **RESUMOS DE TEMPOS DE EXECUÇÃO PYSQL**\n\n"
-    
+    resumo_concat += f"🟢 {linha_intercorrencias}\n\n"
     for nome_script, resumo in resumos.items():
-        resumo_concat += f"{resumo}\n\n"
-        resumo_concat += "─" * 50 + "\n\n"
+        resumo_concat += resumo + "\n\n"
     
     # Envia para todos os destinos
     stats_resumos = enviar_para_todos_destinos(enviar_mensagem_texto, resumo_concat)

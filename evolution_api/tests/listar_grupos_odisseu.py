@@ -2,11 +2,11 @@
 """
 Script para listar todos os grupos de uma instância Evolution API com JID e nome.
 
-Uso (com a venv do projeto):
-  .venv\\Scripts\\python.exe evolution_api/listar_grupos_odisseu.py
-  ou, com venv ativada: python evolution_api/listar_grupos_odisseu.py
+Uso (com a venv do projeto, a partir da raiz do repositório):
+  .venv\\Scripts\\python.exe evolution_api/tests/listar_grupos_odisseu.py
+  ou, com venv ativada: python evolution_api/tests/listar_grupos_odisseu.py
 
-Variáveis de ambiente (.env):
+Variáveis de ambiente (.env em evolution_api ou raiz):
   EVOLUTION_BASE_URL     - URL da API (default: http://localhost:8080)
   EVOLUTION_API_TOKEN   - ou AUTHENTICATION_API_KEY (apikey da Evolution API)
   EVOLUTION_INSTANCE_ID - nome da instância (default: odisseu)
@@ -26,7 +26,10 @@ if os.name == 'nt':
     except:
         pass
 
-# Carrega variáveis de ambiente
+# Carrega .env: pasta tests, depois evolution_api, depois cwd
+script_dir = os.path.dirname(os.path.abspath(__file__))
+load_dotenv(os.path.join(script_dir, ".env"))
+load_dotenv(os.path.join(script_dir, "..", ".env"))
 load_dotenv()
 
 # Configurações da Evolution API
@@ -123,12 +126,12 @@ def listar_grupos_completos():
         return None
 
 def salvar_grupos_arquivo(grupos):
-    """Salva a lista de grupos em arquivo JSON."""
+    """Salva a lista de grupos em arquivo JSON na pasta tests."""
     if not grupos:
         return
     
     try:
-        arquivo = "grupos_odisseu.json"
+        arquivo = os.path.join(script_dir, "grupos_odisseu.json")
         with open(arquivo, 'w', encoding='utf-8') as f:
             json.dump(grupos, f, indent=2, ensure_ascii=False)
         print(f"\n💾 Lista de grupos salva em: {arquivo}")
@@ -158,7 +161,7 @@ def main():
         
         print(f"\n🎉 LISTAGEM CONCLUÍDA COM SUCESSO!")
         print(f"✅ {len(grupos)} grupos encontrados na instância {evo_instance_id}")
-        print(f"💾 Dados salvos em 'grupos_odisseu.json'")
+        print(f"💾 Dados salvos em evolution_api/tests/grupos_odisseu.json")
         
         # Instruções de uso
         print(f"\n💡 COMO USAR OS GRUPOS:")

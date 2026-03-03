@@ -2,9 +2,9 @@
 """
 Script de teste: lista todos os grupos da instância e envia "Teste de Conexão" para cada um.
 
-Uso (com a venv do projeto):
-  .venv\\Scripts\\python.exe evolution_api/send_test_listar_grupos.py
-  ou, com venv ativada: python evolution_api/send_test_listar_grupos.py
+Uso (com a venv do projeto, a partir da raiz do repositório):
+  .venv\\Scripts\\python.exe evolution_api/tests/send_test_listar_grupos.py
+  ou, com venv ativada: python evolution_api/tests/send_test_listar_grupos.py
 
 Variáveis de ambiente (.env em evolution_api ou raiz):
   EVOLUTION_BASE_URL     - URL da API (default: http://localhost:8080)
@@ -26,9 +26,10 @@ if os.name == 'nt':
     except Exception:
         pass
 
-# Carrega .env do diretório do script ou do cwd
+# Carrega .env: pasta tests, depois evolution_api, depois cwd
 script_dir = os.path.dirname(os.path.abspath(__file__))
 load_dotenv(os.path.join(script_dir, ".env"))
+load_dotenv(os.path.join(script_dir, "..", ".env"))
 load_dotenv()
 
 evo_base_url = os.getenv("EVOLUTION_BASE_URL", "http://localhost:8080")

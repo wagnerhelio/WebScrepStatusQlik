@@ -1,0 +1,1032 @@
+{
+  "extract_bm_vistoria_oracle": [
+    {
+      "name": "E_ANDAMENTO.sql",
+      "path": "extract_bm_vistoria_oracle/E_ANDAMENTO.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_bm_vistoria_oracle/E_ANDAMENTO.sql"
+    },
+    {
+      "name": "E_BAIRRO_VW.sql",
+      "path": "extract_bm_vistoria_oracle/E_BAIRRO_VW.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_bm_vistoria_oracle/E_BAIRRO_VW.sql"
+    },
+    {
+      "name": "E_BOLETO.sql",
+      "path": "extract_bm_vistoria_oracle/E_BOLETO.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_bm_vistoria_oracle/E_BOLETO.sql"
+    },
+    {
+      "name": "E_CERCON.sql",
+      "path": "extract_bm_vistoria_oracle/E_CERCON.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_bm_vistoria_oracle/E_CERCON.sql"
+    },
+    {
+      "name": "E_CNAE.sql",
+      "path": "extract_bm_vistoria_oracle/E_CNAE.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_bm_vistoria_oracle/E_CNAE.sql"
+    },
+    {
+      "name": "E_CONTRIBUINTE.sql",
+      "path": "extract_bm_vistoria_oracle/E_CONTRIBUINTE.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_bm_vistoria_oracle/E_CONTRIBUINTE.sql"
+    },
+    {
+      "name": "E_ESCALAS_BM.sql",
+      "path": "extract_bm_vistoria_oracle/E_ESCALAS_BM.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_bm_vistoria_oracle/E_ESCALAS_BM.sql"
+    },
+    {
+      "name": "E_FUNEBOM.sql",
+      "path": "extract_bm_vistoria_oracle/E_FUNEBOM.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_bm_vistoria_oracle/E_FUNEBOM.sql"
+    },
+    {
+      "name": "E_LOCALIDADE.sql",
+      "path": "extract_bm_vistoria_oracle/E_LOCALIDADE.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_bm_vistoria_oracle/E_LOCALIDADE.sql"
+    },
+    {
+      "name": "E_MEDIDAS_DE_SEG.sql",
+      "path": "extract_bm_vistoria_oracle/E_MEDIDAS_DE_SEG.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_bm_vistoria_oracle/E_MEDIDAS_DE_SEG.sql"
+    },
+    {
+      "name": "E_MUNICIPIO_VW.sql",
+      "path": "extract_bm_vistoria_oracle/E_MUNICIPIO_VW.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_bm_vistoria_oracle/E_MUNICIPIO_VW.sql"
+    },
+    {
+      "name": "E_OBM.sql",
+      "path": "extract_bm_vistoria_oracle/E_OBM.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_bm_vistoria_oracle/E_OBM.sql"
+    },
+    {
+      "name": "E_OBM_VW.sql",
+      "path": "extract_bm_vistoria_oracle/E_OBM_VW.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_bm_vistoria_oracle/E_OBM_VW.sql"
+    },
+    {
+      "name": "E_OCUPACAO.sql",
+      "path": "extract_bm_vistoria_oracle/E_OCUPACAO.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_bm_vistoria_oracle/E_OCUPACAO.sql"
+    },
+    {
+      "name": "E_PERICIAINCENDIO.sql",
+      "path": "extract_bm_vistoria_oracle/E_PERICIAINCENDIO.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_bm_vistoria_oracle/E_PERICIAINCENDIO.sql"
+    },
+    {
+      "name": "E_RESP_TECNICO.sql",
+      "path": "extract_bm_vistoria_oracle/E_RESP_TECNICO.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_bm_vistoria_oracle/E_RESP_TECNICO.sql"
+    },
+    {
+      "name": "E_SERV_PRESTADO.sql",
+      "path": "extract_bm_vistoria_oracle/E_SERV_PRESTADO.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_bm_vistoria_oracle/E_SERV_PRESTADO.sql"
+    },
+    {
+      "name": "E_SIAPI.sql",
+      "path": "extract_bm_vistoria_oracle/E_SIAPI.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_bm_vistoria_oracle/E_SIAPI.sql"
+    },
+    {
+      "name": "E_SOLICITACAO_SERVICO.sql",
+      "path": "extract_bm_vistoria_oracle/E_SOLICITACAO_SERVICO.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_bm_vistoria_oracle/E_SOLICITACAO_SERVICO.sql"
+    },
+    {
+      "name": "E_UND_ATENDIMENTO.sql",
+      "path": "extract_bm_vistoria_oracle/E_UND_ATENDIMENTO.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_bm_vistoria_oracle/E_UND_ATENDIMENTO.sql"
+    },
+    {
+      "name": "E_USUARIO.sql",
+      "path": "extract_bm_vistoria_oracle/E_USUARIO.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_bm_vistoria_oracle/E_USUARIO.sql"
+    }
+  ],
+  "extract_conden_oracle": [
+    {
+      "name": "E_CONDEN.sql",
+      "path": "extract_conden_oracle/E_CONDEN.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_conden_oracle/E_CONDEN.sql"
+    }
+  ],
+  "extract_dados_auxiliares_oracle": [
+    {
+      "name": "E_CIRCUNSCRICAO.sql",
+      "path": "extract_dados_auxiliares_oracle/E_CIRCUNSCRICAO.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_dados_auxiliares_oracle/E_CIRCUNSCRICAO.sql"
+    },
+    {
+      "name": "E_RISP_AISP_CIDADE_BAIRRO_SSPJ.sql",
+      "path": "extract_dados_auxiliares_oracle/E_RISP_AISP_CIDADE_BAIRRO_SSPJ.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_dados_auxiliares_oracle/E_RISP_AISP_CIDADE_BAIRRO_SSPJ.sql"
+    }
+  ],
+  "extract_delegacia_virtual_oracle": [
+    {
+      "name": "E_DELEGACIA_VIRTUAL2018.sql",
+      "path": "extract_delegacia_virtual_oracle/E_DELEGACIA_VIRTUAL2018.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_delegacia_virtual_oracle/E_DELEGACIA_VIRTUAL2018.sql"
+    },
+    {
+      "name": "E_DELEGACIA_VIRTUAL2019.sql",
+      "path": "extract_delegacia_virtual_oracle/E_DELEGACIA_VIRTUAL2019.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_delegacia_virtual_oracle/E_DELEGACIA_VIRTUAL2019.sql"
+    },
+    {
+      "name": "E_DELEGACIA_VIRTUAL2020.sql",
+      "path": "extract_delegacia_virtual_oracle/E_DELEGACIA_VIRTUAL2020.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_delegacia_virtual_oracle/E_DELEGACIA_VIRTUAL2020.sql"
+    },
+    {
+      "name": "E_DELEGACIA_VIRTUAL2021.sql",
+      "path": "extract_delegacia_virtual_oracle/E_DELEGACIA_VIRTUAL2021.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_delegacia_virtual_oracle/E_DELEGACIA_VIRTUAL2021.sql"
+    },
+    {
+      "name": "E_DELEGACIA_VIRTUAL2022.sql",
+      "path": "extract_delegacia_virtual_oracle/E_DELEGACIA_VIRTUAL2022.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_delegacia_virtual_oracle/E_DELEGACIA_VIRTUAL2022.sql"
+    },
+    {
+      "name": "E_DELEGACIA_VIRTUAL2023.sql",
+      "path": "extract_delegacia_virtual_oracle/E_DELEGACIA_VIRTUAL2023.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_delegacia_virtual_oracle/E_DELEGACIA_VIRTUAL2023.sql"
+    },
+    {
+      "name": "E_DELEGACIA_VIRTUAL2024.sql",
+      "path": "extract_delegacia_virtual_oracle/E_DELEGACIA_VIRTUAL2024.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_delegacia_virtual_oracle/E_DELEGACIA_VIRTUAL2024.sql"
+    }
+  ],
+  "extract_depai_oracle": [
+    {
+      "name": "E_DEPAI.sql",
+      "path": "extract_depai_oracle/E_DEPAI.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_depai_oracle/E_DEPAI.sql"
+    }
+  ],
+  "extract_dimensoes_gerais_oracle": [
+    {
+      "name": "E_COR_RACA.sql",
+      "path": "extract_dimensoes_gerais_oracle/E_COR_RACA.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_dimensoes_gerais_oracle/E_COR_RACA.sql"
+    },
+    {
+      "name": "E_ESTRUTURA_ORGANIZACIONAL_REAL.sql",
+      "path": "extract_dimensoes_gerais_oracle/E_ESTRUTURA_ORGANIZACIONAL_REAL.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_dimensoes_gerais_oracle/E_ESTRUTURA_ORGANIZACIONAL_REAL.sql"
+    },
+    {
+      "name": "E_FAIXA_ETARIA.sql",
+      "path": "extract_dimensoes_gerais_oracle/E_FAIXA_ETARIA.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_dimensoes_gerais_oracle/E_FAIXA_ETARIA.sql"
+    },
+    {
+      "name": "E_LOCALIDADE.sql",
+      "path": "extract_dimensoes_gerais_oracle/E_LOCALIDADE.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_dimensoes_gerais_oracle/E_LOCALIDADE.sql"
+    },
+    {
+      "name": "E_MOTIVACAO.sql",
+      "path": "extract_dimensoes_gerais_oracle/E_MOTIVACAO.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_dimensoes_gerais_oracle/E_MOTIVACAO.sql"
+    },
+    {
+      "name": "E_NATUREZA_SPI_TIPIFICADA.sql",
+      "path": "extract_dimensoes_gerais_oracle/E_NATUREZA_SPI_TIPIFICADA.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_dimensoes_gerais_oracle/E_NATUREZA_SPI_TIPIFICADA.sql"
+    },
+    {
+      "name": "E_ORIENTACAO_SEXUAL.sql",
+      "path": "extract_dimensoes_gerais_oracle/E_ORIENTACAO_SEXUAL.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_dimensoes_gerais_oracle/E_ORIENTACAO_SEXUAL.sql"
+    },
+    {
+      "name": "E_POPULACAO.sql",
+      "path": "extract_dimensoes_gerais_oracle/E_POPULACAO.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_dimensoes_gerais_oracle/E_POPULACAO.sql"
+    },
+    {
+      "name": "E_QUALIFICACAO.sql",
+      "path": "extract_dimensoes_gerais_oracle/E_QUALIFICACAO.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_dimensoes_gerais_oracle/E_QUALIFICACAO.sql"
+    },
+    {
+      "name": "E_SEXO.sql",
+      "path": "extract_dimensoes_gerais_oracle/E_SEXO.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_dimensoes_gerais_oracle/E_SEXO.sql"
+    }
+  ],
+  "extract_estrutura_organizacional_oracle": [
+    {
+      "name": "E_ESTRUTURA_ORGANIZACIONAL.sql",
+      "path": "extract_estrutura_organizacional_oracle/E_ESTRUTURA_ORGANIZACIONAL.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_estrutura_organizacional_oracle/E_ESTRUTURA_ORGANIZACIONAL.sql"
+    },
+    {
+      "name": "E_LOCALIZACAO_ESTRUTURA_ORGANIZACIONAL.sql",
+      "path": "extract_estrutura_organizacional_oracle/E_LOCALIZACAO_ESTRUTURA_ORGANIZACIONAL.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_estrutura_organizacional_oracle/E_LOCALIZACAO_ESTRUTURA_ORGANIZACIONAL.sql"
+    }
+  ],
+  "extract_goiasbiometrico_oracle": [
+    {
+      "name": "E_DADOS_AGENDAMENTO.sql",
+      "path": "extract_goiasbiometrico_oracle/E_DADOS_AGENDAMENTO.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_goiasbiometrico_oracle/E_DADOS_AGENDAMENTO.sql"
+    },
+    {
+      "name": "E_EMISSAO_ANTECEDENTES.sql",
+      "path": "extract_goiasbiometrico_oracle/E_EMISSAO_ANTECEDENTES.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_goiasbiometrico_oracle/E_EMISSAO_ANTECEDENTES.sql"
+    }
+  ],
+  "extract_ipei_oracle": [
+    {
+      "name": "E_ARMA.sql",
+      "path": "extract_ipei_oracle/E_ARMA.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_ipei_oracle/E_ARMA.sql"
+    },
+    {
+      "name": "E_MANDADO.sql",
+      "path": "extract_ipei_oracle/E_MANDADO.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_ipei_oracle/E_MANDADO.sql"
+    },
+    {
+      "name": "E_POLICIAL.sql",
+      "path": "extract_ipei_oracle/E_POLICIAL.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_ipei_oracle/E_POLICIAL.sql"
+    },
+    {
+      "name": "E_RECOMPENSA.sql",
+      "path": "extract_ipei_oracle/E_RECOMPENSA.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_ipei_oracle/E_RECOMPENSA.sql"
+    },
+    {
+      "name": "E_RECOMPENSA_MANDADO.sql",
+      "path": "extract_ipei_oracle/E_RECOMPENSA_MANDADO.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_ipei_oracle/E_RECOMPENSA_MANDADO.sql"
+    },
+    {
+      "name": "E_RECOMPENSA_POLICIAL.sql",
+      "path": "extract_ipei_oracle/E_RECOMPENSA_POLICIAL.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_ipei_oracle/E_RECOMPENSA_POLICIAL.sql"
+    },
+    {
+      "name": "E_REC_ARMA_POLICIAL.sql",
+      "path": "extract_ipei_oracle/E_REC_ARMA_POLICIAL.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_ipei_oracle/E_REC_ARMA_POLICIAL.sql"
+    }
+  ],
+  "extract_minha_conta_oracle": [
+    {
+      "name": "E_APROVADORES_SOLICITACAO_MINHA_CONTA.sql",
+      "path": "extract_minha_conta_oracle/E_APROVADORES_SOLICITACAO_MINHA_CONTA.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_minha_conta_oracle/E_APROVADORES_SOLICITACAO_MINHA_CONTA.sql"
+    },
+    {
+      "name": "E_AUDITORIA_MINHA_CONTA.sql",
+      "path": "extract_minha_conta_oracle/E_AUDITORIA_MINHA_CONTA.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_minha_conta_oracle/E_AUDITORIA_MINHA_CONTA.sql"
+    },
+    {
+      "name": "E_SOLICITACAO_MINHA_CONTA.sql",
+      "path": "extract_minha_conta_oracle/E_SOLICITACAO_MINHA_CONTA.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_minha_conta_oracle/E_SOLICITACAO_MINHA_CONTA.sql"
+    },
+    {
+      "name": "E_USUARIOS_APROVADORES_MINHA_CONTA.sql",
+      "path": "extract_minha_conta_oracle/E_USUARIOS_APROVADORES_MINHA_CONTA.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_minha_conta_oracle/E_USUARIOS_APROVADORES_MINHA_CONTA.sql"
+    },
+    {
+      "name": "E_USUARIO_MINHA_CONTA.sql",
+      "path": "extract_minha_conta_oracle/E_USUARIO_MINHA_CONTA.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_minha_conta_oracle/E_USUARIO_MINHA_CONTA.sql"
+    }
+  ],
+  "extract_mopi_oracle": [
+    {
+      "name": "E_MOPI.sql",
+      "path": "extract_mopi_oracle/E_MOPI.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_mopi_oracle/E_MOPI.sql"
+    },
+    {
+      "name": "E_MOPI_CINTURAO.sql",
+      "path": "extract_mopi_oracle/E_MOPI_CINTURAO.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_mopi_oracle/E_MOPI_CINTURAO.sql"
+    }
+  ],
+  "extract_mportal_oracle": [
+    {
+      "name": "E_AUTENTICACAO_DEVICE_MPORTAL.sql",
+      "path": "extract_mportal_oracle/E_AUTENTICACAO_DEVICE_MPORTAL.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_mportal_oracle/E_AUTENTICACAO_DEVICE_MPORTAL.sql"
+    },
+    {
+      "name": "E_AUTENTICACAO_USUARIO_MPORTAL.sql",
+      "path": "extract_mportal_oracle/E_AUTENTICACAO_USUARIO_MPORTAL.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_mportal_oracle/E_AUTENTICACAO_USUARIO_MPORTAL.sql"
+    },
+    {
+      "name": "E_K9_MPORTAL.sql",
+      "path": "extract_mportal_oracle/E_K9_MPORTAL.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_mportal_oracle/E_K9_MPORTAL.sql"
+    },
+    {
+      "name": "ODISSEU_MPORTAL_CONSULTA.sql",
+      "path": "extract_mportal_oracle/ODISSEU_MPORTAL_CONSULTA.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_mportal_oracle/ODISSEU_MPORTAL_CONSULTA.sql"
+    }
+  ],
+  "extract_mulher_segura_oracle": [
+    {
+      "name": "E_MULHER_SEGURA.sql",
+      "path": "extract_mulher_segura_oracle/E_MULHER_SEGURA.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_mulher_segura_oracle/E_MULHER_SEGURA.sql"
+    }
+  ],
+  "extract_ocorrencias_antigas_oracle": [
+    {
+      "name": "E_OCORRENCIAS_ANTIGAS.sql",
+      "path": "extract_ocorrencias_antigas_oracle/E_OCORRENCIAS_ANTIGAS.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_ocorrencias_antigas_oracle/E_OCORRENCIAS_ANTIGAS.sql"
+    }
+  ],
+  "extract_odisseu_oracle/relatorio_feminicidios": [
+    {
+      "name": "feminicidios.sql",
+      "path": "extract_odisseu_oracle/relatorio_feminicidios/feminicidios.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_odisseu_oracle/relatorio_feminicidios/feminicidios.sql"
+    },
+    {
+      "name": "feminicidios_comparativo_aisp.sql",
+      "path": "extract_odisseu_oracle/relatorio_feminicidios/feminicidios_comparativo_aisp.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_odisseu_oracle/relatorio_feminicidios/feminicidios_comparativo_aisp.sql"
+    },
+    {
+      "name": "feminicidios_comparativo_dia.sql",
+      "path": "extract_odisseu_oracle/relatorio_feminicidios/feminicidios_comparativo_dia.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_odisseu_oracle/relatorio_feminicidios/feminicidios_comparativo_dia.sql"
+    },
+    {
+      "name": "feminicidios_comparativo_dois_anos.sql",
+      "path": "extract_odisseu_oracle/relatorio_feminicidios/feminicidios_comparativo_dois_anos.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_odisseu_oracle/relatorio_feminicidios/feminicidios_comparativo_dois_anos.sql"
+    },
+    {
+      "name": "feminicidios_comparativo_municipios.sql",
+      "path": "extract_odisseu_oracle/relatorio_feminicidios/feminicidios_comparativo_municipios.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_odisseu_oracle/relatorio_feminicidios/feminicidios_comparativo_municipios.sql"
+    },
+    {
+      "name": "feminicidios_comparativo_municipios_top_20.sql",
+      "path": "extract_odisseu_oracle/relatorio_feminicidios/feminicidios_comparativo_municipios_top_20.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_odisseu_oracle/relatorio_feminicidios/feminicidios_comparativo_municipios_top_20.sql"
+    },
+    {
+      "name": "feminicidios_comparativo_regioes.sql",
+      "path": "extract_odisseu_oracle/relatorio_feminicidios/feminicidios_comparativo_regioes.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_odisseu_oracle/relatorio_feminicidios/feminicidios_comparativo_regioes.sql"
+    },
+    {
+      "name": "feminicidios_comparativo_regioes_dia.sql",
+      "path": "extract_odisseu_oracle/relatorio_feminicidios/feminicidios_comparativo_regioes_dia.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_odisseu_oracle/relatorio_feminicidios/feminicidios_comparativo_regioes_dia.sql"
+    },
+    {
+      "name": "feminicidios_comparativo_regioes_dia_atual.sql",
+      "path": "extract_odisseu_oracle/relatorio_feminicidios/feminicidios_comparativo_regioes_dia_atual.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_odisseu_oracle/relatorio_feminicidios/feminicidios_comparativo_regioes_dia_atual.sql"
+    },
+    {
+      "name": "feminicidios_comparativo_regioes_mes.sql",
+      "path": "extract_odisseu_oracle/relatorio_feminicidios/feminicidios_comparativo_regioes_mes.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_odisseu_oracle/relatorio_feminicidios/feminicidios_comparativo_regioes_mes.sql"
+    },
+    {
+      "name": "feminicidios_comparativo_regioes_semana.sql",
+      "path": "extract_odisseu_oracle/relatorio_feminicidios/feminicidios_comparativo_regioes_semana.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_odisseu_oracle/relatorio_feminicidios/feminicidios_comparativo_regioes_semana.sql"
+    },
+    {
+      "name": "feminicidios_comparativo_risp.sql",
+      "path": "extract_odisseu_oracle/relatorio_feminicidios/feminicidios_comparativo_risp.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_odisseu_oracle/relatorio_feminicidios/feminicidios_comparativo_risp.sql"
+    },
+    {
+      "name": "feminicidios_comparativo_todos_anos.sql",
+      "path": "extract_odisseu_oracle/relatorio_feminicidios/feminicidios_comparativo_todos_anos.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_odisseu_oracle/relatorio_feminicidios/feminicidios_comparativo_todos_anos.sql"
+    },
+    {
+      "name": "feminicidios_em_presidios.sql",
+      "path": "extract_odisseu_oracle/relatorio_feminicidios/feminicidios_em_presidios.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_odisseu_oracle/relatorio_feminicidios/feminicidios_em_presidios.sql"
+    }
+  ],
+  "extract_odisseu_oracle/relatorio_homicidios": [
+    {
+      "name": "homicidios.sql",
+      "path": "extract_odisseu_oracle/relatorio_homicidios/homicidios.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_odisseu_oracle/relatorio_homicidios/homicidios.sql"
+    },
+    {
+      "name": "homicidios_comparativo_aisp.sql",
+      "path": "extract_odisseu_oracle/relatorio_homicidios/homicidios_comparativo_aisp.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_odisseu_oracle/relatorio_homicidios/homicidios_comparativo_aisp.sql"
+    },
+    {
+      "name": "homicidios_comparativo_dia.sql",
+      "path": "extract_odisseu_oracle/relatorio_homicidios/homicidios_comparativo_dia.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_odisseu_oracle/relatorio_homicidios/homicidios_comparativo_dia.sql"
+    },
+    {
+      "name": "homicidios_comparativo_dois_anos.sql",
+      "path": "extract_odisseu_oracle/relatorio_homicidios/homicidios_comparativo_dois_anos.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_odisseu_oracle/relatorio_homicidios/homicidios_comparativo_dois_anos.sql"
+    },
+    {
+      "name": "homicidios_comparativo_municipios.sql",
+      "path": "extract_odisseu_oracle/relatorio_homicidios/homicidios_comparativo_municipios.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_odisseu_oracle/relatorio_homicidios/homicidios_comparativo_municipios.sql"
+    },
+    {
+      "name": "homicidios_comparativo_municipios_top_20.sql",
+      "path": "extract_odisseu_oracle/relatorio_homicidios/homicidios_comparativo_municipios_top_20.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_odisseu_oracle/relatorio_homicidios/homicidios_comparativo_municipios_top_20.sql"
+    },
+    {
+      "name": "homicidios_comparativo_regioes_dia.sql",
+      "path": "extract_odisseu_oracle/relatorio_homicidios/homicidios_comparativo_regioes_dia.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_odisseu_oracle/relatorio_homicidios/homicidios_comparativo_regioes_dia.sql"
+    },
+    {
+      "name": "homicidios_comparativo_regioes_dia_anterior.sql",
+      "path": "extract_odisseu_oracle/relatorio_homicidios/homicidios_comparativo_regioes_dia_anterior.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_odisseu_oracle/relatorio_homicidios/homicidios_comparativo_regioes_dia_anterior.sql"
+    },
+    {
+      "name": "homicidios_comparativo_regioes_dia_atual.sql",
+      "path": "extract_odisseu_oracle/relatorio_homicidios/homicidios_comparativo_regioes_dia_atual.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_odisseu_oracle/relatorio_homicidios/homicidios_comparativo_regioes_dia_atual.sql"
+    },
+    {
+      "name": "homicidios_comparativo_regioes_mes.sql",
+      "path": "extract_odisseu_oracle/relatorio_homicidios/homicidios_comparativo_regioes_mes.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_odisseu_oracle/relatorio_homicidios/homicidios_comparativo_regioes_mes.sql"
+    },
+    {
+      "name": "homicidios_comparativo_regioes_semana.sql",
+      "path": "extract_odisseu_oracle/relatorio_homicidios/homicidios_comparativo_regioes_semana.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_odisseu_oracle/relatorio_homicidios/homicidios_comparativo_regioes_semana.sql"
+    },
+    {
+      "name": "homicidios_comparativo_risp.sql",
+      "path": "extract_odisseu_oracle/relatorio_homicidios/homicidios_comparativo_risp.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_odisseu_oracle/relatorio_homicidios/homicidios_comparativo_risp.sql"
+    },
+    {
+      "name": "homicidios_comparativo_todos_anos.sql",
+      "path": "extract_odisseu_oracle/relatorio_homicidios/homicidios_comparativo_todos_anos.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_odisseu_oracle/relatorio_homicidios/homicidios_comparativo_todos_anos.sql"
+    },
+    {
+      "name": "homicidios_em_presidios.sql",
+      "path": "extract_odisseu_oracle/relatorio_homicidios/homicidios_em_presidios.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_odisseu_oracle/relatorio_homicidios/homicidios_em_presidios.sql"
+    }
+  ],
+  "extract_prisao_flagrante_oracle": [
+    {
+      "name": "E_PRISAO_FLAGRANTE_POSTERIOR.sql",
+      "path": "extract_prisao_flagrante_oracle/E_PRISAO_FLAGRANTE_POSTERIOR.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_prisao_flagrante_oracle/E_PRISAO_FLAGRANTE_POSTERIOR.sql"
+    }
+  ],
+  "extract_produtividade_individual_oracle": [
+    {
+      "name": "E_ESCALA_POLICIAIS.sql",
+      "path": "extract_produtividade_individual_oracle/E_ESCALA_POLICIAIS.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_produtividade_individual_oracle/E_ESCALA_POLICIAIS.sql"
+    },
+    {
+      "name": "E_ESCALA_VIATURAS.sql",
+      "path": "extract_produtividade_individual_oracle/E_ESCALA_VIATURAS.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_produtividade_individual_oracle/E_ESCALA_VIATURAS.sql"
+    },
+    {
+      "name": "E_PRODUTIVIDADE_IND_RAI.sql",
+      "path": "extract_produtividade_individual_oracle/E_PRODUTIVIDADE_IND_RAI.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_produtividade_individual_oracle/E_PRODUTIVIDADE_IND_RAI.sql"
+    },
+    {
+      "name": "E_PROD_INDIVIDUAL.sql",
+      "path": "extract_produtividade_individual_oracle/E_PROD_INDIVIDUAL.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_produtividade_individual_oracle/E_PROD_INDIVIDUAL.sql"
+    }
+  ],
+  "extract_rai_oracle": [
+    {
+      "name": "E_ARMAS_RAI.sql",
+      "path": "extract_rai_oracle/E_ARMAS_RAI.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_rai_oracle/E_ARMAS_RAI.sql"
+    },
+    {
+      "name": "E_DESAPARECIDOS.sql",
+      "path": "extract_rai_oracle/E_DESAPARECIDOS.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_rai_oracle/E_DESAPARECIDOS.sql"
+    },
+    {
+      "name": "E_DESPACHO_RAI.sql",
+      "path": "extract_rai_oracle/E_DESPACHO_RAI.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_rai_oracle/E_DESPACHO_RAI.sql"
+    },
+    {
+      "name": "E_EMBARCACAO.sql",
+      "path": "extract_rai_oracle/E_EMBARCACAO.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_rai_oracle/E_EMBARCACAO.sql"
+    },
+    {
+      "name": "E_ENDERECO_RAI.sql",
+      "path": "extract_rai_oracle/E_ENDERECO_RAI.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_rai_oracle/E_ENDERECO_RAI.sql"
+    },
+    {
+      "name": "E_ENVOLVIMENTO.sql",
+      "path": "extract_rai_oracle/E_ENVOLVIMENTO.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_rai_oracle/E_ENVOLVIMENTO.sql"
+    },
+    {
+      "name": "E_ESCALAS_RAI.sql",
+      "path": "extract_rai_oracle/E_ESCALAS_RAI.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_rai_oracle/E_ESCALAS_RAI.sql"
+    },
+    {
+      "name": "E_FATO_OCORRENCIA.sql",
+      "path": "extract_rai_oracle/E_FATO_OCORRENCIA.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_rai_oracle/E_FATO_OCORRENCIA.sql"
+    },
+    {
+      "name": "E_GRUPO_PROATIVAS.sql",
+      "path": "extract_rai_oracle/E_GRUPO_PROATIVAS.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_rai_oracle/E_GRUPO_PROATIVAS.sql"
+    },
+    {
+      "name": "E_GRUPO_REATIVAS.sql",
+      "path": "extract_rai_oracle/E_GRUPO_REATIVAS.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_rai_oracle/E_GRUPO_REATIVAS.sql"
+    },
+    {
+      "name": "E_GUARNICAO.sql",
+      "path": "extract_rai_oracle/E_GUARNICAO.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_rai_oracle/E_GUARNICAO.sql"
+    },
+    {
+      "name": "E_MANDADOS_RAI.sql",
+      "path": "extract_rai_oracle/E_MANDADOS_RAI.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_rai_oracle/E_MANDADOS_RAI.sql"
+    },
+    {
+      "name": "E_MEDIDAPROTETIVA.sql",
+      "path": "extract_rai_oracle/E_MEDIDAPROTETIVA.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_rai_oracle/E_MEDIDAPROTETIVA.sql"
+    },
+    {
+      "name": "E_NATUREZA_RAI.sql",
+      "path": "extract_rai_oracle/E_NATUREZA_RAI.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_rai_oracle/E_NATUREZA_RAI.sql"
+    },
+    {
+      "name": "E_OBJETO.sql",
+      "path": "extract_rai_oracle/E_OBJETO.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_rai_oracle/E_OBJETO.sql"
+    },
+    {
+      "name": "E_OCORRENCIAINCENDIO.sql",
+      "path": "extract_rai_oracle/E_OCORRENCIAINCENDIO.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_rai_oracle/E_OCORRENCIAINCENDIO.sql"
+    },
+    {
+      "name": "E_OCORRENCIARESGATE.sql",
+      "path": "extract_rai_oracle/E_OCORRENCIARESGATE.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_rai_oracle/E_OCORRENCIARESGATE.sql"
+    },
+    {
+      "name": "E_OCORRENCIAS_FINALIZADAS.sql",
+      "path": "extract_rai_oracle/E_OCORRENCIAS_FINALIZADAS.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_rai_oracle/E_OCORRENCIAS_FINALIZADAS.sql"
+    },
+    {
+      "name": "E_OCORRENCIAS_TCO.sql",
+      "path": "extract_rai_oracle/E_OCORRENCIAS_TCO.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_rai_oracle/E_OCORRENCIAS_TCO.sql"
+    },
+    {
+      "name": "E_OCORRENCIA_ACAO_PREV.sql",
+      "path": "extract_rai_oracle/E_OCORRENCIA_ACAO_PREV.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_rai_oracle/E_OCORRENCIA_ACAO_PREV.sql"
+    },
+    {
+      "name": "E_OCORRENCIA_AMBIENTE.sql",
+      "path": "extract_rai_oracle/E_OCORRENCIA_AMBIENTE.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_rai_oracle/E_OCORRENCIA_AMBIENTE.sql"
+    },
+    {
+      "name": "E_OCORRENCIA_BS_ANIMAL.sql",
+      "path": "extract_rai_oracle/E_OCORRENCIA_BS_ANIMAL.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_rai_oracle/E_OCORRENCIA_BS_ANIMAL.sql"
+    },
+    {
+      "name": "E_OCORRENCIA_NATUREZA.sql",
+      "path": "extract_rai_oracle/E_OCORRENCIA_NATUREZA.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_rai_oracle/E_OCORRENCIA_NATUREZA.sql"
+    },
+    {
+      "name": "E_PESSOA.sql",
+      "path": "extract_rai_oracle/E_PESSOA.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_rai_oracle/E_PESSOA.sql"
+    },
+    {
+      "name": "E_PESSOACONHECIDA.sql",
+      "path": "extract_rai_oracle/E_PESSOACONHECIDA.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_rai_oracle/E_PESSOACONHECIDA.sql"
+    },
+    {
+      "name": "E_PESSOA_NATUREZA.sql",
+      "path": "extract_rai_oracle/E_PESSOA_NATUREZA.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_rai_oracle/E_PESSOA_NATUREZA.sql"
+    },
+    {
+      "name": "E_QUALIFICACAO_RAI.sql",
+      "path": "extract_rai_oracle/E_QUALIFICACAO_RAI.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_rai_oracle/E_QUALIFICACAO_RAI.sql"
+    },
+    {
+      "name": "E_TCO_STATUS_INTEGRACAO_RAI.sql",
+      "path": "extract_rai_oracle/E_TCO_STATUS_INTEGRACAO_RAI.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_rai_oracle/E_TCO_STATUS_INTEGRACAO_RAI.sql"
+    },
+    {
+      "name": "E_UNIDADE_DESTINO_RAI.sql",
+      "path": "extract_rai_oracle/E_UNIDADE_DESTINO_RAI.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_rai_oracle/E_UNIDADE_DESTINO_RAI.sql"
+    },
+    {
+      "name": "E_VITIMASAUTORES.sql",
+      "path": "extract_rai_oracle/E_VITIMASAUTORES.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_rai_oracle/E_VITIMASAUTORES.sql"
+    },
+    {
+      "name": "ODISSEU_RAI_CONSULTA_AUDITORIA.sql",
+      "path": "extract_rai_oracle/ODISSEU_RAI_CONSULTA_AUDITORIA.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_rai_oracle/ODISSEU_RAI_CONSULTA_AUDITORIA.sql"
+    },
+    {
+      "name": "ODISSEU_RAI_OCORRENCIAS_BM.sql",
+      "path": "extract_rai_oracle/ODISSEU_RAI_OCORRENCIAS_BM.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_rai_oracle/ODISSEU_RAI_OCORRENCIAS_BM.sql"
+    },
+    {
+      "name": "ODISSEU_RAI_OCORRENCIAS_RELATORIO_PC_VIOLENCIA_CONTRA_MULHER.sql",
+      "path": "extract_rai_oracle/ODISSEU_RAI_OCORRENCIAS_RELATORIO_PC_VIOLENCIA_CONTRA_MULHER.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_rai_oracle/ODISSEU_RAI_OCORRENCIAS_RELATORIO_PC_VIOLENCIA_CONTRA_MULHER.sql"
+    }
+  ],
+  "extract_scl_iml_oracle": [
+    {
+      "name": "E_PISP_IML_RAI.sql",
+      "path": "extract_scl_iml_oracle/E_PISP_IML_RAI.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_scl_iml_oracle/E_PISP_IML_RAI.sql"
+    },
+    {
+      "name": "E_SCL.sql",
+      "path": "extract_scl_iml_oracle/E_SCL.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_scl_iml_oracle/E_SCL.sql"
+    },
+    {
+      "name": "E_SCL_OP_PAZ.sql",
+      "path": "extract_scl_iml_oracle/E_SCL_OP_PAZ.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_scl_iml_oracle/E_SCL_OP_PAZ.sql"
+    }
+  ],
+  "extract_sicad_oracle": [
+    {
+      "name": "E_AFASTAMENTOS.sql",
+      "path": "extract_sicad_oracle/E_AFASTAMENTOS.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sicad_oracle/E_AFASTAMENTOS.sql"
+    },
+    {
+      "name": "E_ATA_SAUDE.sql",
+      "path": "extract_sicad_oracle/E_ATA_SAUDE.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sicad_oracle/E_ATA_SAUDE.sql"
+    },
+    {
+      "name": "E_CARACTERISTICAS_FISICAS.sql",
+      "path": "extract_sicad_oracle/E_CARACTERISTICAS_FISICAS.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sicad_oracle/E_CARACTERISTICAS_FISICAS.sql"
+    },
+    {
+      "name": "E_COMPORTAMENTO.sql",
+      "path": "extract_sicad_oracle/E_COMPORTAMENTO.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sicad_oracle/E_COMPORTAMENTO.sql"
+    },
+    {
+      "name": "E_CONDECORACAO.sql",
+      "path": "extract_sicad_oracle/E_CONDECORACAO.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sicad_oracle/E_CONDECORACAO.sql"
+    },
+    {
+      "name": "E_CURSO.sql",
+      "path": "extract_sicad_oracle/E_CURSO.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sicad_oracle/E_CURSO.sql"
+    },
+    {
+      "name": "E_DEPENDENTES.sql",
+      "path": "extract_sicad_oracle/E_DEPENDENTES.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sicad_oracle/E_DEPENDENTES.sql"
+    },
+    {
+      "name": "E_ELOGIO.sql",
+      "path": "extract_sicad_oracle/E_ELOGIO.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sicad_oracle/E_ELOGIO.sql"
+    },
+    {
+      "name": "E_EST_ORGANIZACIONAL_REAL.sql",
+      "path": "extract_sicad_oracle/E_EST_ORGANIZACIONAL_REAL.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sicad_oracle/E_EST_ORGANIZACIONAL_REAL.sql"
+    },
+    {
+      "name": "E_EXCLUSAO_PESSOAL.sql",
+      "path": "extract_sicad_oracle/E_EXCLUSAO_PESSOAL.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sicad_oracle/E_EXCLUSAO_PESSOAL.sql"
+    },
+    {
+      "name": "E_FUNCOES.sql",
+      "path": "extract_sicad_oracle/E_FUNCOES.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sicad_oracle/E_FUNCOES.sql"
+    },
+    {
+      "name": "E_GRAU_DE_INSTRUCAO.sql",
+      "path": "extract_sicad_oracle/E_GRAU_DE_INSTRUCAO.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sicad_oracle/E_GRAU_DE_INSTRUCAO.sql"
+    },
+    {
+      "name": "E_HISTORICO_UNIDADES.sql",
+      "path": "extract_sicad_oracle/E_HISTORICO_UNIDADES.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sicad_oracle/E_HISTORICO_UNIDADES.sql"
+    },
+    {
+      "name": "E_PESSOA_SICAD.sql",
+      "path": "extract_sicad_oracle/E_PESSOA_SICAD.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sicad_oracle/E_PESSOA_SICAD.sql"
+    },
+    {
+      "name": "E_PROMOCOES.sql",
+      "path": "extract_sicad_oracle/E_PROMOCOES.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sicad_oracle/E_PROMOCOES.sql"
+    },
+    {
+      "name": "E_PUNICOES.sql",
+      "path": "extract_sicad_oracle/E_PUNICOES.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sicad_oracle/E_PUNICOES.sql"
+    },
+    {
+      "name": "E_RELATORIO_ATA_SAUDE.sql",
+      "path": "extract_sicad_oracle/E_RELATORIO_ATA_SAUDE.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sicad_oracle/E_RELATORIO_ATA_SAUDE.sql"
+    },
+    {
+      "name": "E_RELATORIO_AVERBACOES.sql",
+      "path": "extract_sicad_oracle/E_RELATORIO_AVERBACOES.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sicad_oracle/E_RELATORIO_AVERBACOES.sql"
+    },
+    {
+      "name": "E_RESUMO_QUADRO_PGQ.sql",
+      "path": "extract_sicad_oracle/E_RESUMO_QUADRO_PGQ.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sicad_oracle/E_RESUMO_QUADRO_PGQ.sql"
+    },
+    {
+      "name": "E_TAF.sql",
+      "path": "extract_sicad_oracle/E_TAF.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sicad_oracle/E_TAF.sql"
+    },
+    {
+      "name": "E_TODOS_SERVIDORES_CORPORACOES.sql",
+      "path": "extract_sicad_oracle/E_TODOS_SERVIDORES_CORPORACOES.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sicad_oracle/E_TODOS_SERVIDORES_CORPORACOES.sql"
+    },
+    {
+      "name": "E_TRANSFERENCIA_UNIDADE.sql",
+      "path": "extract_sicad_oracle/E_TRANSFERENCIA_UNIDADE.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sicad_oracle/E_TRANSFERENCIA_UNIDADE.sql"
+    },
+    {
+      "name": "E_VEICULOS_SICAD.sql",
+      "path": "extract_sicad_oracle/E_VEICULOS_SICAD.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sicad_oracle/E_VEICULOS_SICAD.sql"
+    }
+  ],
+  "extract_spp_oracle": [
+    {
+      "name": "E_DELEGACIAS.sql",
+      "path": "extract_spp_oracle/E_DELEGACIAS.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_spp_oracle/E_DELEGACIAS.sql"
+    },
+    {
+      "name": "E_DELEGADO.sql",
+      "path": "extract_spp_oracle/E_DELEGADO.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_spp_oracle/E_DELEGADO.sql"
+    },
+    {
+      "name": "E_ESCRIVAO.sql",
+      "path": "extract_spp_oracle/E_ESCRIVAO.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_spp_oracle/E_ESCRIVAO.sql"
+    },
+    {
+      "name": "E_INQUERITO_SPP.sql",
+      "path": "extract_spp_oracle/E_INQUERITO_SPP.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_spp_oracle/E_INQUERITO_SPP.sql"
+    },
+    {
+      "name": "E_MOVIMENTACAO_SPP.sql",
+      "path": "extract_spp_oracle/E_MOVIMENTACAO_SPP.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_spp_oracle/E_MOVIMENTACAO_SPP.sql"
+    },
+    {
+      "name": "E_NATUREZA_SPP.sql",
+      "path": "extract_spp_oracle/E_NATUREZA_SPP.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_spp_oracle/E_NATUREZA_SPP.sql"
+    },
+    {
+      "name": "E_OCORRENCIA_SPP.sql",
+      "path": "extract_spp_oracle/E_OCORRENCIA_SPP.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_spp_oracle/E_OCORRENCIA_SPP.sql"
+    },
+    {
+      "name": "E_PARTES_SPP.sql",
+      "path": "extract_spp_oracle/E_PARTES_SPP.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_spp_oracle/E_PARTES_SPP.sql"
+    },
+    {
+      "name": "E_SPP.sql",
+      "path": "extract_spp_oracle/E_SPP.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_spp_oracle/E_SPP.sql"
+    }
+  ],
+  "extract_sptc_oracle": [
+    {
+      "name": "E_ARMAS_ODIN.sql",
+      "path": "extract_sptc_oracle/E_ARMAS_ODIN.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sptc_oracle/E_ARMAS_ODIN.sql"
+    },
+    {
+      "name": "E_DNA_SPTC.sql",
+      "path": "extract_sptc_oracle/E_DNA_SPTC.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sptc_oracle/E_DNA_SPTC.sql"
+    },
+    {
+      "name": "E_EXAMES_ANALISE_LABORATORIAL.sql",
+      "path": "extract_sptc_oracle/E_EXAMES_ANALISE_LABORATORIAL.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sptc_oracle/E_EXAMES_ANALISE_LABORATORIAL.sql"
+    },
+    {
+      "name": "E_EXAMES_CRIMINALISTICA.sql",
+      "path": "extract_sptc_oracle/E_EXAMES_CRIMINALISTICA.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sptc_oracle/E_EXAMES_CRIMINALISTICA.sql"
+    },
+    {
+      "name": "E_EXAMES_MEDICINA_LEGAL.sql",
+      "path": "extract_sptc_oracle/E_EXAMES_MEDICINA_LEGAL.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sptc_oracle/E_EXAMES_MEDICINA_LEGAL.sql"
+    },
+    {
+      "name": "E_LAUDOS_ANALISE_LABORATORIAL.sql",
+      "path": "extract_sptc_oracle/E_LAUDOS_ANALISE_LABORATORIAL.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sptc_oracle/E_LAUDOS_ANALISE_LABORATORIAL.sql"
+    },
+    {
+      "name": "E_LAUDOS_CRIMINALISTICA.sql",
+      "path": "extract_sptc_oracle/E_LAUDOS_CRIMINALISTICA.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sptc_oracle/E_LAUDOS_CRIMINALISTICA.sql"
+    },
+    {
+      "name": "E_LAUDOS_EXPEDIDOS.sql",
+      "path": "extract_sptc_oracle/E_LAUDOS_EXPEDIDOS.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sptc_oracle/E_LAUDOS_EXPEDIDOS.sql"
+    },
+    {
+      "name": "E_LAUDOS_MEDICINA_LEGAL.sql",
+      "path": "extract_sptc_oracle/E_LAUDOS_MEDICINA_LEGAL.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sptc_oracle/E_LAUDOS_MEDICINA_LEGAL.sql"
+    },
+    {
+      "name": "E_MEDICINA_LEGAL.sql",
+      "path": "extract_sptc_oracle/E_MEDICINA_LEGAL.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sptc_oracle/E_MEDICINA_LEGAL.sql"
+    },
+    {
+      "name": "E_PERICIAS_EXTERNAS.sql",
+      "path": "extract_sptc_oracle/E_PERICIAS_EXTERNAS.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sptc_oracle/E_PERICIAS_EXTERNAS.sql"
+    },
+    {
+      "name": "E_PERICIA_ANALISE_LABORATORIAL.sql",
+      "path": "extract_sptc_oracle/E_PERICIA_ANALISE_LABORATORIAL.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sptc_oracle/E_PERICIA_ANALISE_LABORATORIAL.sql"
+    },
+    {
+      "name": "E_PERICIA_CRIMINALISTICA.sql",
+      "path": "extract_sptc_oracle/E_PERICIA_CRIMINALISTICA.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sptc_oracle/E_PERICIA_CRIMINALISTICA.sql"
+    },
+    {
+      "name": "E_PERICIA_MEDICINA_LEGAL.sql",
+      "path": "extract_sptc_oracle/E_PERICIA_MEDICINA_LEGAL.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sptc_oracle/E_PERICIA_MEDICINA_LEGAL.sql"
+    },
+    {
+      "name": "E_PISP_ODIN_RAI.sql",
+      "path": "extract_sptc_oracle/E_PISP_ODIN_RAI.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sptc_oracle/E_PISP_ODIN_RAI.sql"
+    },
+    {
+      "name": "E_REQUISICOES_ABERTO.sql",
+      "path": "extract_sptc_oracle/E_REQUISICOES_ABERTO.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sptc_oracle/E_REQUISICOES_ABERTO.sql"
+    },
+    {
+      "name": "E_SPTC_OP_PAZ.sql",
+      "path": "extract_sptc_oracle/E_SPTC_OP_PAZ.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sptc_oracle/E_SPTC_OP_PAZ.sql"
+    },
+    {
+      "name": "E_SPTC_OP_PAZ_FULL.sql",
+      "path": "extract_sptc_oracle/E_SPTC_OP_PAZ_FULL.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sptc_oracle/E_SPTC_OP_PAZ_FULL.sql"
+    },
+    {
+      "name": "E_VESTIGIO_OCORRENCIA.sql",
+      "path": "extract_sptc_oracle/E_VESTIGIO_OCORRENCIA.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sptc_oracle/E_VESTIGIO_OCORRENCIA.sql"
+    },
+    {
+      "name": "ODISSEU_SPTC_SINAB_PERGUNTA7.sql",
+      "path": "extract_sptc_oracle/ODISSEU_SPTC_SINAB_PERGUNTA7.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_sptc_oracle/ODISSEU_SPTC_SINAB_PERGUNTA7.sql"
+    }
+  ],
+  "extract_veiculos_oracle": [
+    {
+      "name": "E_DETRAN.sql",
+      "path": "extract_veiculos_oracle/E_DETRAN.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_veiculos_oracle/E_DETRAN.sql"
+    },
+    {
+      "name": "E_FURTOROUBO.sql",
+      "path": "extract_veiculos_oracle/E_FURTOROUBO.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_veiculos_oracle/E_FURTOROUBO.sql"
+    },
+    {
+      "name": "E_INFRACAO_TRANSITO.sql",
+      "path": "extract_veiculos_oracle/E_INFRACAO_TRANSITO.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_veiculos_oracle/E_INFRACAO_TRANSITO.sql"
+    },
+    {
+      "name": "E_OCORRENCIAS_TRANSITO.sql",
+      "path": "extract_veiculos_oracle/E_OCORRENCIAS_TRANSITO.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_veiculos_oracle/E_OCORRENCIAS_TRANSITO.sql"
+    },
+    {
+      "name": "E_TIPO_VEICULO_VIATURA.sql",
+      "path": "extract_veiculos_oracle/E_TIPO_VEICULO_VIATURA.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_veiculos_oracle/E_TIPO_VEICULO_VIATURA.sql"
+    },
+    {
+      "name": "E_VEICULOS.sql",
+      "path": "extract_veiculos_oracle/E_VEICULOS.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_veiculos_oracle/E_VEICULOS.sql"
+    },
+    {
+      "name": "E_VEICULOS_ANALISE.sql",
+      "path": "extract_veiculos_oracle/E_VEICULOS_ANALISE.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_veiculos_oracle/E_VEICULOS_ANALISE.sql"
+    }
+  ],
+  "extract_viaturas_oracle": [
+    {
+      "name": "E_PATRIMONIO_ATUAL.sql",
+      "path": "extract_viaturas_oracle/E_PATRIMONIO_ATUAL.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_viaturas_oracle/E_PATRIMONIO_ATUAL.sql"
+    },
+    {
+      "name": "E_PATRIMONIO_ESCALA.sql",
+      "path": "extract_viaturas_oracle/E_PATRIMONIO_ESCALA.sql",
+      "raw_url": "https://gitlab.ssp.go.gov.br/ssp/bi/etl-oracle/-/raw/main/extract_viaturas_oracle/E_PATRIMONIO_ESCALA.sql"
+    }
+  ]
+}

@@ -1,0 +1,135 @@
+#!/usr/bin/env python3
+"""
+Scheduler exclusivo: PySQL + Evolution API
+
+Dispara apenas a rotina de relatórios PySQL (homicídios e feminicídios) e o envio
+via Evolution API. Não executa Status Qlik nem Envio Qlik.
+
+Comportamento:
+  - Envio 1x por dia. Histórico em pysql/historico_pysql_evolution.json.
+  - Horário preferido: PYSQL_SCHEDULER_HORA:MINUTO (padrão 08:00).
+  - Se o scheduler for iniciado após o horário e ainda não tiver enviado hoje,
+    dispara na próxima verificação (cumprindo 1x/dia mesmo fora do horário).
+  - Se já enviou hoje, aguarda o próximo dia.
+
+Uso:
+  python scheduler_pysql_evolution.py
+
+Variáveis de ambiente (opcional, no .env da raiz):
+  PYSQL_SCHEDULER_HORA   - Hora do dia para disparo (0-23). Padrão: 8
+  PYSQL_SCHEDULER_MINUTO - Minuto (0-59). Padrão: 0
+  PYSQL_SCHEDULER_INTERVALO_SEG - Intervalo de verificação em segundos. Padrão: 60
+"""
+
+import os
+import sys
+import time
+import subprocess
+from datetime import datetime
+from pathlib import Path
+
+# UTF-8 no Windows
+if os.name == "nt":
+    try:
+        os.system("chcp 65001 > nul")
+        if hasattr(sys.stdout, "reconfigure"):
+            sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
+PROJECT_ROOT = Path(__file__).resolve().parent
+sys.path.insert(0, str(PROJECT_ROOT))
+
+# Carrega .env da raiz para PYSQL_SCHEDULER_*
+try:
+    from dotenv import load_dotenv
+    load_dotenv(PROJECT_ROOT / ".env")
+except Exception:
+    pass
+
+HORA_PADRAO = int(os.getenv("PYSQL_SCHEDULER_HORA", "8"))
+MINUTO_PADRAO = int(os.getenv("PYSQL_SCHEDULER_MINUTO", "0"))
+INTERVALO_VERIFICACAO = int(os.getenv("PYSQL_SCHEDULER_INTERVALO_SEG", "60"))
+
+
+def executar_tarefa(script_path: str, descricao: str, timeout_seg: int = 10800) -> bool:
+    """
+    Executa um script Python com retry (até 3 tentativas).
+    timeout_seg: 3h por padrão para os relatórios PySQL.
+    """
+    for tentativa in range(3):
+        try:
+            print(f"   Executando {descricao} (tentativa {tentativa + 1}/3)...", flush=True)
+            result = subprocess.run(
+                [sys.executable, "-u", str(script_path)],
+                cwd=PROJECT_ROOT,
+                env={**os.environ, "PYTHONIOENCODING": "utf-8", "PYTHONUTF8": "1"},
+                capture_output=False,
+                timeout=timeout_seg,
+            )
+            if result.returncode == 0:
+                print(f"   OK {descricao}", flush=True)
+                return True
+            print(f"   Falhou {descricao} (código {result.returncode})", flush=True)
+        except subprocess.TimeoutExpired:
+            print(f"   Timeout {descricao}", flush=True)
+        except KeyboardInterrupt:
+            print(f"   Interrompido pelo usuário", flush=True)
+            return False
+        except Exception as e:
+            print(f"   Erro {descricao}: {e}", flush=True)
+    return False
+
+
+def rodar_pysql_evolution():
+    """Dispara o módulo send_pysql_evolution (executa scripts PySQL + envia via Evolution)."""
+    script = PROJECT_ROOT / "evolution_api" / "send_pysql_evolution.py"
+    if not script.exists():
+        print(f"   Script não encontrado: {script}", flush=True)
+        return False
+    return executar_tarefa(
+        script,
+        "PySQL + Envio Evolution API",
+        timeout_seg=10800,  # 3 horas
+    )
+
+
+def main():
+    from pysql.historico_pysql_evolution import data_ultimo_envio_sucesso, registrar_envio
+
+    print("=" * 60, flush=True)
+    print("Scheduler PySQL + Evolution API", flush=True)
+    print("=" * 60, flush=True)
+    print(f"   Disparo diário: 1x por dia (preferência {HORA_PADRAO:02d}:{MINUTO_PADRAO:02d})", flush=True)
+    print(f"   Se hoje ainda não enviou e já passou do horário → dispara na próxima verificação.", flush=True)
+    print(f"   Histórico: pysql/historico_pysql_evolution.json", flush=True)
+    print(f"   Verificação a cada {INTERVALO_VERIFICACAO}s | Ctrl+C para encerrar", flush=True)
+    print("=" * 60, flush=True)
+
+    try:
+        while True:
+            agora = datetime.now()
+            hoje = agora.date().isoformat()
+            ultima_data_envio = data_ultimo_envio_sucesso()
+
+            # Deve rodar se ainda não enviou hoje
+            ja_enviou_hoje = ultima_data_envio == hoje
+            horario_passou = (agora.hour, agora.minute) >= (HORA_PADRAO, MINUTO_PADRAO)
+
+            if not ja_enviou_hoje and horario_passou:
+                print(f"\n[{agora.strftime('%Y-%m-%d %H:%M:%S')}] Disparo: PySQL + Evolution (1x/dia)", flush=True)
+                sucesso = rodar_pysql_evolution()
+                registrar_envio(sucesso, agora)
+                if sucesso:
+                    print(f"   Concluído. Próximo envio: amanhã.", flush=True)
+                else:
+                    print(f"   Falha no fluxo PySQL/Evolution. Nova tentativa no próximo ciclo.", flush=True)
+
+            time.sleep(INTERVALO_VERIFICACAO)
+
+    except KeyboardInterrupt:
+        print("\nScheduler encerrado.", flush=True)
+
+
+if __name__ == "__main__":
+    main()
