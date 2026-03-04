@@ -41,14 +41,18 @@ except ImportError as e:
 load_dotenv(os.path.join(project_root, ".env"))
 load_dotenv()  # Sobrescreve com .env local do evolution_api se existir
 
-# Configurações da Evolution API
-evo_base_url = os.getenv("EVOLUTION_BASE_URL", "http://localhost:8080")
+# Configurações da Evolution API (URL resolvida por validação: localhost → hostname → IP)
+evo_base_url_raw = os.getenv("EVOLUTION_BASE_URL", "http://localhost:8080")
 evo_api_token = os.getenv("EVOLUTION_API_TOKEN")
 evo_instance_id = os.getenv("EVOLUTION_INSTANCE_NAME")
 evo_instance_token = os.getenv("EVOLUTION_INSTANCE_ID")
 # Suporte a múltiplos destinos (separados por quebra de linha ou vírgula)
 evo_grupo_raw = os.getenv("EVO_DESTINO_GRUPO", "")
 evo_destino_raw = os.getenv("EVO_DESTINO", "")
+# Grupo administrativo para notificação de erros (ex.: BI SSP)
+evo_grupo_admin = (os.getenv("EVO_GRUPO_ADMIN", "") or "").strip()
+if evo_grupo_admin and "@g.us" not in evo_grupo_admin:
+    evo_grupo_admin = ""
 
 # Processa múltiplos grupos (separa por quebras de linha ou vírgula)
 evo_grupos = []
@@ -110,6 +114,49 @@ evo_api_token = str(evo_api_token).strip()
 evo_instance_id = str(evo_instance_id).strip()
 evo_instance_token = str(evo_instance_token).strip()
 evo_grupo = str(evo_grupo).strip() if evo_grupo else ""
+
+# =============================================================================
+# VALIDAÇÃO DA URL DA EVOLUTION API (localhost → hostname → IP)
+# =============================================================================
+
+def _testar_url_evolution(base_url: str, timeout: int = 5) -> bool:
+    """Testa se a Evolution API responde na URL (qualquer resposta = servidor acessível)."""
+    try:
+        import requests
+        url = base_url.rstrip("/")
+        requests.get(url, timeout=timeout)
+        return True
+    except Exception:
+        return False
+
+
+def _resolver_evolution_base_url() -> str:
+    """
+    Tenta em ordem: URL do .env → localhost → URLs em EVOLUTION_FALLBACK_URLS (.env).
+    Não expõe IPs/hosts no código; fallback explícito apenas localhost.
+    """
+    candidatos = [
+        evo_base_url_raw.strip().rstrip("/"),
+        "http://localhost:8080",
+    ]
+    fallback_raw = os.getenv("EVOLUTION_FALLBACK_URLS", "").strip()
+    if fallback_raw:
+        for u in fallback_raw.replace(",", " ").split():
+            u = u.strip().rstrip("/")
+            if u and u not in candidatos:
+                candidatos.append(u)
+    for url in candidatos:
+        if _testar_url_evolution(url):
+            return url
+    return evo_base_url_raw.strip().rstrip("/")
+
+
+evo_base_url = _resolver_evolution_base_url()
+# Não expor URL (exceto localhost)
+if "localhost" in evo_base_url:
+    print("🔗 Evolution API: OK (localhost)", flush=True)
+else:
+    print("🔗 Evolution API: OK", flush=True)
 
 # =============================================================================
 # INICIALIZAÇÃO DO CLIENTE EVOLUTION
@@ -364,9 +411,6 @@ def to_whatsapp_jid(raw_number: str) -> str:
     if not (8 <= len(digits) <= 15):
         raise ValueError(f"Número fora do padrão E.164: {digits} (deve ter 8-15 dígitos)")
     
-    # Log para debug
-    print(f"🔢 Normalização E.164: {raw_number} → {digits}@s.whatsapp.net")
-    
     return f"{digits}@s.whatsapp.net"
 
 def is_session_error(response):
@@ -397,7 +441,7 @@ def warmup_group_session(group_jid, warmup_text="⏳ Preparando envio de relató
         bool: True se o aquecimento foi bem-sucedido
     """
     try:
-        print(f"🔥 Aquecendo sessão do grupo: {group_jid}")
+        print("🔥 Aquecendo sessão do grupo...")
         
         # Envia mensagem de aquecimento
         client.messages.send_text(
@@ -413,11 +457,11 @@ def warmup_group_session(group_jid, warmup_text="⏳ Preparando envio de relató
         import time
         time.sleep(3)
         
-        print(f"✅ Sessão do grupo aquecida: {group_jid}")
+        print("✅ Sessão do grupo aquecida")
         return True
         
     except Exception as e:
-        print(f"⚠️ Erro no aquecimento do grupo {group_jid}: {e}")
+        print(f"⚠️ Erro no aquecimento do grupo: {e}")
         return False
 
 # =============================================================================
@@ -491,19 +535,15 @@ def enviar_arquivo_para(destinatario, caminho_completo, max_retries=3):
             # Verifica se houve erro de sessão
             if is_session_error(response):
                 if attempt < max_retries - 1:
-                    print(f"⚠️ SessionError no grupo {jid_final}, tentativa {attempt + 1}/{max_retries}")
+                    print(f"⚠️ SessionError no grupo, tentativa {attempt + 1}/{max_retries}")
                     time.sleep(8)  # Aguarda mais tempo para a sessão se estabilizar
                     continue
                 else:
-                    print(f"❌ Falha após {max_retries} tentativas no grupo {jid_final}")
+                    print(f"❌ Falha após {max_retries} tentativas no grupo")
                     return False
             
-            print(f"📨 Enviado para {jid_final}: {nome_arquivo} | Resultado: {response}")
+            print(f"📨 Enviado: {nome_arquivo}")
             
-            # Log detalhado para debug
-            if isinstance(response, dict) and 'key' in response:
-                message_id = response['key'].get('id', 'N/A')
-                print(f"🔍 Debug - Message ID: {message_id}, JID: {jid_final}")
             
             return True
             
@@ -512,7 +552,7 @@ def enviar_arquivo_para(destinatario, caminho_completo, max_retries=3):
                 print(f"⚠️ Erro na tentativa {attempt + 1}/{max_retries}: {e}")
                 time.sleep(5)
             else:
-                print(f"❌ Erro ao enviar arquivo {nome_arquivo} para {jid_final}: {e}")
+                print(f"❌ Erro ao enviar arquivo {nome_arquivo}: {e}")
                 return False
     
     return False
@@ -546,11 +586,17 @@ def enviar_mensagem_texto(destinatario, texto):
             ),
             evo_instance_token
         )
-        print(f"✅ Mensagem de texto enviada para: {jid_final}")
+        if destinatario == evo_grupo_admin:
+            print("✅ Notificação enviada ao grupo administrativo", flush=True)
+        else:
+            print("✅ Mensagem de texto enviada")
         return True
     except Exception as e:
         import traceback
-        print(f"❌ Erro ao enviar mensagem de texto para {jid_final}: {e}")
+        if destinatario == evo_grupo_admin:
+            print("❌ Erro ao enviar notificação ao grupo administrativo", flush=True)
+        else:
+            print(f"❌ Erro ao enviar mensagem de texto: {e}")
         print(f"🔍 Traceback: {traceback.format_exc()}")
         return False
 
@@ -569,16 +615,14 @@ def enviar_para_todos_destinos(func, *args, **kwargs):
     # Combina todos os destinos (grupos + individuais)
     todos_destinos = evo_destinos + evo_grupos
     
-    print(f"📤 Enviando para {len(todos_destinos)} destino(s):")
-    for i, destino in enumerate(todos_destinos, 1):
-        print(f"   {i}. {destino}")
+    print(f"📤 Enviando para {len(todos_destinos)} destino(s)")
     
     sucessos = 0
     falhas = 0
     
     for destino in todos_destinos:
         if not destino:
-            print(f"⚠️ Destino não definido: {destino}")
+            print("⚠️ Destino não definido")
             falhas += 1
             continue
         
@@ -589,7 +633,7 @@ def enviar_para_todos_destinos(func, *args, **kwargs):
             else:
                 falhas += 1
         except Exception as e:
-            print(f"❌ Erro ao processar destino {destino}: {e}")
+            print(f"❌ Erro ao processar destino: {e}")
             falhas += 1
     
     estatisticas = {
@@ -600,6 +644,17 @@ def enviar_para_todos_destinos(func, *args, **kwargs):
     
     print(f"📊 Estatísticas: {sucessos} sucessos, {falhas} falhas de {len(todos_destinos)} destinos")
     return estatisticas
+
+
+def notificar_erro_admin(mensagem_erro: str) -> bool:
+    """Envia mensagem de erro ao grupo administrativo (EVO_GRUPO_ADMIN), sem expor dados sensíveis."""
+    if not evo_grupo_admin:
+        return False
+    try:
+        return enviar_mensagem_texto(evo_grupo_admin, mensagem_erro)
+    except Exception:
+        return False
+
 
 # =============================================================================
 # ENVIO DE RESUMOS DE TEMPOS
@@ -775,15 +830,7 @@ def main():
     print(f"📁 Pasta de logs de erro PySQL: {errorlogs_pysql_dir}")
     print(f"📁 Pasta de scripts PySQL: {pysql_dir}")
     
-    # Debug: mostra destinos carregados
-    print(f"\n📊 DESTINOS CONFIGURADOS:")
-    print(f"   📱 Destinos individuais ({len(evo_destinos)}):")
-    for i, destino in enumerate(evo_destinos, 1):
-        print(f"      {i}. {destino}")
-    print(f"   👥 Grupos ({len(evo_grupos)}):")
-    for i, grupo in enumerate(evo_grupos, 1):
-        print(f"      {i}. {grupo}")
-    print(f"   📊 Total de destinos: {len(evo_destinos) + len(evo_grupos)}")
+    print(f"\n📊 Destinos: {len(evo_destinos) + len(evo_grupos)} configurado(s)")
     
     try:
         print("\n" + "="*60)
@@ -827,13 +874,13 @@ def main():
             print("⚠️ Envio interrompido - continuando...")
             stats_erros = {'sucessos': 0, 'falhas': 1, 'total': 1}
         
-        # Calcula estatísticas totais
-        total_sucessos = (stats_resumos.get('sucessos', 0) + 
-                         stats_pdfs.get('sucessos', 0) + 
-                         stats_erros.get('sucessos', 0))
-        total_falhas = (stats_resumos.get('falhas', 0) + 
-                       stats_pdfs.get('falhas', 0) + 
-                       stats_erros.get('falhas', 0))
+        # Calcula estatísticas totais (stats_* podem ser None se pasta não existir)
+        total_sucessos = ((stats_resumos or {}).get('sucessos', 0) +
+                         (stats_pdfs or {}).get('sucessos', 0) +
+                         (stats_erros or {}).get('sucessos', 0))
+        total_falhas = ((stats_resumos or {}).get('falhas', 0) +
+                       (stats_pdfs or {}).get('falhas', 0) +
+                       (stats_erros or {}).get('falhas', 0))
         
         print(f"\n📊 ESTATÍSTICAS FINAIS:")
         print(f"   ✅ Sucessos: {total_sucessos}")
@@ -856,6 +903,12 @@ def main():
             print("\n✅ Processo PySQL finalizado com sucesso!")
         else:
             print(f"\n⚠️ Processo PySQL finalizado com {total_falhas} falha(s)")
+
+        # Nenhum envio bem-sucedido = falha: notifica admin e sai com código 1 (histórico marca erro)
+        if total_sucessos == 0:
+            msg = "⚠️ *PySQL + Evolution*: falha no envio. Nenhuma mensagem entregue aos destinos. Verifique conexão e logs."
+            notificar_erro_admin(msg)
+            sys.exit(1)
         
     except KeyboardInterrupt:
         print("\n⚠️ Processo interrompido pelo usuário")
@@ -867,7 +920,9 @@ def main():
         
     except Exception as e:
         print(f"\n❌ Erro: {e}")
-        print("🔄 Continuando...")
+        msg = f"⚠️ *PySQL + Evolution*: erro na execução. {str(e)[:200]}"
+        notificar_erro_admin(msg)
+        sys.exit(1)
 
 # =============================================================================
 # EXECUÇÃO DO SCRIPT

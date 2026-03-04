@@ -74,24 +74,67 @@ def data_ultimo_envio_sucesso() -> str | None:
     return envios_ok[-1].get("data")
 
 
+def _formatar_data_br(data_str: str) -> str:
+    """Converte YYYY-MM-DD para DD/MM/YYYY."""
+    try:
+        parts = data_str.split("-")
+        if len(parts) == 3:
+            return f"{parts[2]}/{parts[1]}/{parts[0]}"
+    except Exception:
+        pass
+    return data_str
+
+
 def texto_tempo_sem_intercorrencias() -> str:
     """
-    Lê o histórico e retorna texto para o resumo WhatsApp, ex.:
-    "Tempo sem intercorrências: 5 dias" ou "Nenhuma falha registrada"
+    Lê o histórico e retorna texto para o resumo WhatsApp:
+    - Sem falhas: "N dias consecutivos sem erros ou falhas"
+    - Com falha: "Do dia X até o dia da falha: K dias... 1 falha no dia D. Depois M dias consecutivos..."
     """
     data = _carregar()
+    envios = [e for e in data.get("envios", []) if e.get("sucesso")]
     ultima = data.get("ultima_intercorrencia")
+
     if not ultima:
-        return "Tempo sem intercorrências: nenhuma falha registrada."
+        # Nenhuma falha: contabiliza dias consecutivos de envios com sucesso
+        n = len(envios)
+        if n == 0:
+            return "Histórico: ainda sem envios registrados."
+        if n == 1:
+            return "1 dia consecutivo sem erros ou falhas."
+        return f"{n} dias consecutivos sem erros ou falhas."
+
     try:
         dt = datetime.fromisoformat(ultima.replace("Z", "+00:00"))
         if dt.tzinfo:
             dt = dt.replace(tzinfo=None)
-        dias = (datetime.now() - dt).days
-        if dias == 0:
-            return "Tempo sem intercorrências: desde hoje (após última falha)."
-        if dias == 1:
-            return "Tempo sem intercorrências: 1 dia."
-        return f"Tempo sem intercorrências: {dias} dias."
+        data_falha = dt.strftime("%Y-%m-%d")
+        data_falha_br = _formatar_data_br(data_falha)
     except Exception:
-        return "Tempo sem intercorrências: nenhuma falha registrada."
+        return "Histórico: falha ao ler data da última intercorrência."
+
+    # Envios antes da falha (data < data_falha)
+    envios_antes = [e for e in envios if e.get("data", "") < data_falha]
+    # Envios depois da falha (data > data_falha)
+    envios_depois = [e for e in envios if e.get("data", "") > data_falha]
+
+    k = len(envios_antes)
+    m = len(envios_depois)
+
+    if k > 0:
+        primeira_data = min(e["data"] for e in envios_antes)
+        primeira_br = _formatar_data_br(primeira_data)
+        parte1 = f"Do dia {primeira_br} até o dia da falha: {k} dias sem erros ou falhas."
+    else:
+        parte1 = "Nenhum envio antes da falha."
+
+    parte2 = f"1 falha registrada no dia {data_falha_br}."
+
+    if m == 0:
+        parte3 = "Ainda sem envios após a falha."
+    elif m == 1:
+        parte3 = "Depois 1 dia consecutivo sem erros ou falhas."
+    else:
+        parte3 = f"Depois {m} dias consecutivos sem erros ou falhas."
+
+    return f"{parte1} {parte2} {parte3}"
