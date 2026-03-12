@@ -78,6 +78,15 @@ if evo_destino_raw:
 evo_grupo = evo_grupos[0] if evo_grupos else ""
 evo_destino = evo_destinos[0] if evo_destinos else ""
 
+# Destino extra para esta execução (ex.: --enviar-para usado pelo webhook)
+evo_enviar_para_override = []
+for i, arg in enumerate(sys.argv):
+    if arg == "--enviar-para" and i + 1 < len(sys.argv):
+        jid = sys.argv[i + 1].strip()
+        if jid and jid not in evo_enviar_para_override:
+            evo_enviar_para_override.append(jid)
+        break
+
 # =============================================================================
 # CONFIGURAÇÃO DOS DIRETÓRIOS
 # =============================================================================
@@ -95,8 +104,8 @@ pastas_envio = [reports_pysql_dir, errorlogs_pysql_dir, img_reports_dir]
 # VALIDAÇÃO DAS CONFIGURAÇÕES
 # =============================================================================
 
-# Verifica se todas as variáveis obrigatórias estão definidas
-total_destinos = len(evo_grupos) + len(evo_destinos)
+# Verifica se todas as variáveis obrigatórias estão definidas (permite só --enviar-para)
+total_destinos = len(evo_grupos) + len(evo_destinos) + len(evo_enviar_para_override)
 if not all([evo_api_token, evo_instance_id, evo_instance_token]) or total_destinos == 0:
     print("❌ Variáveis de ambiente obrigatórias não definidas. Verifique o arquivo .env")
     print("📋 Variáveis necessárias:")
@@ -205,17 +214,20 @@ def verificar_dependencias_pysql():
 def executar_scripts_pysql():
     """
     Executa todos os scripts Python encontrados na pasta pysql/.
-    
+    Em caso de falha, grava stderr em errorlogs para envio posterior.
+
     Returns:
-        dict: Dicionário com resultados da execução de cada script
+        tuple: (dict resultados, list scripts_falharam)
     """
+    import time as _time
     print("🚀 Executando scripts PySQL...")
     
     resultados = {}
+    scripts_falharam = []
     
     if not os.path.exists(pysql_dir):
         print(f"⚠️ Pasta PySQL não encontrada: {pysql_dir}")
-        return resultados
+        return resultados, scripts_falharam
     
     # Lista apenas scripts de relatório (filtro por prefixo)
     scripts_python = [
@@ -225,11 +237,12 @@ def executar_scripts_pysql():
     
     if not scripts_python:
         print(f"📂 Nenhum script Python encontrado em {pysql_dir}")
-        return resultados
+        return resultados, scripts_falharam
     
     print(f"📄 Encontrados {len(scripts_python)} scripts Python")
     
-    # Executa cada script usando a mesma lógica da função de teste que funciona
+    os.makedirs(errorlogs_pysql_dir, exist_ok=True)
+    
     for i, script in enumerate(scripts_python, 1):
         script_path = os.path.join(pysql_dir, script)
         descricao = f"Script {script}"
@@ -249,7 +262,7 @@ def executar_scripts_pysql():
             try:
                 resultado = subprocess.run(
                     [sys.executable, script_path],
-                    capture_output=False,
+                    capture_output=True,
                     text=True,
                     encoding='utf-8',
                     errors='replace',
@@ -258,35 +271,55 @@ def executar_scripts_pysql():
                     timeout=60*60*3  # 3 horas timeout (10800 segundos)
                 )
                 
+                if resultado.stdout:
+                    print(resultado.stdout)
+                if resultado.stderr:
+                    print(resultado.stderr, file=sys.stderr)
+                
                 if resultado.returncode == 0:
                     print(f"✅ {descricao} executado com sucesso")
                     resultados[script] = f"Script {descricao} executado com sucesso (código {resultado.returncode})"
                 else:
                     print(f"⚠️ {descricao} retornou código {resultado.returncode}")
                     resultados[script] = f"Erro na execução de {descricao} (código {resultado.returncode})"
+                    scripts_falharam.append(script)
+                    # Grava log de erro para envio posterior
+                    nome_base = script.replace(".py", "")
+                    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+                    log_path = os.path.join(errorlogs_pysql_dir, f"pysql_{nome_base}_{ts}.txt")
+                    with open(log_path, "w", encoding="utf-8") as f:
+                        f.write(f"Script: {script}\nCódigo de saída: {resultado.returncode}\n\n")
+                        if resultado.stdout:
+                            f.write("=== STDOUT ===\n")
+                            f.write(resultado.stdout)
+                            f.write("\n")
+                        if resultado.stderr:
+                            f.write("=== STDERR ===\n")
+                            f.write(resultado.stderr)
+                    print(f"   📋 Log de erro salvo: {log_path}")
                     
             except KeyboardInterrupt:
                 print(f"⚠️ {descricao} foi interrompido pelo usuário - continuando...")
                 resultados[script] = f"Script {descricao} foi interrompido pelo usuário"
-                # Continua para o próximo script em vez de parar
+                scripts_falharam.append(script)
                 continue
                 
         except subprocess.TimeoutExpired:
             print(f"⏰ Timeout ao executar {descricao} (3 horas)")
             resultados[script] = f"Timeout ao executar {descricao} (3 horas)"
+            scripts_falharam.append(script)
         except Exception as e:
             import traceback
             print(f"❌ Erro ao executar {descricao}: {e}")
             print(f"🔍 Traceback: {traceback.format_exc()}")
             resultados[script] = f"Erro ao executar {descricao}: {str(e)}"
+            scripts_falharam.append(script)
         
-        # Aguarda um pouco entre execuções para não sobrecarregar
-        if i < len(scripts_python):  # Não aguarda após o último script
+        if i < len(scripts_python):
             print(f"⏳ Aguardando 3 segundos antes do próximo script...")
-            import time
-            time.sleep(3)
+            _time.sleep(3)
     
-    return resultados
+    return resultados, scripts_falharam
 
 # =============================================================================
 # ANÁLISE DE TEMPOS DE EXECUÇÃO
@@ -612,8 +645,8 @@ def enviar_para_todos_destinos(func, *args, **kwargs):
     Returns:
         dict: Estatísticas de envio {'sucessos': int, 'falhas': int, 'total': int}
     """
-    # Combina todos os destinos (grupos + individuais)
-    todos_destinos = evo_destinos + evo_grupos
+    # Combina todos os destinos (grupos + individuais + override ex. webhook)
+    todos_destinos = evo_destinos + evo_grupos + evo_enviar_para_override
     
     print(f"📤 Enviando para {len(todos_destinos)} destino(s)")
     
@@ -832,6 +865,8 @@ def main():
     
     print(f"\n📊 Destinos: {len(evo_destinos) + len(evo_grupos)} configurado(s)")
     
+    resultados_execucao = {}
+    scripts_falharam = []
     try:
         print("\n" + "="*60)
         print("🔍 VERIFICAÇÃO DE DEPENDÊNCIAS PYSQL")
@@ -842,10 +877,20 @@ def main():
         print("🔄 EXECUÇÃO DE SCRIPTS PYSQL")
         print("="*60)
         try:
-            resultados_execucao = executar_scripts_pysql()
+            resultados_execucao, scripts_falharam = executar_scripts_pysql()
         except KeyboardInterrupt:
             print("⚠️ Execução interrompida - continuando...")
             resultados_execucao = {"interrompido": "Execução interrompida"}
+            scripts_falharam = []
+        
+        # Aviso explícito quando um ou mais scripts falharam (evita mensagem sem PDF)
+        if scripts_falharam:
+            msg_falha = (
+                "⚠️ *Relatório PySQL*: um ou mais scripts falharam.\n"
+                "Scripts com erro: " + ", ".join(scripts_falharam) + "\n"
+                "Nenhum PDF foi gerado. Os logs de erro serão enviados em seguida."
+            )
+            enviar_para_todos_destinos(enviar_mensagem_texto, msg_falha)
         
         print("\n" + "="*60)
         print("📊 ENVIO DE RESUMOS DE TEMPOS")
@@ -899,13 +944,32 @@ def main():
         else:
             print("\n⚠️ Nenhum envio bem-sucedido - mantendo arquivos para reenvio")
         
-        if total_falhas == 0:
+        if total_falhas == 0 and not scripts_falharam:
             print("\n✅ Processo PySQL finalizado com sucesso!")
         else:
-            print(f"\n⚠️ Processo PySQL finalizado com {total_falhas} falha(s)")
+            if scripts_falharam:
+                print(f"\n⚠️ Processo PySQL finalizado com falhas: scripts com erro ({', '.join(scripts_falharam)})")
+            if total_falhas > 0:
+                print(f"\n⚠️ Processo PySQL: {total_falhas} falha(s) de envio.")
 
-        # Nenhum envio bem-sucedido = falha: notifica admin e sai com código 1 (histórico marca erro)
+        # Scripts falharam ou nenhum envio bem-sucedido: grava resumo para o scheduler, notifica admin e sai com código 1
+        if scripts_falharam:
+            try:
+                from pysql.historico_pysql_evolution import escrever_resumo_falha
+                escrever_resumo_falha(
+                    f"Scripts PySQL falharam: {', '.join(scripts_falharam)}. Nenhum PDF gerado (ex.: falha GitLab/repositório)."
+                )
+            except Exception:
+                pass
+            msg = f"⚠️ *PySQL + Evolution*: scripts com erro ({', '.join(scripts_falharam)}). Nenhum PDF gerado. Verifique os logs enviados."
+            notificar_erro_admin(msg)
+            sys.exit(1)
         if total_sucessos == 0:
+            try:
+                from pysql.historico_pysql_evolution import escrever_resumo_falha
+                escrever_resumo_falha("Falha no envio. Nenhuma mensagem entregue aos destinos.")
+            except Exception:
+                pass
             msg = "⚠️ *PySQL + Evolution*: falha no envio. Nenhuma mensagem entregue aos destinos. Verifique conexão e logs."
             notificar_erro_admin(msg)
             sys.exit(1)

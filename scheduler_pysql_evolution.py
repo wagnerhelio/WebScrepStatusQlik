@@ -15,6 +15,9 @@ Comportamento:
 Uso:
   python scheduler_pysql_evolution.py
 
+  Para orquestração completa (venv + ExecutionPolicy + Docker + registro webhook + scheduler), use:
+  .\\iniciar_pysql_evolution.ps1   ou   iniciar_pysql_evolution.bat
+
 Variáveis de ambiente (opcional, no .env da raiz):
   PYSQL_SCHEDULER_HORA   - Hora do dia para disparo (0-23). Padrão: 8
   PYSQL_SCHEDULER_MINUTO - Minuto (0-59). Padrão: 0
@@ -25,8 +28,10 @@ import os
 import sys
 import time
 import subprocess
+import queue
 from datetime import datetime
 from pathlib import Path
+from threading import Thread
 
 # UTF-8 no Windows
 if os.name == "nt":
@@ -50,6 +55,48 @@ except Exception:
 HORA_PADRAO = int(os.getenv("PYSQL_SCHEDULER_HORA", "8"))
 MINUTO_PADRAO = int(os.getenv("PYSQL_SCHEDULER_MINUTO", "0"))
 INTERVALO_VERIFICACAO = int(os.getenv("PYSQL_SCHEDULER_INTERVALO_SEG", "60"))
+WEBHOOK_PYSQL_ENABLED = os.getenv("WEBHOOK_PYSQL_ENABLED", "true").strip().lower() in ("1", "true", "yes")
+WEBHOOK_PYSQL_PORT = os.getenv("WEBHOOK_PYSQL_PORT", "5050").strip()
+EVOLUTION_BOT_NUMBER = (os.getenv("EVOLUTION_BOT_NUMBER") or "").strip().replace(" ", "")
+
+
+def _validar_webhook():
+    """Valida configuração do webhook; retorna (ok: bool, mensagem: str)."""
+    if not WEBHOOK_PYSQL_ENABLED:
+        return True, "desativado (WEBHOOK_PYSQL_ENABLED=false)"
+    try:
+        import flask  # noqa: F401
+    except ImportError:
+        return False, "Flask não instalado. Execute: pip install flask"
+    if not EVOLUTION_BOT_NUMBER or not EVOLUTION_BOT_NUMBER.isdigit():
+        return False, "EVOLUTION_BOT_NUMBER não definido ou inválido no .env (use só dígitos, ex.: 5562995071258)"
+    if len(EVOLUTION_BOT_NUMBER) < 10:
+        return False, "EVOLUTION_BOT_NUMBER deve ter pelo menos 10 dígitos (DDI + DDD + número)"
+    return True, "ok"
+
+
+def _iniciar_webhook_em_thread():
+    """Inicia o servidor webhook em thread para comando por WhatsApp (@robô)."""
+    ok, msg = _validar_webhook()
+    if not ok:
+        print(f"   Webhook PySQL: não iniciado ({msg})", flush=True)
+        return None
+    if msg != "ok":
+        print(f"   Webhook PySQL: {msg}", flush=True)
+        return None
+    try:
+        import evolution_api.webhook_pysql as webhook_mod
+        webhook_mod.RELATORIO_PEDIDO_QUEUE = queue.Queue()
+        from evolution_api.webhook_pysql import run_webhook_server
+        th = Thread(target=run_webhook_server, daemon=True)
+        th.start()
+        time.sleep(0.5)
+        print("   Webhook PySQL: ativo (comando por @ no WhatsApp)", flush=True)
+        print(f"   URL para registrar na Evolution: http://<SEU_IP>:{WEBHOOK_PYSQL_PORT}/webhook", flush=True)
+        return webhook_mod.RELATORIO_PEDIDO_QUEUE
+    except Exception as e:
+        print(f"   Webhook PySQL: não iniciado ({e})", flush=True)
+        return None
 
 
 def executar_tarefa(script_path: str, descricao: str, timeout_seg: int = 10800) -> bool:
@@ -94,8 +141,61 @@ def rodar_pysql_evolution():
     )
 
 
+def rodar_pysql_evolution_para_jid(remote_jid: str):
+    """Executa send_pysql_evolution com --enviar-para (pedido pelo webhook). Saída no console."""
+    script = PROJECT_ROOT / "evolution_api" / "send_pysql_evolution.py"
+    if not script.exists():
+        print(f"   Script não encontrado: {script}", flush=True)
+        return False
+    print(f"\n[webhook] Executando relatório PySQL sob demanda (destino: {remote_jid})", flush=True)
+    print("=" * 60, flush=True)
+    try:
+        result = subprocess.run(
+            [sys.executable, "-u", str(script), "--enviar-para", remote_jid],
+            cwd=PROJECT_ROOT,
+            env={**os.environ, "PYTHONIOENCODING": "utf-8", "PYTHONUTF8": "1", "PYTHONUNBUFFERED": "1"},
+            capture_output=False,
+            timeout=10800,
+        )
+        if result.returncode == 0:
+            print("=" * 60, flush=True)
+            print("[webhook] Relatório PySQL concluído com sucesso.", flush=True)
+            return True
+        print("=" * 60, flush=True)
+        print(f"[webhook] Relatório PySQL falhou (código {result.returncode}).", flush=True)
+        try:
+            from evolution_api.send_pysql_evolution import enviar_mensagem_texto
+            from evolution_api.webhook_pysql import MSG_ERRO
+            enviar_mensagem_texto(remote_jid, MSG_ERRO + f" (código {result.returncode})")
+        except Exception:
+            pass
+        return False
+    except subprocess.TimeoutExpired:
+        print("[webhook] Relatório PySQL: timeout.", flush=True)
+        try:
+            from evolution_api.send_pysql_evolution import enviar_mensagem_texto
+            from evolution_api.webhook_pysql import MSG_ERRO
+            enviar_mensagem_texto(remote_jid, MSG_ERRO + " (timeout)")
+        except Exception:
+            pass
+        return False
+    except Exception as e:
+        print(f"[webhook] Erro ao executar relatório: {e}", flush=True)
+        try:
+            from evolution_api.send_pysql_evolution import enviar_mensagem_texto
+            from evolution_api.webhook_pysql import MSG_ERRO
+            enviar_mensagem_texto(remote_jid, MSG_ERRO + f" ({str(e)[:80]})")
+        except Exception:
+            pass
+        return False
+
+
 def main():
-    from pysql.historico_pysql_evolution import data_ultimo_envio_sucesso, registrar_envio
+    from pysql.historico_pysql_evolution import (
+        data_ultimo_envio_sucesso,
+        registrar_envio,
+        ler_e_limpar_resumo_falha,
+    )
 
     print("=" * 60, flush=True)
     print("Scheduler PySQL + Evolution API", flush=True)
@@ -104,10 +204,22 @@ def main():
     print(f"   Se hoje ainda não enviou e já passou do horário → dispara na próxima verificação.", flush=True)
     print(f"   Histórico: pysql/historico_pysql_evolution.json", flush=True)
     print(f"   Verificação a cada {INTERVALO_VERIFICACAO}s | Ctrl+C para encerrar", flush=True)
+    relatorio_queue = _iniciar_webhook_em_thread()
     print("=" * 60, flush=True)
 
     try:
         while True:
+            # Pedidos de relatório pelo WhatsApp (executados no thread principal para logs no console)
+            if relatorio_queue is not None:
+                try:
+                    while not relatorio_queue.empty():
+                        jid = relatorio_queue.get_nowait()
+                        rodar_pysql_evolution_para_jid(jid)
+                except queue.Empty:
+                    pass
+                except Exception as e:
+                    print(f"[webhook] Erro ao processar fila de relatório: {e}", flush=True)
+
             agora = datetime.now()
             hoje = agora.date().isoformat()
             ultima_data_envio = data_ultimo_envio_sucesso()
@@ -119,7 +231,8 @@ def main():
             if not ja_enviou_hoje and horario_passou:
                 print(f"\n[{agora.strftime('%Y-%m-%d %H:%M:%S')}] Disparo: PySQL + Evolution (1x/dia)", flush=True)
                 sucesso = rodar_pysql_evolution()
-                registrar_envio(sucesso, agora)
+                resumo_falha = ler_e_limpar_resumo_falha() if not sucesso else None
+                registrar_envio(sucesso, agora, resumo_falha=resumo_falha)
                 if sucesso:
                     print(f"   Concluído. Próximo envio: amanhã.", flush=True)
                 else:

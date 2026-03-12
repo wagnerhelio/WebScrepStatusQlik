@@ -21,9 +21,9 @@ def fetch_sql_from_gitlab(
     Obtém o conteúdo de um arquivo SQL do repositório GitLab via API raw.
 
     Args:
-        file_path: Caminho do arquivo no repositório (ex: extract_odisseu_oracle/homicidios/homicidios.sql).
+        file_path: Caminho do arquivo no repositório (ex: extract_odisseu_oracle/relatorio_homicidios/homicidios.sql).
         base_url: URL base do GitLab (ex: https://gitlab.ssp.go.gov.br).
-        project: Caminho do projeto (ex: ssp/bi/etl-oracle). Use %2F para / na URL.
+        project: Caminho do projeto (ex: ssp/bi/odisseu-reports). Use %2F para / na URL.
         token: Private Token de acesso à API.
         branch: Branch (ex: main).
 
@@ -31,7 +31,7 @@ def fetch_sql_from_gitlab(
         Texto da SQL em UTF-8 ou None em caso de falha (rede, 404, etc.).
     """
     base_url = base_url.rstrip("/")
-    # GitLab API: project ID pode ser path URL-encoded (ex: ssp%2Fbi%2Fetl-oracle)
+    # GitLab API: project ID pode ser path URL-encoded (ex: ssp%2Fbi%2Fodisseu-reports)
     from urllib.parse import quote
 
     project_encoded = quote(project, safe="")
@@ -53,6 +53,12 @@ def fetch_sql_from_gitlab(
         raise RuntimeError(f"Falha ao acessar GitLab para {file_path}: {e.reason}") from e
 
     sql_text = body.decode("utf-8").strip()
+    # Proteção extra: se vier HTML (login), falha explicitamente
+    if sql_text.lstrip().lower().startswith("<!doctype html") or "<html" in sql_text[:200].lower():
+        raise RuntimeError(
+            "Conteúdo HTML recebido do GitLab em vez de SQL. "
+            "Verifique permissão do token e URL do projeto."
+        )
     if sql_text.endswith(";"):
         sql_text = sql_text[:-1].strip()
     return sql_text

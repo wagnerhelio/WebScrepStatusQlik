@@ -14,12 +14,33 @@ from pathlib import Path
 # Caminho do histórico (pysql/historico_pysql_evolution.json)
 SCRIPT_DIR = Path(__file__).resolve().parent
 ARQUIVO_HISTORICO = SCRIPT_DIR / "historico_pysql_evolution.json"
+ARQUIVO_RESUMO_FALHA = SCRIPT_DIR / "ultima_falha_resumo.txt"  # preenchido por send_pysql_evolution ao falhar; lido pelo scheduler
 MAX_REGISTROS_ENVIO = 365
+
+
+def escrever_resumo_falha(texto: str) -> None:
+    """Grava resumo da falha para o scheduler registrar no histórico."""
+    try:
+        ARQUIVO_RESUMO_FALHA.write_text((texto or "").strip(), encoding="utf-8")
+    except Exception:
+        pass
+
+
+def ler_e_limpar_resumo_falha() -> str | None:
+    """Lê o resumo da última falha (se existir) e remove o arquivo. Usado pelo scheduler."""
+    try:
+        if ARQUIVO_RESUMO_FALHA.exists():
+            texto = ARQUIVO_RESUMO_FALHA.read_text(encoding="utf-8").strip()
+            ARQUIVO_RESUMO_FALHA.unlink(missing_ok=True)
+            return texto or None
+    except Exception:
+        pass
+    return None
 
 
 def _carregar():
     """Carrega o arquivo de histórico. Retorna estrutura padrão se não existir."""
-    padrao = {"envios": [], "ultima_intercorrencia": None}
+    padrao = {"envios": [], "ultima_intercorrencia": None, "ultima_intercorrencia_resumo": None}
     if not ARQUIVO_HISTORICO.exists():
         return padrao
     try:
@@ -27,6 +48,7 @@ def _carregar():
             data = json.load(f)
         data.setdefault("envios", [])
         data.setdefault("ultima_intercorrencia", None)
+        data.setdefault("ultima_intercorrencia_resumo", None)
         return data
     except Exception:
         return padrao
@@ -39,11 +61,16 @@ def _salvar(data: dict) -> None:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 
-def registrar_envio(sucesso: bool, timestamp: datetime | None = None) -> None:
+def registrar_envio(
+    sucesso: bool,
+    timestamp: datetime | None = None,
+    resumo_falha: str | None = None,
+) -> None:
     """
     Chamado pelo scheduler após rodar o fluxo.
     - sucesso=True: adiciona entrada em envios e limpa ultima_intercorrencia.
     - sucesso=False: atualiza ultima_intercorrencia (não adiciona envio).
+      Se resumo_falha for informado (ou lido de arquivo pelo scheduler), grava em ultima_intercorrencia_resumo.
     """
     agora = timestamp or datetime.now()
     data = _carregar()
@@ -57,8 +84,13 @@ def registrar_envio(sucesso: bool, timestamp: datetime | None = None) -> None:
         if len(data["envios"]) > MAX_REGISTROS_ENVIO:
             data["envios"] = data["envios"][-MAX_REGISTROS_ENVIO:]
         data["ultima_intercorrencia"] = None
+        data["ultima_intercorrencia_resumo"] = None
     else:
         data["ultima_intercorrencia"] = agora.isoformat()
+        if resumo_falha and (resumo_falha := resumo_falha.strip()):
+            data["ultima_intercorrencia_resumo"] = resumo_falha
+        else:
+            data.setdefault("ultima_intercorrencia_resumo", None)
     _salvar(data)
 
 
@@ -128,7 +160,10 @@ def texto_tempo_sem_intercorrencias() -> str:
     else:
         parte1 = "Nenhum envio antes da falha."
 
+    resumo = (data.get("ultima_intercorrencia_resumo") or "").strip()
     parte2 = f"1 falha registrada no dia {data_falha_br}."
+    if resumo:
+        parte2 += f" Motivo: {resumo}"
 
     if m == 0:
         parte3 = "Ainda sem envios após a falha."
