@@ -17,36 +17,51 @@ $ErrorActionPreference = "Stop"
 $ProjectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $ProjectRoot
 
-Write-Host "============================================================" -ForegroundColor Cyan
-Write-Host " Orquestrador PySQL + Evolution API" -ForegroundColor Cyan
-Write-Host "============================================================" -ForegroundColor Cyan
+# 0) Garantir ambiente limpo: encerrar qualquer instancia anterior do fluxo PySQL+Evolution
+$pararScript = Join-Path $ProjectRoot "parar_pysql_evolution.ps1"
+if (Test-Path $pararScript) {
+    Write-Host "============================================================" -ForegroundColor Cyan
+    Write-Host " Orquestrador PySQL + Evolution API" -ForegroundColor Cyan
+    Write-Host "============================================================" -ForegroundColor Cyan
+    Write-Host "[0/6] Garantindo ambiente limpo (encerrando processos anteriores)..." -ForegroundColor Yellow
+    & $pararScript | Out-Host
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "      Aviso: parar_pysql_evolution retornou $LASTEXITCODE. Continuando." -ForegroundColor Yellow
+    } else {
+        Write-Host "      OK." -ForegroundColor Green
+    }
+} else {
+    Write-Host "============================================================" -ForegroundColor Cyan
+    Write-Host " Orquestrador PySQL + Evolution API" -ForegroundColor Cyan
+    Write-Host "============================================================" -ForegroundColor Cyan
+}
 
 # 1) ExecutionPolicy (só CurrentUser, sem elevação)
 try {
     $current = Get-ExecutionPolicy -Scope CurrentUser -ErrorAction SilentlyContinue
     if ($current -eq "Restricted" -or $current -eq "Undefined") {
-        Write-Host "[1/5] Ajustando politica de execucao (RemoteSigned, CurrentUser)..." -ForegroundColor Yellow
+        Write-Host "[1/6] Ajustando politica de execucao (RemoteSigned, CurrentUser)..." -ForegroundColor Yellow
         Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
         Write-Host "      OK." -ForegroundColor Green
     } else {
-        Write-Host "[1/5] Politica de execucao ja permitida para este usuario." -ForegroundColor Green
+        Write-Host "[1/6] Politica de execucao ja permitida para este usuario." -ForegroundColor Green
     }
 } catch {
-    Write-Host "[1/5] Aviso: nao foi possivel alterar ExecutionPolicy. Continuando..." -ForegroundColor Yellow
+    Write-Host "[1/6] Aviso: nao foi possivel alterar ExecutionPolicy. Continuando..." -ForegroundColor Yellow
 }
 
 # 2) Ativar venv
 $venvActivate = Join-Path $ProjectRoot ".venv\Scripts\Activate.ps1"
 if (-not (Test-Path $venvActivate)) {
-    Write-Host "[2/5] ERRO: venv nao encontrada em .venv\Scripts\Activate.ps1" -ForegroundColor Red
+    Write-Host "[2/6] ERRO: venv nao encontrada em .venv\Scripts\Activate.ps1" -ForegroundColor Red
     exit 1
 }
-Write-Host "[2/5] Ativando venv..." -ForegroundColor Yellow
+Write-Host "[2/6] Ativando venv..." -ForegroundColor Yellow
 . $venvActivate
 Write-Host "      OK." -ForegroundColor Green
 
 # 3) Docker: verificar e, se desligado, iniciar e aguardar
-Write-Host "[3/5] Verificando Docker..." -ForegroundColor Yellow
+Write-Host "[3/6] Verificando Docker..." -ForegroundColor Yellow
 $dockerOk = $false
 try {
     $null = docker info 2>&1
@@ -91,13 +106,13 @@ if (-not $dockerOk) {
 }
 
 # 4) Registrar webhook na Evolution (se .env tiver EVOLUTION_WEBHOOK_AUTO_REGISTER=true)
-Write-Host "[4/5] Verificando/registrando webhook na Evolution API..." -ForegroundColor Yellow
+Write-Host "[4/6] Verificando/registrando webhook na Evolution API..." -ForegroundColor Yellow
 & (Join-Path $ProjectRoot ".venv\Scripts\python.exe") (Join-Path $ProjectRoot "evolution_api\registrar_webhook.py")
 if ($LASTEXITCODE -ne 0) { Write-Host "      Aviso: registro do webhook falhou. Continuando." -ForegroundColor Yellow }
 else { Write-Host "      OK." -ForegroundColor Green }
 
 # 5) Rodar o scheduler (e webhook de comando por @ no WhatsApp, se habilitado)
-Write-Host "[5/5] Iniciando scheduler PySQL + Evolution (e webhook)..." -ForegroundColor Yellow
+Write-Host "[5/6] Iniciando scheduler PySQL + Evolution (e webhook)..." -ForegroundColor Yellow
 Write-Host "============================================================" -ForegroundColor Cyan
 & (Join-Path $ProjectRoot ".venv\Scripts\python.exe") (Join-Path $ProjectRoot "scheduler_pysql_evolution.py")
 exit $LASTEXITCODE

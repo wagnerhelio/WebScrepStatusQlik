@@ -211,15 +211,44 @@ def verificar_dependencias_pysql():
 
 
 
+def _is_progress_line(line):
+    """Detecta linha de barra de progresso dos scripts PySQL para reescrever na mesma linha."""
+    if not line or "%" not in line or "[" not in line or "]" not in line:
+        return False
+    # Formato: "       [#####-----] 10.0% (1.0s/99.8s)"
+    import re
+    return bool(re.search(r"\[[#\-]+\].*%\s*\(\d+\.?\d*s/", line))
+
+def _stream_subprocess_output(proc, stream, dest_handle, buffer_list):
+    """Lê stream do processo linha a linha, imprime em dest_handle e acumula em buffer_list.
+    Linhas de barra de progresso são reescritas na mesma linha (\\r) para não gerar uma linha por atualização."""
+    try:
+        for line in iter(stream.readline, ""):
+            buffer_list.append(line)
+            if _is_progress_line(line):
+                # Reescrever na mesma linha: \r + conteúdo (sem \n) + padding + \r
+                content = line.rstrip("\r\n")
+                padding = " " * max(0, 80 - len(content))
+                dest_handle.write("\r" + content + padding + "\r")
+            else:
+                dest_handle.write(line)
+            dest_handle.flush()
+    except (BrokenPipeError, OSError):
+        pass
+    finally:
+        stream.close()
+
+
 def executar_scripts_pysql():
     """
     Executa todos os scripts Python encontrados na pasta pysql/.
-    Em caso de falha, grava stderr em errorlogs para envio posterior.
+    Saída é exibida em tempo real; em caso de falha, grava stdout/stderr em errorlogs.
 
     Returns:
         tuple: (dict resultados, list scripts_falharam)
     """
     import time as _time
+    import threading
     print("🚀 Executando scripts PySQL...")
     
     resultados = {}
@@ -229,7 +258,6 @@ def executar_scripts_pysql():
         print(f"⚠️ Pasta PySQL não encontrada: {pysql_dir}")
         return resultados, scripts_falharam
     
-    # Lista apenas scripts de relatório (filtro por prefixo)
     scripts_python = [
         f for f in os.listdir(pysql_dir) 
         if f.endswith('.py') and f != '__init__.py' and f.startswith(('pysql_', 'report_'))
@@ -260,42 +288,60 @@ def executar_scripts_pysql():
             env['PYTHONUTF8'] = '1'
             
             try:
-                resultado = subprocess.run(
-                    [sys.executable, script_path],
-                    capture_output=True,
+                proc = subprocess.Popen(
+                    [sys.executable, "-u", script_path],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
                     text=True,
                     encoding='utf-8',
                     errors='replace',
                     cwd=project_root,
                     env=env,
-                    timeout=60*60*3  # 3 horas timeout (10800 segundos)
+                    bufsize=1,
                 )
+                out_buf, err_buf = [], []
+                t1 = threading.Thread(
+                    target=_stream_subprocess_output,
+                    args=(proc, proc.stdout, sys.stdout, out_buf),
+                    daemon=True,
+                )
+                t2 = threading.Thread(
+                    target=_stream_subprocess_output,
+                    args=(proc, proc.stderr, sys.stderr, err_buf),
+                    daemon=True,
+                )
+                t1.start()
+                t2.start()
+                try:
+                    returncode = proc.wait(timeout=60 * 60 * 3)
+                except subprocess.TimeoutExpired:
+                    proc.kill()
+                    proc.wait()
+                    returncode = -1
+                t1.join(timeout=2)
+                t2.join(timeout=2)
+                stdout_text = "".join(out_buf)
+                stderr_text = "".join(err_buf)
                 
-                if resultado.stdout:
-                    print(resultado.stdout)
-                if resultado.stderr:
-                    print(resultado.stderr, file=sys.stderr)
-                
-                if resultado.returncode == 0:
+                if returncode == 0:
                     print(f"✅ {descricao} executado com sucesso")
-                    resultados[script] = f"Script {descricao} executado com sucesso (código {resultado.returncode})"
+                    resultados[script] = f"Script {descricao} executado com sucesso (código {returncode})"
                 else:
-                    print(f"⚠️ {descricao} retornou código {resultado.returncode}")
-                    resultados[script] = f"Erro na execução de {descricao} (código {resultado.returncode})"
+                    print(f"⚠️ {descricao} retornou código {returncode}")
+                    resultados[script] = f"Erro na execução de {descricao} (código {returncode})"
                     scripts_falharam.append(script)
-                    # Grava log de erro para envio posterior
                     nome_base = script.replace(".py", "")
                     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
                     log_path = os.path.join(errorlogs_pysql_dir, f"pysql_{nome_base}_{ts}.txt")
                     with open(log_path, "w", encoding="utf-8") as f:
-                        f.write(f"Script: {script}\nCódigo de saída: {resultado.returncode}\n\n")
-                        if resultado.stdout:
+                        f.write(f"Script: {script}\nCódigo de saída: {returncode}\n\n")
+                        if stdout_text:
                             f.write("=== STDOUT ===\n")
-                            f.write(resultado.stdout)
+                            f.write(stdout_text)
                             f.write("\n")
-                        if resultado.stderr:
+                        if stderr_text:
                             f.write("=== STDERR ===\n")
-                            f.write(resultado.stderr)
+                            f.write(stderr_text)
                     print(f"   📋 Log de erro salvo: {log_path}")
                     
             except KeyboardInterrupt:

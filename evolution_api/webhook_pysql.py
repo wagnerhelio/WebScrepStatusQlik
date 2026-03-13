@@ -113,33 +113,31 @@ def _extrair_mentioned_jids(data):
 
 
 def _bot_foi_mencionado(data):
-    """Verifica se o número do robô foi mencionado ou se a mensagem é comando direto (DM)."""
+    """
+    Verifica se o comando foi dirigido ao robô.
+    - Em grupo: só aciona se o robô for marcado com @ (mentionedJid).
+    - Em DM (conversa 1:1 com o bot): aciona se o texto contiver 'relatório'/'relatorio'.
+    """
     if not EVOLUTION_BOT_NUMBER:
         return False
     bot_jid = f"{EVOLUTION_BOT_NUMBER}@s.whatsapp.net"
     mentioned = _extrair_mentioned_jids(data)
-    if bot_jid in mentioned:
-        return True
-    # DM: se remoteJid é o próprio bot (conversa 1:1 com o bot), qualquer mensagem pode ser comando
     key = data.get("key") or {}
-    remote = (key.get("remoteJid") or "").lower()
-    # Em DM o remoteJid é número@s.whatsapp.net; em grupo é xxx@g.us
+    remote = (key.get("remoteJid") or "").strip()
+
+    # Em grupo: exige que o robô tenha sido marcado (@NúmeroDoBI / @bot)
+    if remote.endswith("@g.us"):
+        return bot_jid in mentioned
+
+    # DM (1:1 com o bot): aciona se a mensagem for para o bot e contiver pedido de relatório
     if remote.endswith("@s.whatsapp.net"):
         digits_remote = re.sub(r"\D", "", remote)
         digits_bot = re.sub(r"\D", "", EVOLUTION_BOT_NUMBER)
-        if digits_remote == digits_bot:
-            return True
-    # Palavra-chave: "relatório" ou "relatorio" dispara sem precisar marcar @
-    texto = _extrair_texto(data).lower()
-    if "relatório" in texto or "relatorio" in texto:
-        # No grupo: só escrever "relatório" (ou "relatorio") já aciona o bot
-        if remote.endswith("@g.us"):
-            return True
-        # Em DM com o bot, "relatório" dispara a pergunta
-        if remote.endswith("@s.whatsapp.net"):
-            digits_remote = re.sub(r"\D", "", remote)
-            if digits_remote == re.sub(r"\D", "", EVOLUTION_BOT_NUMBER):
-                return True
+        if digits_remote != digits_bot:
+            return False
+        texto = _extrair_texto(data).lower()
+        return "relatório" in texto or "relatorio" in texto
+
     return False
 
 

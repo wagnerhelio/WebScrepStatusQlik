@@ -1,41 +1,11 @@
 {
   "envios": [
     {
-      "data": "2026-03-05",
-      "timestamp": "2026-03-05T08:42:44.751988",
+      "data": "2026-03-12",
+      "timestamp": "2026-03-12T10:28:10.089258",
       "sucesso": true
-    },
-    {
-      "data": "2026-03-06",
-      "timestamp": "2026-03-06T08:00:34.739628",
-      "sucesso": true
-    },
-    {
-      "data": "2026-03-07",
-      "timestamp": "2026-03-07T08:00:58.615964",
-      "sucesso": true
-    },
-    {
-      "data": "2026-03-08",
-      "timestamp": "2026-03-08T08:00:10.977717",
-      "sucesso": true
-    },
-    {
-      "data": "2026-03-09",
-      "timestamp": "2026-03-09T08:00:48.691811",
-      "sucesso": true
-    },
-    {
-      "data": "2026-03-10",
-      "timestamp": "2026-03-10T08:00:15.384161",
-      "sucesso": true
-    },
-    {
-      "data": "2026-03-11",
-      "timestamp": "2026-03-11T08:00:36.183583",
-      "sucesso": true
-    },
+    }
   ],
-  "ultima_intercorrencia": "2026-03-12T08:00:30.410301",
-  "ultima_intercorrencia_resumo": "Falha ao carregar SQL do GitLab (diretório/repositório). Scripts não geraram PDF."
+  "ultima_intercorrencia": null,
+  "ultima_intercorrencia_resumo": null
 }
