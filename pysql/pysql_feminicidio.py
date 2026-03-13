@@ -769,8 +769,8 @@ pdf.set_text_color(0, 0, 0)  # Preto
 titulo_homicidio_todos_anos = f'Feminicídios comparativo por ano :'
 pdf.cell(0, 10, titulo_homicidio_todos_anos, ln=1, align='L')
 
-# Cabeçalho da tabela de meses/anos (com coluna TOTAL); larguras reduzidas e centralizadas na A4
-col_widths_homicidio_todos_anos = [14] + [10]*12 + [12]  # ANO + 12 meses + TOTAL
+# Cabeçalho da tabela de meses/anos (TOTAL + ÍNDICE POR 100K HAB.); coluna ÍNDICE mais larga para caber o texto
+col_widths_homicidio_todos_anos = [14] + [10]*12 + [12] + [30]  # ANO + 12 meses + TOTAL + ÍNDICE POR 100K HAB.
 largura_total_tabela = sum(col_widths_homicidio_todos_anos)
 pagina_largura_util = 190
 x_inicio_tabela = pdf.l_margin + (pagina_largura_util - largura_total_tabela) / 2
@@ -779,9 +779,10 @@ pdf.set_font('Arial', 'B', 7)
 pdf.set_fill_color(230, 230, 230)
 pdf.set_draw_color(0, 0, 0)
 pdf.set_text_color(0, 0, 0)
+altura_cabecalho_todos_anos = 7
 for i, col in enumerate(colunas_homicidio_todos_anos):
-    pdf.cell(col_widths_homicidio_todos_anos[i], 6, str(col).upper(), 1, 0, 'C', fill=True)
-pdf.cell(col_widths_homicidio_todos_anos[-1], 6, 'TOTAL', 1, 0, 'C', fill=True)
+    cabecalho = 'ÍNDICE POR 100K HAB.' if (i == len(colunas_homicidio_todos_anos) - 1 and str(col).upper() == 'INDICE_100K') else str(col).upper()
+    pdf.cell(col_widths_homicidio_todos_anos[i], altura_cabecalho_todos_anos, cabecalho, 1, 0, 'C', fill=True)
 pdf.ln()
 
 # Dados da tabela de meses/anos
@@ -790,7 +791,7 @@ pdf.set_text_color(0, 0, 0)  # Preto para texto
 def safe_str_homicidio_todos_anos(item):
     return str(item) if item is not None else ''
 
-# Adiciona zebragem (alternância de cores de fundo)
+# Adiciona zebragem (alternância de cores de fundo); última coluna = ÍNDICE POR 100K HAB. sem %
 for idx, linha in enumerate(linhas_homicidio_todos_anos):
     pdf.set_x(x_inicio_tabela)
     if idx % 2 == 0:
@@ -798,9 +799,15 @@ for idx, linha in enumerate(linhas_homicidio_todos_anos):
     else:
         pdf.set_fill_color(240, 240, 245)
     for i, item in enumerate(linha):
-        pdf.cell(col_widths_homicidio_todos_anos[i], 6, safe_str_homicidio_todos_anos(item), 1, 0, 'C', fill=True)
-    total_linha = sum(int(linha[i]) if linha[i] is not None else 0 for i in range(1, 13))
-    pdf.cell(col_widths_homicidio_todos_anos[-1], 6, str(total_linha), 1, 0, 'C', fill=True)
+        if i == len(linha) - 1 and item is not None:
+            try:
+                n = float(item)
+                texto = f'{n:.2f}'.replace('.', ',')
+            except (TypeError, ValueError):
+                texto = safe_str_homicidio_todos_anos(item)
+        else:
+            texto = safe_str_homicidio_todos_anos(item)
+        pdf.cell(col_widths_homicidio_todos_anos[i], 6, texto, 1, 0, 'C', fill=True)
     pdf.ln()
 
 pdf.set_font('Arial', 'I', 9)
