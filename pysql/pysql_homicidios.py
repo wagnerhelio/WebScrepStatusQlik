@@ -371,7 +371,7 @@ ano_anterior = ano_atual - 1
 
 # Textos de rodapé de período (utilizado na consulta): do dia 01/01/YYYY até DD/MM/YYYY HH:MM:SS
 texto_periodo_ate_hoje = f"De 01/01/{ano_atual} até {hoje.strftime('%d/%m/%Y %H:%M:%S')}"
-texto_periodo_ate_ontem = f"De 01/01/{ano_atual} até {hoje.strftime('%d/%m/%Y %H:%M:%S')}"
+texto_periodo_ate_ontem = f"De 01/01/{ano_atual} até {ontem_data}"
 # Período anterior (sem hora): 01/01/ano_anterior até ontem
 texto_periodo_anterior = f"De 01/01/{ano_anterior} até {ontem_data}"
 
@@ -442,6 +442,11 @@ pdf.set_font('Arial', 'B', 28)
 pdf.set_text_color(30, 80, 160)
 pdf.set_x(kpi_x)
 pdf.cell(0, 15, str(homicidios_hoje), ln=1, align='C')
+# legenda período (dia atual com hora)
+pdf.set_font('Arial', 'I', 8)
+pdf.set_text_color(0, 0, 0)
+pdf.set_x(kpi_x)
+pdf.cell(0, 6, texto_periodo_ate_hoje, ln=1, align='L')
 
 #titulo kpi homicidios em mes
 pdf.set_font('Arial', '', 12)
@@ -454,13 +459,18 @@ pdf.set_font('Arial', 'B', 28)
 pdf.set_text_color(30, 80, 160)
 pdf.set_x(kpi_x)
 pdf.cell(0, 15, str(homicidios_mes), ln=1, align='C')
+# legenda período (dia atual com hora)
+pdf.set_font('Arial', 'I', 8)
+pdf.set_text_color(0, 0, 0)
+pdf.set_x(kpi_x)
+pdf.cell(0, 6, texto_periodo_ate_hoje, ln=1, align='L')
 
  # Y final após os KPIs (usado para posicionar o próximo bloco abaixo do mais baixo)
 kpi_end_y = pdf.get_y()
 
 # ------------------------------------------------- TABELA DE REGIAO - COMPARATIVO MENSAL ATUAL E ACUMULADO -------------------------------------------------
-# Posiciona abaixo do bloco mais baixo (caixa à esquerda ou KPIs à direita)
-y_after_header = max(caixa_y + caixa_h, kpi_end_y) - 4   
+# Posiciona abaixo do bloco mais baixo (caixa à esquerda ou KPIs à direita), com espaço para não grudar
+y_after_header = max(caixa_y + caixa_h, kpi_end_y) + 8
 pdf.set_xy(pdf.l_margin, y_after_header)
 
 columns_regiao_observatorio_atualizada = [
@@ -472,23 +482,9 @@ columns_regiao_observatorio_atualizada = [
     f"Acumulado Jan a {mes_atual} {ano_anterior} (até dia {dia_atual})",
     f"Acumulado Jan a {mes_atual} {ano_atual} (até dia {dia_atual})",
     "%",
-    "Índice por 100K hab."
 ]
 
 columns_regiao_observatorio, rows_regiao_observatorio = resultados["Homicídios Comparativo por Regiões dia atual"]
-
-def _fmt_indice_100k(row, i, item):
-    """Se coluna 8 veio como população da SQL, exibe taxa por 100k (homicídios*100000/pop)."""
-    if i != 8 or item is None or len(row) <= 6:
-        return safe_str(item)
-    try:
-        v = float(item)
-        if v > 1000:
-            hom = float(row[6]) if row[6] is not None else 0
-            return str(round((hom * 100000) / v, 2)) if v else safe_str(item)
-    except (ValueError, TypeError):
-        pass
-    return safe_str(item)
 
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
@@ -496,7 +492,7 @@ pdf.set_text_color(0, 0, 0)  # Preto
 titulo_regiao_observatorio = f'Homicídios por regiões - comparativo dia atual e acumulado :'
 pdf.cell(0, 10, titulo_regiao_observatorio, ln=1, align='L')
 
-col_widths_regiao_observatorio = [25, 20, 20, 20, 15, 23, 23, 15, 23]  # 9 colunas
+col_widths_regiao_observatorio = [25, 20, 20, 20, 15, 23, 23, 15]  # 8 colunas (sem Índice 100K)
 # Cabeçalho da tabela de regiões observatório (ajustado para quebra de linha, altura uniforme)
 pdf.set_font('Arial', 'B', 7)
 pdf.set_fill_color(230, 230, 230)
@@ -556,7 +552,7 @@ for row in rows_regiao_observatorio:
             pdf.set_fill_color(255, 255, 255)  # reset do background
             pdf.set_text_color(0, 0, 0)  # reset do texto
         else:
-            pdf.cell(col_widths_regiao_observatorio[i], 6, _fmt_indice_100k(row, i, item), 1, 0, 'C')
+            pdf.cell(col_widths_regiao_observatorio[i], 6, safe_str(item), 1, 0, 'C')
     pdf.ln()
 
 # Calcula e adiciona linha de TOTAL
@@ -576,13 +572,11 @@ if rows_regiao_observatorio:
                 except (ValueError, TypeError):
                     pass  # Ignora valores não numéricos
     
-    # Cria linha de total (col 8 = Índice 100K: total = acumulado*100000/pop_total)
+    # Cria linha de total
     linha_total = ["GOIÁS"]
     for i in range(1, len(totais)):
         if i in [4, 7]:  # Colunas de porcentagem
             linha_total.append(f"{totais[i]:.2f}")
-        elif i == 8 and totais[8] > 1000:
-            linha_total.append(str(round((totais[6] * 100000) / totais[8], 2)))
         else:  # Colunas numéricas
             linha_total.append(str(totais[i]))
     
@@ -747,8 +741,39 @@ pdf.set_text_color(0, 0, 0)  # Preto
 titulo_homicidio_todos_anos = f'Homicidios comparativo por ano :'
 pdf.cell(0, 10, titulo_homicidio_todos_anos, ln=1, align='L')
 
-# Cabeçalho da tabela de meses/anos (com coluna TOTAL); larguras reduzidas para caber na A4 e centralizar
-col_widths_homicidio_todos_anos = [14] + [10]*12 + [12]  # ANO + 12 meses + TOTAL
+# Gráfico de linha: total de homicídios por ano (dados da tabela comparativo por ano)
+col_total = 'TOTAL' if (not df_homicidio_todos_anos.empty and 'TOTAL' in df_homicidio_todos_anos.columns) else 'total'
+if not df_homicidio_todos_anos.empty and col_total in df_homicidio_todos_anos.columns:
+    col_ano = 'ANO_FATO' if 'ANO_FATO' in df_homicidio_todos_anos.columns else 'ano_fato'
+    if col_ano in df_homicidio_todos_anos.columns:
+        df_graf = df_homicidio_todos_anos[[col_ano, col_total]].copy()
+        df_graf[col_ano] = df_graf[col_ano].astype(int)
+        df_graf[col_total] = df_graf[col_total].fillna(0).astype(int)
+        df_graf = df_graf.sort_values(col_ano)
+        anos_graf = df_graf[col_ano].tolist()
+        totais_graf = df_graf[col_total].tolist()
+        plt.figure(figsize=(10, 2.0))
+        sns.lineplot(x=anos_graf, y=totais_graf, marker='o', color='#2e86ab')
+        for i, v in enumerate(totais_graf):
+            if v is not None and int(v) >= 0:
+                plt.text(anos_graf[i], v, str(int(v)), ha='center', va='bottom', fontsize=8, bbox=dict(facecolor='white', alpha=0.8, edgecolor='none'))
+        plt.ylabel('Total homicídios')
+        plt.xlabel('Ano')
+        plt.yticks([])
+        plt.tight_layout()
+        try:
+            grafico_todos_anos_path = os.path.join(relatorio_dir, 'grafico_homicidio_todos_anos_total.png')
+            plt.savefig(grafico_todos_anos_path, dpi=150, bbox_inches='tight')
+        except Exception as e:
+            print(f"Erro ao salvar gráfico total por ano: {e}")
+        plt.close()
+        pdf.ln(1)
+        if os.path.exists(os.path.join(relatorio_dir, 'grafico_homicidio_todos_anos_total.png')):
+            pdf.image(os.path.join(relatorio_dir, 'grafico_homicidio_todos_anos_total.png'), x=5, w=200)
+        pdf.ln(2)
+
+# Cabeçalho da tabela de meses/anos (TOTAL + ÍNDICE POR 100K HAB.); larguras reduzidas para caber na A4 e centralizar
+col_widths_homicidio_todos_anos = [14] + [10]*12 + [12] + [14]  # ANO + 12 meses + TOTAL + ÍNDICE POR 100K HAB.
 largura_total_tabela = sum(col_widths_homicidio_todos_anos)
 pagina_largura_util = 190
 x_inicio_tabela = pdf.l_margin + (pagina_largura_util - largura_total_tabela) / 2
@@ -758,8 +783,8 @@ pdf.set_fill_color(230, 230, 230)
 pdf.set_draw_color(0, 0, 0)
 pdf.set_text_color(0, 0, 0)
 for i, col in enumerate(colunas_homicidio_todos_anos):
-    pdf.cell(col_widths_homicidio_todos_anos[i], 6, str(col).upper(), 1, 0, 'C', fill=True)
-pdf.cell(col_widths_homicidio_todos_anos[-1], 6, 'TOTAL', 1, 0, 'C', fill=True)
+    cabecalho = 'ÍNDICE POR 100K HAB.' if (i == len(colunas_homicidio_todos_anos) - 1 and str(col).upper() == 'INDICE_100K') else str(col).upper()
+    pdf.cell(col_widths_homicidio_todos_anos[i], 6, cabecalho, 1, 0, 'C', fill=True)
 pdf.ln()
 
 # Dados da tabela de meses/anos
@@ -768,7 +793,16 @@ pdf.set_text_color(0, 0, 0)  # Preto para texto
 def safe_str_homicidio_todos_anos(item):
     return str(item) if item is not None else ''
 
-# Adiciona zebragem (alternância de cores de fundo)
+# Adiciona zebragem (alternância de cores de fundo); última coluna = ÍNDICE POR 100K HAB. com %
+def fmt_indice_100k_pct(val):
+    if val is None:
+        return ''
+    try:
+        n = float(val)
+        return f'{n:.2f}'.replace('.', ',') + '%'
+    except (TypeError, ValueError):
+        return str(val) if val is not None else ''
+
 for idx, linha in enumerate(linhas_homicidio_todos_anos):
     pdf.set_x(x_inicio_tabela)
     if idx % 2 == 0:
@@ -776,9 +810,11 @@ for idx, linha in enumerate(linhas_homicidio_todos_anos):
     else:
         pdf.set_fill_color(240, 240, 245)
     for i, item in enumerate(linha):
-        pdf.cell(col_widths_homicidio_todos_anos[i], 6, safe_str_homicidio_todos_anos(item), 1, 0, 'C', fill=True)
-    total_linha = sum(int(linha[i]) if linha[i] is not None else 0 for i in range(1, 13))
-    pdf.cell(col_widths_homicidio_todos_anos[-1], 6, str(total_linha), 1, 0, 'C', fill=True)
+        if i == len(linha) - 1:
+            texto = fmt_indice_100k_pct(item)
+        else:
+            texto = safe_str_homicidio_todos_anos(item)
+        pdf.cell(col_widths_homicidio_todos_anos[i], 6, texto, 1, 0, 'C', fill=True)
     pdf.ln()
 
 pdf.set_font('Arial', 'I', 9)
@@ -899,17 +935,17 @@ for ano, row in df_tab.iterrows():
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, texto_periodo_ate_ontem, ln=1, align='L')
 
-# ------------------------------------------------- TABELA DE REGIAO - COMPARATIVO MENSAL E ACUMULADO -------------------------------------------------
+# ------------------------------------------------- TABELA DE REGIAO - COMPARATIVO MENSAL E ACUMULADO (DIA ANTERIOR) -------------------------------------------------
+# Na virada do mês (ex: 1º mar), dados são do mês de ontem (fev); rótulos usam mes_ontem para bater com a SQL
 columns_regiao_observatorio_atualizada = [
     "REGIÃO",
     f"{mes_atual}/{ano_anterior} (fechado)",
-    f"{mes_atual}/{ano_anterior} (até dia {dia_ontem})",
-    f"{mes_atual}/{ano_atual} (até dia {dia_ontem})",
+    f"{mes_ontem}/{ano_anterior} (até dia {dia_ontem})",
+    f"{mes_ontem}/{ano_atual} (até dia {dia_ontem})",
     "%",
-    f"Acumulado Jan a {mes_atual} {ano_anterior} (até dia {dia_ontem})",
-    f"Acumulado Jan a {mes_atual} {ano_atual} (até dia {dia_ontem})",
+    f"Acumulado Jan a {mes_ontem} {ano_anterior} (até dia {dia_ontem})",
+    f"Acumulado Jan a {mes_ontem} {ano_atual} (até dia {dia_ontem})",
     "%",
-    "Índice por 100K hab."
 ]
 
 columns_regiao_observatorio, rows_regiao_observatorio = resultados["Homicídios Comparativo por Regiões dia anterior"]
@@ -923,7 +959,7 @@ pdf.set_text_color(0, 0, 0)  # Preto
 titulo_regiao_observatorio = f'Homicídios por regiões comparativo dia anterior e acumulado :'
 pdf.cell(0, 10, titulo_regiao_observatorio, ln=1, align='L')
 
-col_widths_regiao_observatorio = [25, 20, 20, 20, 15, 23, 23, 15, 23]  # 9 colunas
+col_widths_regiao_observatorio = [25, 20, 20, 20, 15, 23, 23, 15]  # 8 colunas (sem Índice 100K)
 # Cabeçalho da tabela de regiões observatório (ajustado para quebra de linha, altura uniforme)
 pdf.set_font('Arial', 'B', 7)
 pdf.set_fill_color(230, 230, 230)
@@ -983,7 +1019,7 @@ for row in rows_regiao_observatorio:
             pdf.set_fill_color(255, 255, 255)  # reset do background
             pdf.set_text_color(0, 0, 0)  # reset do texto
         else:
-            pdf.cell(col_widths_regiao_observatorio[i], 6, _fmt_indice_100k(row, i, item), 1, 0, 'C')
+            pdf.cell(col_widths_regiao_observatorio[i], 6, safe_str(item), 1, 0, 'C')
     pdf.ln()
 
 # Calcula e adiciona linha de TOTAL
@@ -1003,13 +1039,11 @@ if rows_regiao_observatorio:
                 except (ValueError, TypeError):
                     pass  # Ignora valores não numéricos
     
-    # Cria linha de total (col 8 = Índice 100K)
+    # Cria linha de total
     linha_total = ["GOIÁS"]
     for i in range(1, len(totais)):
         if i in [4, 7]:  # Colunas de porcentagem
             linha_total.append(f"{totais[i]:.2f}")
-        elif i == 8 and totais[8] > 1000:
-            linha_total.append(str(round((totais[6] * 100000) / totais[8], 2)))
         else:  # Colunas numéricas
             linha_total.append(str(totais[i]))
     
@@ -1036,6 +1070,10 @@ if rows_regiao_observatorio:
             pdf.cell(col_widths_regiao_observatorio[i], 6, safe_str(item), 1, 0, 'C')
     pdf.ln()
     pdf.set_font('Arial', '', 7)  # Volta para fonte normal
+
+# Legenda período dia anterior (sem hora)
+pdf.set_font('Arial', 'I', 9)
+pdf.cell(0, 8, texto_periodo_ate_ontem, ln=1, align='L')
 
 # Adiciona uma nova página
 pdf.add_page()
@@ -1468,18 +1506,17 @@ pdf.cell(0, 8, texto_periodo_ate_ontem, ln=1, align='L')
 # Adiciona uma nova página
 pdf.add_page()
 
-# ------------------------------------------------- TABELA DE HOMICÍDIOS POR MUNICIPIOS TOP 20 -------------------------------------------------
-
+# ------------------------------------------------- TABELA DE HOMICÍDIOS POR MUNICIPIOS TOP 20 (DIA ANTERIOR) -------------------------------------------------
+# Rótulos com mes_ontem para virada do mês (ex: 1º mar = dados de fev)
 columns_municipio_top20_atualizada = [
     "REGIÃO",
     f"{mes_atual}/{ano_anterior} (fechado)",
-    f"{mes_atual}/{ano_anterior} (até dia {dia_ontem})",
-    f"{mes_atual}/{ano_atual} (até dia {dia_ontem})",
+    f"{mes_ontem}/{ano_anterior} (até dia {dia_ontem})",
+    f"{mes_ontem}/{ano_atual} (até dia {dia_ontem})",
     "%",
-    f"Acumulado Jan a {mes_atual} {ano_anterior} (até dia {dia_ontem})",
-    f"Acumulado Jan a {mes_atual} {ano_atual} (até dia {dia_ontem})",
+    f"Acumulado Jan a {mes_ontem} {ano_anterior} (até dia {dia_ontem})",
+    f"Acumulado Jan a {mes_ontem} {ano_atual} (até dia {dia_ontem})",
     "%",
-    "Índice por 100K hab."
 ]
 
 columns_municipio_top20, rows_municipio_top20 = resultados["Homicídios Comparativo por Município Top 20"]
@@ -1490,7 +1527,7 @@ pdf.set_text_color(0, 0, 0)  # Preto
 titulo_municipio_top20 = f'Homicídios por municípios - comparativo dia anterior e acumulado :'
 pdf.cell(0, 10, titulo_municipio_top20, ln=1, align='L')
 
-col_widths_municipio_top20 = [60, 17, 17, 17, 12, 22, 22, 12, 15]  # 9 colunas
+col_widths_municipio_top20 = [60, 17, 17, 17, 12, 22, 22, 12]  # 8 colunas (sem Índice 100K)
 # Cabeçalho da tabela de regiões observatório (ajustado para quebra de linha, altura uniforme)
 pdf.set_font('Arial', 'B', 7)
 pdf.set_fill_color(230, 230, 230)
@@ -1579,7 +1616,7 @@ for idx, row in enumerate(rows_municipio_top20):
             pdf.set_fill_color(255, 255, 255)  # reset do background
             pdf.set_text_color(0, 0, 0)  # reset do texto
         else:
-            pdf.cell(col_widths_municipio_top20[i], 6, _fmt_indice_100k(row, i, item), 1, 0, 'C', fill=True)
+            pdf.cell(col_widths_municipio_top20[i], 6, safe_str(item), 1, 0, 'C', fill=True)
     pdf.ln()
 
 pdf.set_font('Arial', 'I', 9)
@@ -1587,18 +1624,17 @@ pdf.cell(0, 8, texto_periodo_ate_ontem, ln=1, align='L')
 
 # Adiciona uma nova página
 pdf.add_page()
-# ------------------------------------------------- TABELA DE HOMICÍDIOS POR RISP -------------------------------------------------
-
+# ------------------------------------------------- TABELA DE HOMICÍDIOS POR RISP (DIA ANTERIOR) -------------------------------------------------
+# Rótulos com mes_ontem para virada do mês
 columns_risp_atualizada = [
     "RISP",
     f"{mes_atual}/{ano_anterior} (fechado)",
-    f"{mes_atual}/{ano_anterior} (até dia {dia_ontem})",
-    f"{mes_atual}/{ano_atual} (até dia {dia_ontem})",
+    f"{mes_ontem}/{ano_anterior} (até dia {dia_ontem})",
+    f"{mes_ontem}/{ano_atual} (até dia {dia_ontem})",
     "%",
-    f"Acumulado Jan a {mes_atual} {ano_anterior} (até dia {dia_ontem})",
-    f"Acumulado Jan a {mes_atual} {ano_atual} (até dia {dia_ontem})",
+    f"Acumulado Jan a {mes_ontem} {ano_anterior} (até dia {dia_ontem})",
+    f"Acumulado Jan a {mes_ontem} {ano_atual} (até dia {dia_ontem})",
     "%",
-    "Índice por 100K hab."
 ]
 
 columns_risp, rows_risp = resultados["Homicídios Comparativo por Risp"]
@@ -1612,7 +1648,7 @@ pdf.set_text_color(0, 0, 0)  # Preto
 titulo_risp = f'Homicídios por Risp - comparativo dia anterior e acumulado :'
 pdf.cell(0, 10, titulo_risp, ln=1, align='L')
 
-col_widths_risp = [60, 17, 17, 17, 12, 22, 22, 12, 15]  
+col_widths_risp = [60, 17, 17, 17, 12, 22, 22, 12]  # 8 colunas (sem Índice 100K)  
 
 # Cabeçalho da tabela de Risp (ajustado para quebra de linha, altura uniforme)
 pdf.set_font('Arial', 'B', 7)
@@ -1702,7 +1738,7 @@ for idx, row in enumerate(rows_risp):
             pdf.set_fill_color(255, 255, 255)  # reset do background
             pdf.set_text_color(0, 0, 0)  # reset do texto
         else:
-            pdf.cell(col_widths_risp[i], 6, _fmt_indice_100k(row, i, item), 1, 0, 'C', fill=True)
+            pdf.cell(col_widths_risp[i], 6, safe_str(item), 1, 0, 'C', fill=True)
     pdf.ln()
 
 pdf.set_font('Arial', 'I', 9)
@@ -1710,18 +1746,17 @@ pdf.cell(0, 8, texto_periodo_ate_ontem, ln=1, align='L')
 
 # Adiciona uma nova página
 pdf.add_page()
-# ------------------------------------------------- TABELA DE HOMICÍDIOS POR AISP ------------------------------------------------- 
-
+# ------------------------------------------------- TABELA DE HOMICÍDIOS POR AISP (DIA ANTERIOR) -------------------------------------------------
+# Rótulos com mes_ontem para virada do mês
 columns_aisp_atualizada = [
     "AISP",
     f"{mes_atual}/{ano_anterior} (fechado)",
-    f"{mes_atual}/{ano_anterior} (até dia {dia_ontem})",
-    f"{mes_atual}/{ano_atual} (até dia {dia_ontem})",
+    f"{mes_ontem}/{ano_anterior} (até dia {dia_ontem})",
+    f"{mes_ontem}/{ano_atual} (até dia {dia_ontem})",
     "%",
-    f"Acumulado Jan a {mes_atual} {ano_anterior} (até dia {dia_ontem})",
-    f"Acumulado Jan a {mes_atual} {ano_atual} (até dia {dia_ontem})",
+    f"Acumulado Jan a {mes_ontem} {ano_anterior} (até dia {dia_ontem})",
+    f"Acumulado Jan a {mes_ontem} {ano_atual} (até dia {dia_ontem})",
     "%",
-    "Índice por 100K hab."
 ]
 
 columns_aisp, rows_aisp = resultados["Homicídios Comparativo por Aisp"]
@@ -1735,7 +1770,7 @@ pdf.set_text_color(0, 0, 0)  # Preto
 titulo_aisp = f'Homicídios por Aisp - comparativo dia anterior e acumulado :'
 pdf.cell(0, 10, titulo_aisp, ln=1, align='L')
 
-col_widths_aisp = [60, 17, 17, 17, 12, 22, 22, 12, 15]  # 9 colunas
+col_widths_aisp = [60, 17, 17, 17, 12, 22, 22, 12]  # 8 colunas (sem Índice 100K)
 # Cabeçalho da tabela de Aisp (ajustado para quebra de linha, altura uniforme)
 pdf.set_font('Arial', 'B', 7)
 pdf.set_fill_color(230, 230, 230)
@@ -1824,7 +1859,7 @@ for idx, row in enumerate(rows_aisp):
             pdf.set_fill_color(255, 255, 255)  # reset do background
             pdf.set_text_color(0, 0, 0)  # reset do texto
         else:
-            pdf.cell(col_widths_aisp[i], 6, _fmt_indice_100k(row, i, item), 1, 0, 'C', fill=True)
+            pdf.cell(col_widths_aisp[i], 6, safe_str(item), 1, 0, 'C', fill=True)
     pdf.ln()
 
 pdf.set_font('Arial', 'I', 9)

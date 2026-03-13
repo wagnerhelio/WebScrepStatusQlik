@@ -366,7 +366,7 @@ ano_anterior = ano_atual - 1
 
 # Textos de rodapé de período (utilizado na consulta): do dia 01/01/YYYY até DD/MM/YYYY HH:MM:SS
 texto_periodo_ate_hoje = f"De 01/01/{ano_atual} até {hoje.strftime('%d/%m/%Y %H:%M:%S')}"
-texto_periodo_ate_ontem = f"De 01/01/{ano_atual} até {hoje.strftime('%d/%m/%Y %H:%M:%S')}"
+texto_periodo_ate_ontem = f"De 01/01/{ano_atual} até {ontem_data}"
 texto_periodo_anterior = f"De 01/01/{ano_anterior} até {ontem_data}"
 
 # --- INÍCIO DA GERAÇÃO DO PDF ---
@@ -465,8 +465,8 @@ pdf.cell(0, 8, texto_periodo_ate_hoje, ln=1, align='L')
 kpi_end_y = pdf.get_y()
 
 # ------------------------------------------------- TABELA DE REGIAO - COMPARATIVO MENSAL ATUAL E ACUMULADO -------------------------------------------------
-# Posiciona abaixo do bloco mais baixo (caixa à esquerda ou KPIs à direita)
-y_after_header = max(caixa_y + caixa_h, kpi_end_y) - 4   
+# Posiciona abaixo do bloco mais baixo (caixa à esquerda ou KPIs à direita), com espaço para não grudar
+y_after_header = max(caixa_y + caixa_h, kpi_end_y) + 8
 pdf.set_xy(pdf.l_margin, y_after_header)
 
 columns_regiao_observatorio_atualizada = [
@@ -891,15 +891,16 @@ for ano, row in df_tab.iterrows():
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, texto_periodo_ate_ontem, ln=1, align='L')
 
-# ------------------------------------------------- TABELA DE REGIAO - COMPARATIVO MENSAL E ACUMULADO -------------------------------------------------
+# ------------------------------------------------- TABELA DE REGIAO - COMPARATIVO MENSAL E ACUMULADO (DIA ANTERIOR) -------------------------------------------------
+# Na virada do mês (ex: 1º mar), dados são do mês de ontem (fev); rótulos usam mes_ontem para bater com a SQL
 columns_regiao_observatorio_atualizada = [
     "REGIÃO",
     f"{mes_atual}/{ano_anterior} (fechado)",
-    f"{mes_atual}/{ano_anterior} (até dia {dia_ontem})",
-    f"{mes_atual}/{ano_atual} (até dia {dia_ontem})",
+    f"{mes_ontem}/{ano_anterior} (até dia {dia_ontem})",
+    f"{mes_ontem}/{ano_atual} (até dia {dia_ontem})",
     "%",
-    f"Acumulado Jan a {mes_atual} {ano_anterior} (até dia {dia_ontem})",
-    f"Acumulado Jan a {mes_atual} {ano_atual} (até dia {dia_ontem})",
+    f"Acumulado Jan a {mes_ontem} {ano_anterior} (até dia {dia_ontem})",
+    f"Acumulado Jan a {mes_ontem} {ano_atual} (até dia {dia_ontem})",
     "%",
     "Índice por 100K hab."
 ]
@@ -1463,16 +1464,16 @@ pdf.cell(0, 8, texto_periodo_ate_ontem, ln=1, align='L')
 # Adiciona uma nova página
 pdf.add_page()
 
-# ------------------------------------------------- TABELA DE HOMICÍDIOS POR MUNICIPIOS TOP 20 -------------------------------------------------
-
+# ------------------------------------------------- TABELA DE FEMINICÍDIOS POR MUNICIPIOS TOP 20 (DIA ANTERIOR) -------------------------------------------------
+# Rótulos com mes_ontem para virada do mês
 columns_municipio_top20_atualizada = [
     "REGIÃO",
     f"{mes_atual}/{ano_anterior} (fechado)",
-    f"{mes_atual}/{ano_anterior} (até dia {dia_ontem})",
-    f"{mes_atual}/{ano_atual} (até dia {dia_ontem})",
+    f"{mes_ontem}/{ano_anterior} (até dia {dia_ontem})",
+    f"{mes_ontem}/{ano_atual} (até dia {dia_ontem})",
     "%",
-    f"Acumulado Jan a {mes_atual} {ano_anterior} (até dia {dia_ontem})",
-    f"Acumulado Jan a {mes_atual} {ano_atual} (até dia {dia_ontem})",
+    f"Acumulado Jan a {mes_ontem} {ano_anterior} (até dia {dia_ontem})",
+    f"Acumulado Jan a {mes_ontem} {ano_atual} (até dia {dia_ontem})",
     "%",
     "Índice por 100K hab."
 ]
@@ -1582,16 +1583,16 @@ pdf.cell(0, 8, texto_periodo_ate_ontem, ln=1, align='L')
 
 # Adiciona uma nova página
 pdf.add_page()
-# ------------------------------------------------- TABELA DE HOMICÍDIOS POR RISP -------------------------------------------------
-
+# ------------------------------------------------- TABELA DE FEMINICÍDIOS POR RISP (DIA ANTERIOR) -------------------------------------------------
+# Rótulos com mes_ontem para virada do mês
 columns_risp_atualizada = [
     "RISP",
     f"{mes_atual}/{ano_anterior} (fechado)",
-    f"{mes_atual}/{ano_anterior} (até dia {dia_ontem})",
-    f"{mes_atual}/{ano_atual} (até dia {dia_ontem})",
+    f"{mes_ontem}/{ano_anterior} (até dia {dia_ontem})",
+    f"{mes_ontem}/{ano_atual} (até dia {dia_ontem})",
     "%",
-    f"Acumulado Jan a {mes_atual} {ano_anterior} (até dia {dia_ontem})",
-    f"Acumulado Jan a {mes_atual} {ano_atual} (até dia {dia_ontem})",
+    f"Acumulado Jan a {mes_ontem} {ano_anterior} (até dia {dia_ontem})",
+    f"Acumulado Jan a {mes_ontem} {ano_atual} (até dia {dia_ontem})",
     "%",
     "Índice por 100K hab."
 ]
@@ -1705,16 +1706,16 @@ pdf.cell(0, 8, texto_periodo_ate_ontem, ln=1, align='L')
 
 # Adiciona uma nova página
 pdf.add_page()
-# ------------------------------------------------- TABELA DE HOMICÍDIOS POR AISP ------------------------------------------------- 
-
+# ------------------------------------------------- TABELA DE FEMINICÍDIOS POR AISP (DIA ANTERIOR) -------------------------------------------------
+# Rótulos com mes_ontem para virada do mês
 columns_aisp_atualizada = [
     "AISP",
     f"{mes_atual}/{ano_anterior} (fechado)",
-    f"{mes_atual}/{ano_anterior} (até dia {dia_ontem})",
-    f"{mes_atual}/{ano_atual} (até dia {dia_ontem})",
+    f"{mes_ontem}/{ano_anterior} (até dia {dia_ontem})",
+    f"{mes_ontem}/{ano_atual} (até dia {dia_ontem})",
     "%",
-    f"Acumulado Jan a {mes_atual} {ano_anterior} (até dia {dia_ontem})",
-    f"Acumulado Jan a {mes_atual} {ano_atual} (até dia {dia_ontem})",
+    f"Acumulado Jan a {mes_ontem} {ano_anterior} (até dia {dia_ontem})",
+    f"Acumulado Jan a {mes_ontem} {ano_atual} (até dia {dia_ontem})",
     "%",
     "Índice por 100K hab."
 ]
