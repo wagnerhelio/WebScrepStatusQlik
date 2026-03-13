@@ -1105,12 +1105,19 @@ if not df_comparativo_dia.empty and os.path.exists(grafico_path):
         pdf.cell(0, 8, 'Gráfico não disponível', ln=1, align='C')
 else:
     if df_comparativo_dia.empty:
-        sem_dados_path = os.path.join(relatorio_dir, 'sem_dados.png')
-        if os.path.exists(sem_dados_path):
+        try:
+            fig, ax = plt.subplots(figsize=(4, 0.8))
+            ax.axis('off')
+            ax.text(0.5, 0.5, 'Não há valores registrados', ha='center', va='center', fontsize=11, color='#666666')
+            plt.savefig(grafico_path, dpi=150, bbox_inches='tight', facecolor='white')
+            plt.close()
+        except Exception as e:
+            print(f"Erro ao gerar placeholder gráfico dia região: {e}")
+        if os.path.exists(grafico_path):
             try:
                 w_img = 80
                 x_centro = (210 - w_img) / 2
-                pdf.image(sem_dados_path, x=x_centro, w=w_img)
+                pdf.image(grafico_path, x=x_centro, w=w_img)
             except Exception:
                 pdf.set_font('Arial', 'I', 10)
                 pdf.cell(0, 8, 'Não há valores registrados', ln=1, align='C')
@@ -1378,6 +1385,7 @@ pdf.cell(0, 10, titulo_tabela, ln=1, align='L')
 
 # Cria o DataFrame
 df_grafico_presidios = pd.DataFrame(rows_grafico_presidios, columns=columns_grafico_presidios)
+grafico_presidios_path = os.path.join(relatorio_dir, 'grafico_feminicidio_presidios.png')
 
 # Cria a tabela com os dados
 if not df_grafico_presidios.empty:
@@ -1428,29 +1436,26 @@ if not df_grafico_presidios.empty:
     plt.close()
 
     # Adiciona o gráfico ao PDF
-    # Verifica se o arquivo existe antes de adicionar ao PDF
-    grafico_presidios_path = os.path.join(relatorio_dir, 'grafico_feminicidio_presidios.png')
     if os.path.exists(grafico_presidios_path):
         pdf.image(grafico_presidios_path, x=5, w=200)
     else:
         pdf.set_font('Arial', 'I', 10)
         pdf.cell(0, 8, 'Gráfico não disponível', ln=1, align='C')
 else:
-    # Sem dados: imagem pequena e centralizada para não quebrar a página
-    sem_dados_path = os.path.join(relatorio_dir, 'sem_dados.png')
+    # Sem dados: gera placeholder com o nome do gráfico que seria gerado (grafico_feminicidio_presidios.png)
     try:
         fig, ax = plt.subplots(figsize=(4, 0.8))
         ax.axis('off')
         ax.text(0.5, 0.5, 'Não há valores registrados', ha='center', va='center', fontsize=11, color='#666666')
-        plt.savefig(sem_dados_path, dpi=150, bbox_inches='tight', facecolor='white')
+        plt.savefig(grafico_presidios_path, dpi=150, bbox_inches='tight', facecolor='white')
         plt.close()
     except Exception as e:
-        print(f"Erro ao gerar imagem sem_dados: {e}")
-    if os.path.exists(sem_dados_path):
+        print(f"Erro ao gerar placeholder gráfico presídios: {e}")
+    if os.path.exists(grafico_presidios_path):
         try:
             w_img = 80
             x_centro = (210 - w_img) / 2
-            pdf.image(sem_dados_path, x=x_centro, w=w_img)
+            pdf.image(grafico_presidios_path, x=x_centro, w=w_img)
         except Exception:
             pdf.set_font('Arial', 'I', 10)
             pdf.cell(0, 8, 'Não há valores registrados', ln=1, align='C')
