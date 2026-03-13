@@ -239,6 +239,23 @@ except Exception as e:
 # Define o diretório onde está o logo
 logo_dir = os.path.join(PROJECT_ROOT, 'pysql', 'img_reports')
 
+def safe_str(item):
+    return str(item) if item is not None else ''
+
+# Ordem fixa das regiões nas tabelas: Goiânia, Interior, Entorno do DF (GOIÁS é linha de total no final)
+def ordenar_linhas_regiao(rows, col_regiao=0):
+    """Ordena as linhas da tabela de regiões: GOIÂNIA, INTERIOR, ENTORNO DO DF."""
+    def indice_regiao(row):
+        nome = (row[col_regiao] or "").strip().upper().replace("Â", "A")
+        if "GOIANIA" in nome:
+            return 0
+        if "INTERIOR" in nome:
+            return 1
+        if "ENTORNO" in nome or " DF" in nome:
+            return 2
+        return 3
+    return sorted(rows, key=indice_regiao)
+
 class PDFComRodape(FPDF):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -250,6 +267,17 @@ class PDFComRodape(FPDF):
         
         # Configura margens para otimizar espaço
         self.set_margins(10, 2, 10)
+
+    def espaco_restante(self):
+        """Espaço em mm até o limite de quebra (acima do rodapé)."""
+        return self.page_break_trigger - self.get_y()
+
+    def garantir_espaco_ou_nova_pagina(self, altura_estimada_mm=55):
+        """Só adiciona nova página se não houver espaço; senão apenas avança algumas linhas."""
+        if self.get_y() + altura_estimada_mm > self.page_break_trigger:
+            self.add_page()
+        else:
+            self.ln(6)
 
     def footer(self):
         self.set_y(-10)
@@ -364,8 +392,9 @@ mes_ontem = ontem.strftime('%b').capitalize()  # Ex: 'Jul'
 dia_ontem = ontem.day
 ano_anterior = ano_atual - 1
 
-# Textos de rodapé de período (utilizado na consulta): do dia 01/01/YYYY até DD/MM/YYYY HH:MM:SS
+# Textos de rodapé: período completo (tabelas/gráficos) e apenas data/hora (só no KPI do dia)
 texto_periodo_ate_hoje = f"De 01/01/{ano_atual} até {hoje.strftime('%d/%m/%Y %H:%M:%S')}"
+texto_periodo_apenas_dia = hoje.strftime('%d/%m/%Y %H:%M:%S')  # só no KPI \"Feminicídios em: [data]\"
 texto_periodo_ate_ontem = f"De 01/01/{ano_atual} até {ontem_data}"
 texto_periodo_anterior = f"De 01/01/{ano_anterior} até {ontem_data}"
 
@@ -437,11 +466,11 @@ pdf.set_text_color(30, 80, 160)
 pdf.set_x(kpi_x)
 pdf.cell(0, 15, str(feminicidios_hoje), ln=1, align='C')
 
-#rodape kpi feminicidios em dia
+#rodape kpi feminicidios em dia (apenas data/hora)
 pdf.set_font('Arial', 'I', 8)
 pdf.set_text_color(0, 0, 0)
 pdf.set_x(kpi_x)
-pdf.cell(0, 8, texto_periodo_ate_hoje, ln=1, align='L')
+pdf.cell(0, 8, texto_periodo_apenas_dia, ln=1, align='L')
 
 #titulo kpi feminicidios em mes
 pdf.set_font('Arial', '', 12)
@@ -455,7 +484,7 @@ pdf.set_text_color(30, 80, 160)
 pdf.set_x(kpi_x)
 pdf.cell(0, 15, str(feminicidios_mes), ln=1, align='C')
 
-#rodape kpi feminicidios em mes
+#rodape kpi feminicidios em mes (período completo)
 pdf.set_font('Arial', 'I', 8) 
 pdf.set_text_color(0, 0, 0)
 pdf.set_x(kpi_x)
@@ -482,9 +511,10 @@ columns_regiao_observatorio_atualizada = [
 ]
 
 columns_regiao_observatorio, rows_regiao_observatorio = resultados["Feminicídios Comparativo por Regiões dia atual"]
+rows_regiao_observatorio = ordenar_linhas_regiao(rows_regiao_observatorio)
 
 
-# Título da tabela
+# Título da tabela (mantém bloco inteiro na mesma página)
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)  # Preto
 titulo_regiao_observatorio = f'Feminicídios por regiões - comparativo dia atual e acumulado :'
@@ -723,8 +753,8 @@ else:
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 6, texto_periodo_ate_ontem, ln=1, align='L')
 
-# Adiciona uma nova página
-pdf.add_page()
+# Adiciona nova página apenas se necessário para o bloco \"Feminicídios comparativo por ano\"
+pdf.garantir_espaco_ou_nova_pagina(70)
 # ------------------------------------------------- TABELA DE HOMICÍDIOS POR MESES/ANOS  -------------------------------------------------
 # Monta a tabela comparativa de homicídios por mês e ano
 colunas_homicidio_todos_anos, linhas_homicidio_todos_anos = resultados["Feminicídios Comparativo por Todos os Anos"]
@@ -778,11 +808,10 @@ pdf.cell(0, 8, texto_periodo_ate_ontem, ln=1, align='L')
 
 # ------------------------------------------------- GRAFICO COMPARATIVO POR DIA -------------------------------------------------
 # Gera o gráfico comparativo de homicídios por dia
+pdf.garantir_espaco_ou_nova_pagina(70)
 columns_dia, rows_dia = resultados["Feminicídios Comparativo por Dia"]
 
-pdf.ln(3)
-
-# Título do grafico
+# Título do grafico (tratado como entidade com o gráfico)
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)  # Preto
 titulo_mes_atual = f'Feminicídios - Comparativo por dia no mês atual: {hoje.strftime("%b/%Y")}'
@@ -906,9 +935,10 @@ columns_regiao_observatorio_atualizada = [
 ]
 
 columns_regiao_observatorio, rows_regiao_observatorio = resultados["Feminicídios Comparativo por Regiões"]
+rows_regiao_observatorio = ordenar_linhas_regiao(rows_regiao_observatorio)
 
 # Espaço antes da tabela
-pdf.ln(0.5)
+pdf.garantir_espaco_ou_nova_pagina(60)
 
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
@@ -1132,9 +1162,10 @@ pdf.cell(0, 8, texto_periodo_ate_ontem, ln=1, align='L')
 
 # ------------------------------------------------- GRAFICO COMPARATIVO POR MES POR REGIÃO -------------------------------------------------
 # Gera o gráfico comparativo de homicídios por mês por região
+pdf.garantir_espaco_ou_nova_pagina(70)
 columns_mes_regioes, rows_mes_regioes = resultados["Feminicídios Comparativo por Mes por Regiões"]
 
-# Título do grafico
+# Título do grafico (tratado como entidade com o gráfico)
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)
 titulo_mes_regiao = f'Feminicídios - Mês a mês por Região no ano {hoje.year}:'
@@ -1375,9 +1406,10 @@ pdf.cell(0, 8, texto_periodo_ate_ontem, ln=1, align='L')
 
 # ------------------------------------------------- GRAFICO DE HOMICÍDIOS EM PRESIDIOS -------------------------------------------------
 # Gera tabela com dados do gráfico comparativo de homicídios por mês por região
+pdf.garantir_espaco_ou_nova_pagina(60)
 columns_grafico_presidios, rows_grafico_presidios = resultados["Feminicídios em Presídios"]
 
-# Título da tabela
+# Título da tabela (tratado como entidade com o gráfico ou placeholder)
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)
 titulo_tabela = f'Feminicídios - Presídios'

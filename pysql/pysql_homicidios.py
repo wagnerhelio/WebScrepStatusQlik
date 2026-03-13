@@ -48,6 +48,21 @@ matplotlib.use('Agg')  # Configura o backend antes de importar pyplot
 def safe_str(item):
     return str(item) if item is not None else ''
 
+# Ordem fixa das regiões nas tabelas: Goiânia, Interior, Entorno do DF (GOIÁS é linha de total no final)
+ORDEM_REGIOES = ("GOIÂNIA", "INTERIOR", "ENTORNO DO DF")
+def ordenar_linhas_regiao(rows, col_regiao=0):
+    """Ordena as linhas da tabela de regiões: GOIÂNIA, INTERIOR, ENTORNO DO DF."""
+    def indice_regiao(row):
+        nome = (row[col_regiao] or "").strip().upper().replace("Â", "A")
+        if "GOIANIA" in nome:
+            return 0
+        if "INTERIOR" in nome:
+            return 1
+        if "ENTORNO" in nome or " DF" in nome:
+            return 2
+        return 3
+    return sorted(rows, key=indice_regiao)
+
 def safe_print_progress(text):
     """Função segura para imprimir progresso no Windows"""
     try:
@@ -250,6 +265,17 @@ class PDFComRodape(FPDF):
         # Configura margens para otimizar espaço
         self.set_margins(10, 2, 10)
 
+    def espaco_restante(self):
+        """Espaço em mm até o limite de quebra (acima do rodapé)."""
+        return self.page_break_trigger - self.get_y()
+
+    def garantir_espaco_ou_nova_pagina(self, altura_estimada_mm=55):
+        """Só adiciona nova página se não houver espaço; senão deixa o fluxo seguir (evita página em branco)."""
+        if self.get_y() + altura_estimada_mm > self.page_break_trigger:
+            self.add_page()
+        else:
+            self.ln(6)
+
     def footer(self):
         self.set_y(-10)
         self.set_font('Arial', 'I', 8)
@@ -369,8 +395,9 @@ mes_ontem = ontem.strftime('%b').capitalize()  # Ex: 'Jul'
 dia_ontem = ontem.day
 ano_anterior = ano_atual - 1
 
-# Textos de rodapé de período (utilizado na consulta): do dia 01/01/YYYY até DD/MM/YYYY HH:MM:SS
+# Textos de rodapé: período completo (tabelas/gráficos) e apenas data/hora (só no KPI do dia)
 texto_periodo_ate_hoje = f"De 01/01/{ano_atual} até {hoje.strftime('%d/%m/%Y %H:%M:%S')}"
+texto_periodo_apenas_dia = hoje.strftime('%d/%m/%Y %H:%M:%S')  # só no KPI "Homicídios em: [data]" (dado do dia)
 texto_periodo_ate_ontem = f"De 01/01/{ano_atual} até {ontem_data}"
 # Período anterior (sem hora): 01/01/ano_anterior até ontem
 texto_periodo_anterior = f"De 01/01/{ano_anterior} até {ontem_data}"
@@ -442,11 +469,11 @@ pdf.set_font('Arial', 'B', 28)
 pdf.set_text_color(30, 80, 160)
 pdf.set_x(kpi_x)
 pdf.cell(0, 15, str(homicidios_hoje), ln=1, align='C')
-# legenda período (dia atual com hora)
+# legenda apenas data/hora (KPI refere-se exclusivamente ao dia)
 pdf.set_font('Arial', 'I', 8)
 pdf.set_text_color(0, 0, 0)
 pdf.set_x(kpi_x)
-pdf.cell(0, 6, texto_periodo_ate_hoje, ln=1, align='L')
+pdf.cell(0, 6, texto_periodo_apenas_dia, ln=1, align='L')
 
 #titulo kpi homicidios em mes
 pdf.set_font('Arial', '', 12)
@@ -459,7 +486,7 @@ pdf.set_font('Arial', 'B', 28)
 pdf.set_text_color(30, 80, 160)
 pdf.set_x(kpi_x)
 pdf.cell(0, 15, str(homicidios_mes), ln=1, align='C')
-# legenda período (dia atual com hora)
+# legenda período completo (KPI do mês = acumulado de 01/01 até hoje)
 pdf.set_font('Arial', 'I', 8)
 pdf.set_text_color(0, 0, 0)
 pdf.set_x(kpi_x)
@@ -485,6 +512,7 @@ columns_regiao_observatorio_atualizada = [
 ]
 
 columns_regiao_observatorio, rows_regiao_observatorio = resultados["Homicídios Comparativo por Regiões dia atual"]
+rows_regiao_observatorio = ordenar_linhas_regiao(rows_regiao_observatorio)
 
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
@@ -725,8 +753,8 @@ else:
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, texto_periodo_ate_hoje, ln=1, align='L')
 
-# Adiciona uma nova página
-pdf.add_page()
+# Só nova página se faltar espaço; senão segue na mesma
+pdf.garantir_espaco_ou_nova_pagina(70)
 # ------------------------------------------------- TABELA DE HOMICÍDIOS POR MESES/ANOS  -------------------------------------------------
 # Monta a tabela comparativa de homicídios por mês e ano
 colunas_homicidio_todos_anos, linhas_homicidio_todos_anos = resultados["Homicídios Comparativo por Todos os Anos"]
@@ -772,8 +800,8 @@ if not df_homicidio_todos_anos.empty and col_total in df_homicidio_todos_anos.co
             pdf.image(os.path.join(relatorio_dir, 'grafico_homicidio_todos_anos_total.png'), x=5, w=200)
         pdf.ln(2)
 
-# Cabeçalho da tabela de meses/anos (TOTAL + ÍNDICE POR 100K HAB.); larguras reduzidas para caber na A4 e centralizar
-col_widths_homicidio_todos_anos = [14] + [10]*12 + [12] + [14]  # ANO + 12 meses + TOTAL + ÍNDICE POR 100K HAB.
+# Cabeçalho da tabela de meses/anos (TOTAL + ÍNDICE POR 100K HAB.); coluna ÍNDICE ainda mais larga para caber o texto
+col_widths_homicidio_todos_anos = [14] + [10]*12 + [12] + [30]  # ANO + 12 meses + TOTAL + ÍNDICE POR 100K HAB. (~30mm)
 largura_total_tabela = sum(col_widths_homicidio_todos_anos)
 pagina_largura_util = 190
 x_inicio_tabela = pdf.l_margin + (pagina_largura_util - largura_total_tabela) / 2
@@ -782,9 +810,10 @@ pdf.set_font('Arial', 'B', 7)
 pdf.set_fill_color(230, 230, 230)
 pdf.set_draw_color(0, 0, 0)
 pdf.set_text_color(0, 0, 0)
+altura_cabecalho_todos_anos = 7  # um pouco mais alto para o texto do ÍNDICE não ficar apertado
 for i, col in enumerate(colunas_homicidio_todos_anos):
     cabecalho = 'ÍNDICE POR 100K HAB.' if (i == len(colunas_homicidio_todos_anos) - 1 and str(col).upper() == 'INDICE_100K') else str(col).upper()
-    pdf.cell(col_widths_homicidio_todos_anos[i], 6, cabecalho, 1, 0, 'C', fill=True)
+    pdf.cell(col_widths_homicidio_todos_anos[i], altura_cabecalho_todos_anos, cabecalho, 1, 0, 'C', fill=True)
 pdf.ln()
 
 # Dados da tabela de meses/anos
@@ -793,16 +822,6 @@ pdf.set_text_color(0, 0, 0)  # Preto para texto
 def safe_str_homicidio_todos_anos(item):
     return str(item) if item is not None else ''
 
-# Adiciona zebragem (alternância de cores de fundo); última coluna = ÍNDICE POR 100K HAB. com %
-def fmt_indice_100k_pct(val):
-    if val is None:
-        return ''
-    try:
-        n = float(val)
-        return f'{n:.2f}'.replace('.', ',') + '%'
-    except (TypeError, ValueError):
-        return str(val) if val is not None else ''
-
 for idx, linha in enumerate(linhas_homicidio_todos_anos):
     pdf.set_x(x_inicio_tabela)
     if idx % 2 == 0:
@@ -810,8 +829,13 @@ for idx, linha in enumerate(linhas_homicidio_todos_anos):
     else:
         pdf.set_fill_color(240, 240, 245)
     for i, item in enumerate(linha):
-        if i == len(linha) - 1:
-            texto = fmt_indice_100k_pct(item)
+        # Última coluna: índice por 100k, sem símbolo de %
+        if i == len(linha) - 1 and item is not None:
+            try:
+                n = float(item)
+                texto = f'{n:.2f}'.replace(".", ",")
+            except (TypeError, ValueError):
+                texto = safe_str_homicidio_todos_anos(item)
         else:
             texto = safe_str_homicidio_todos_anos(item)
         pdf.cell(col_widths_homicidio_todos_anos[i], 6, texto, 1, 0, 'C', fill=True)
@@ -824,9 +848,8 @@ pdf.cell(0, 8, texto_periodo_ate_hoje, ln=1, align='L')
 # Gera o gráfico comparativo de homicídios por dia
 columns_dia, rows_dia = resultados["Homicídios Comparativo por Dia"]
 
-pdf.ln(1)
-
-# Título do grafico
+pdf.garantir_espaco_ou_nova_pagina(70)
+# Título do grafico (tratado como entidade junto com o gráfico abaixo)
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)  # Preto
 titulo_mes_atual = f'Homicídios - Comparativo por dia no mês atual: {hoje.strftime("%b/%Y")}'
@@ -949,9 +972,10 @@ columns_regiao_observatorio_atualizada = [
 ]
 
 columns_regiao_observatorio, rows_regiao_observatorio = resultados["Homicídios Comparativo por Regiões dia anterior"]
+rows_regiao_observatorio = ordenar_linhas_regiao(rows_regiao_observatorio)
 
 # Espaço antes da tabela
-pdf.ln(0.5)
+pdf.garantir_espaco_ou_nova_pagina(60)
 
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
@@ -1075,9 +1099,7 @@ if rows_regiao_observatorio:
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, texto_periodo_ate_ontem, ln=1, align='L')
 
-# Adiciona uma nova página
-pdf.add_page()
-
+pdf.garantir_espaco_ou_nova_pagina(80)
 # ------------------------------------------------- GRAFICO COMPARATIVO POR DIA POR REGIÃO -------------------------------------------------
 # Gera o gráfico comparativo de homicídios por dia por região
 columns_dia_regioes, rows_dia_regioes = resultados["Homicídios Comparativo por Dia por Regiões"]
@@ -1174,9 +1196,10 @@ pdf.cell(0, 8, texto_periodo_ate_ontem, ln=1, align='L')
 
 # ------------------------------------------------- GRAFICO COMPARATIVO POR MES POR REGIÃO -------------------------------------------------
 # Gera o gráfico comparativo de homicídios por mês por região
+pdf.garantir_espaco_ou_nova_pagina(70)
 columns_mes_regioes, rows_mes_regioes = resultados["Homicídios Comparativo por Mes por Regiões"]
 
-# Título do grafico
+# Título do grafico (tratado como entidade junto com o gráfico)
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)
 titulo_mes_regiao = f'Homicídios - Mês a mês por Região no ano {hoje.year}:'
@@ -1347,7 +1370,8 @@ pdf.cell(0, 8, texto_periodo_ate_ontem, ln=1, align='L')
 # Gera o gráfico comparativo de homicídios por semana por região
 columns_semana_regioes, rows_semana_regioes = resultados["Homicídios Comparativo por Semana por Regiões"]
 
-# Título do grafico
+# Título do grafico (tratado como entidade junto com o gráfico)
+pdf.garantir_espaco_ou_nova_pagina(70)
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)
 titulo_semana_regiao = f'Homicídios - dias da semana por Região no ano {hoje.year}:'    
@@ -1417,6 +1441,7 @@ pdf.cell(0, 8, texto_periodo_ate_ontem, ln=1, align='L')
 
 # ------------------------------------------------- GRAFICO DE HOMICÍDIOS EM PRESIDIOS -------------------------------------------------
 # Gera tabela com dados do gráfico comparativo de homicídios por mês por região
+pdf.garantir_espaco_ou_nova_pagina(60)
 columns_grafico_presidios, rows_grafico_presidios = resultados["Homicídios em Presídios"]
 
 # Título da tabela
@@ -1508,9 +1533,7 @@ else:
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, texto_periodo_ate_ontem, ln=1, align='L')
 
-# Adiciona uma nova página
-pdf.add_page()
-
+pdf.garantir_espaco_ou_nova_pagina(80)
 # ------------------------------------------------- TABELA DE HOMICÍDIOS POR MUNICIPIOS TOP 20 (DIA ANTERIOR) -------------------------------------------------
 # Rótulos com mes_ontem para virada do mês (ex: 1º mar = dados de fev)
 columns_municipio_top20_atualizada = [
@@ -1627,8 +1650,7 @@ for idx, row in enumerate(rows_municipio_top20):
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, texto_periodo_ate_ontem, ln=1, align='L')
 
-# Adiciona uma nova página
-pdf.add_page()
+pdf.garantir_espaco_ou_nova_pagina(80)
 # ------------------------------------------------- TABELA DE HOMICÍDIOS POR RISP (DIA ANTERIOR) -------------------------------------------------
 # Rótulos com mes_ontem para virada do mês
 columns_risp_atualizada = [
@@ -1749,8 +1771,7 @@ for idx, row in enumerate(rows_risp):
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, texto_periodo_ate_ontem, ln=1, align='L')
 
-# Adiciona uma nova página
-pdf.add_page()
+pdf.garantir_espaco_ou_nova_pagina(80)
 # ------------------------------------------------- TABELA DE HOMICÍDIOS POR AISP (DIA ANTERIOR) -------------------------------------------------
 # Rótulos com mes_ontem para virada do mês
 columns_aisp_atualizada = [
