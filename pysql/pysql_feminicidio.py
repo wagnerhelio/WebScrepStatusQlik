@@ -1877,22 +1877,39 @@ columns_rais, rows_rais = resultados["Feminicídios Relação de RAIs"]
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)
 pdf.cell(0, 10, 'Relação de RAIs', ln=1, align='L')
-col_widths_rais = [22, 24, 38, 48, 18, 20]  # id_rai, data_fato, dataultimaatualizacao, municipio, aisp, risp
+# Larguras: id_rai, data_fato, dataultimaatualizacao, municipio, aisp, risp (AISP e RISP com mais espaço para nome completo + quebra de linha)
+col_widths_rais = [20, 22, 34, 36, 38, 40]
+altura_linha_rais = 4
+idx_aisp, idx_risp = 4, 5
 pdf.set_font('Arial', 'B', 7)
 pdf.set_fill_color(230, 230, 230)
 for i, col in enumerate(columns_rais):
     pdf.cell(col_widths_rais[i], 6, str(col).replace('_', ' ').upper(), 1, 0, 'C', fill=True)
 pdf.ln()
 pdf.set_font('Arial', '', 6)
-pdf.set_fill_color(255, 255, 255)
+x_cols_rais = [pdf.l_margin]
+for i in range(len(col_widths_rais) - 1):
+    x_cols_rais.append(x_cols_rais[-1] + col_widths_rais[i])
 for idx, row in enumerate(rows_rais):
     if idx % 2 == 0:
         pdf.set_fill_color(255, 255, 255)
     else:
         pdf.set_fill_color(240, 240, 245)
-    for i, item in enumerate(row):
-        pdf.cell(col_widths_rais[i], 5, safe_str(item), 1, 0, 'C', fill=True)
-    pdf.ln()
+    aisp_text = safe_str(row[idx_aisp])
+    risp_text = safe_str(row[idx_risp])
+    linhas_aisp = pdf.multi_cell(col_widths_rais[idx_aisp], altura_linha_rais, aisp_text, 0, 'L', split_only=True)
+    linhas_risp = pdf.multi_cell(col_widths_rais[idx_risp], altura_linha_rais, risp_text, 0, 'L', split_only=True)
+    n_linhas = max(len(linhas_aisp) if linhas_aisp else 1, len(linhas_risp) if linhas_risp else 1)
+    row_height = n_linhas * altura_linha_rais
+    y_start = pdf.get_y()
+    for i in range(4):
+        pdf.set_xy(x_cols_rais[i], y_start)
+        pdf.cell(col_widths_rais[i], row_height, safe_str(row[i]), 1, 0, 'C', fill=True)
+    pdf.set_xy(x_cols_rais[idx_aisp], y_start)
+    pdf.multi_cell(col_widths_rais[idx_aisp], altura_linha_rais, aisp_text, 1, 'L', fill=True)
+    pdf.set_xy(x_cols_rais[idx_risp], y_start)
+    pdf.multi_cell(col_widths_rais[idx_risp], altura_linha_rais, risp_text, 1, 'L', fill=True)
+    pdf.set_y(y_start + row_height)
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, texto_periodo_ate_hoje, ln=1, align='L')
 
