@@ -201,7 +201,7 @@ def executar_com_progresso(nome, query, cursor, tempos_medios):
     cursor.execute(query)
     
     # Processa o resultado
-    if nome in ["Feminicídios Comparativo por Município", "Feminicídios Comparativo por 2 Anos","Feminicídios Comparativo por Todos os Anos","Feminicídios Comparativo por Regiões","Feminicídios Comparativo por Regiões dia atual","Feminicídios Comparativo por Dia","Feminicídios Comparativo por Dia por Regiões","Feminicídios Comparativo por Mes por Regiões","Feminicídios Comparativo por Semana por Regiões","Feminicídios em Presídios","Feminicídios Comparativo por Município Top 20","Feminicídios Comparativo por Risp","Feminicídios Comparativo por Aisp"]:
+    if nome in ["Feminicídios Comparativo por Município", "Feminicídios Comparativo por 2 Anos","Feminicídios Comparativo por Todos os Anos","Feminicídios Comparativo por Regiões","Feminicídios Comparativo por Regiões dia atual","Feminicídios Comparativo por Dia","Feminicídios Comparativo por Dia por Regiões","Feminicídios Comparativo por Mes por Regiões","Feminicídios Comparativo por Semana por Regiões","Feminicídios em Presídios","Feminicídios Comparativo por Município Top 20","Feminicídios Comparativo por Risp","Feminicídios Comparativo por Aisp","Feminicídios Relação de RAIs"]:
         columns = [str(col[0]) for col in cursor.description]
         rows = [list(row) for row in cursor.fetchall()]
         resultado = (columns, rows)
@@ -333,6 +333,7 @@ QUERY_METADATA_FEMINICIDIOS = [
     ("Feminicídios Comparativo por Município Top 20", "feminicidios_comparativo_municipios_top_20.sql"),
     ("Feminicídios Comparativo por Risp", "feminicidios_comparativo_risp.sql"),
     ("Feminicídios Comparativo por Aisp", "feminicidios_comparativo_aisp.sql"),
+    ("Feminicídios Relação de RAIs", "feminicidios_relacao_rais.sql"),
 ]
 
 # Carrega SQLs do GitLab (extract_odisseu_oracle/relatorio_feminicidios no repositório etl-oracle)
@@ -1869,6 +1870,31 @@ for idx, row in enumerate(rows_aisp):
 
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, texto_periodo_ate_ontem, ln=1, align='L')
+
+# ------------------------------------------------- RELAÇÃO DE RAIs (AO FINAL DO PDF) -------------------------------------------------
+pdf.garantir_espaco_ou_nova_pagina(25)
+columns_rais, rows_rais = resultados["Feminicídios Relação de RAIs"]
+pdf.set_font('Arial', 'B', 12)
+pdf.set_text_color(0, 0, 0)
+pdf.cell(0, 10, 'Relação de RAIs', ln=1, align='L')
+col_widths_rais = [22, 24, 38, 48, 18, 20]  # id_rai, data_fato, dataultimaatualizacao, municipio, aisp, risp
+pdf.set_font('Arial', 'B', 7)
+pdf.set_fill_color(230, 230, 230)
+for i, col in enumerate(columns_rais):
+    pdf.cell(col_widths_rais[i], 6, str(col).replace('_', ' ').upper(), 1, 0, 'C', fill=True)
+pdf.ln()
+pdf.set_font('Arial', '', 6)
+pdf.set_fill_color(255, 255, 255)
+for idx, row in enumerate(rows_rais):
+    if idx % 2 == 0:
+        pdf.set_fill_color(255, 255, 255)
+    else:
+        pdf.set_fill_color(240, 240, 245)
+    for i, item in enumerate(row):
+        pdf.cell(col_widths_rais[i], 5, safe_str(item), 1, 0, 'C', fill=True)
+    pdf.ln()
+pdf.set_font('Arial', 'I', 9)
+pdf.cell(0, 8, texto_periodo_ate_hoje, ln=1, align='L')
 
 # ------------------------------------------------- SALVANDO O PDF -------------------------------------------------
 

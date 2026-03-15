@@ -4,6 +4,21 @@
       "data": "2026-03-12",
       "timestamp": "2026-03-12T10:28:10.089258",
       "sucesso": true
+    },
+    {
+      "data": "2026-03-13",
+      "timestamp": "2026-03-13T15:23:11.678508",
+      "sucesso": true
+    },
+    {
+      "data": "2026-03-14",
+      "timestamp": "2026-03-14T08:00:24.437911",
+      "sucesso": true
+    },
+    {
+      "data": "2026-03-15",
+      "timestamp": "2026-03-15T08:00:33.884661",
+      "sucesso": true
     }
   ],
   "ultima_intercorrencia": null,
