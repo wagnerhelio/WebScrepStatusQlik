@@ -578,6 +578,7 @@ def enviar_arquivo_para(destinatario, caminho_completo, max_retries=3):
         ".pdf": ("application/pdf", "document"),
         ".json": ("application/json", "document"),
         ".txt": ("text/plain", "document"),
+        ".xlsx": ("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "document"),
         ".png": ("image/png", "image"),
         ".jpg": ("image/jpeg", "image"),
         ".jpeg": ("image/jpeg", "image"),
@@ -758,15 +759,73 @@ def enviar_resumos_tempo():
         enviar_para_todos_destinos(enviar_mensagem_texto, mensagem)
         return
     
-    # Monta o resumo concatenado (resumido: cabeçalho, tempo sem intercorrências, script, execução, tempo)
-    resumo_concat = "⏱️ **RESUMOS DE TEMPOS DE EXECUÇÃO PYSQL**\n\n"
-    resumo_concat += f"🟢 {linha_intercorrencias}\n\n"
-    for nome_script, resumo in resumos.items():
-        resumo_concat += resumo + "\n\n"
+    # Monta o resumo no formato solicitado (ordem: FEMINICIDIOS, HOMICIDIOS)
+    def _get_resumo(nome: str) -> str:
+        return (resumos.get(nome) or "").strip()
+
+    def _extrair_ultima_execucao(resumo: str) -> str:
+        for line in (resumo or "").splitlines():
+            if line.lower().startswith("última execução:"):
+                return line.split(":", 1)[1].strip()
+        return ""
+
+    def _extrair_tempo_total(resumo: str) -> str:
+        for line in (resumo or "").splitlines():
+            if line.lower().startswith("tempo total:"):
+                return line.split(":", 1)[1].strip()
+        return ""
+
+    resumo_fem = _get_resumo("feminicidios")
+    resumo_hom = _get_resumo("homicidios")
+
+    msg = "⏱️ *RESUMOS DE TEMPOS DE EXECUÇÃO PYSQL*\n\n"
+    msg += f"🟢 {linha_intercorrencias}\n\n"
+    if resumo_fem:
+        msg += "📊 *FEMINICIDIOS*\n"
+        msg += f"Última execução: {_extrair_ultima_execucao(resumo_fem)}\n"
+        msg += f"Tempo total: {_extrair_tempo_total(resumo_fem)}\n\n"
+    if resumo_hom:
+        msg += "📊 *HOMICIDIOS*\n"
+        msg += f"Última execução: {_extrair_ultima_execucao(resumo_hom)}\n"
+        msg += f"Tempo total: {_extrair_tempo_total(resumo_hom)}\n\n"
     
     # Envia para todos os destinos
-    stats_resumos = enviar_para_todos_destinos(enviar_mensagem_texto, resumo_concat)
+    stats_resumos = enviar_para_todos_destinos(enviar_mensagem_texto, msg.strip())
     return stats_resumos
+
+
+def enviar_pdfs_e_auditorias_rais():
+    """Envia PDFs e XLSX de auditoria de RAIs na ordem e mensagens solicitadas."""
+    pdf_hom = os.path.join(reports_pysql_dir, "relatorio_homicidios.pdf")
+    pdf_fem = os.path.join(reports_pysql_dir, "relatorio_feminicidios.pdf")
+    xlsx_hom = os.path.join(reports_pysql_dir, "auditoria_rais_homicidio.xlsx")
+    xlsx_fem = os.path.join(reports_pysql_dir, "auditoria_rais_feminicidio.xlsx")
+
+    def _enviar_se_existir(caminho: str):
+        if not os.path.exists(caminho):
+            print(f"⚠️ Arquivo não encontrado para envio: {caminho}")
+            return None
+        return enviar_para_todos_destinos(enviar_arquivo_para, caminho)
+
+    # Mensagens de preparação + envio em sequência
+    enviar_para_todos_destinos(enviar_mensagem_texto, "⏳ Preparando envio de relatórios...\nPDF - homicidios")
+    stats_pdf_hom = _enviar_se_existir(pdf_hom)
+
+    enviar_para_todos_destinos(enviar_mensagem_texto, "⏳ Preparando envio de adutoria de RAIs...\nXLSX - homicidios")
+    stats_xlsx_hom = _enviar_se_existir(xlsx_hom)
+
+    enviar_para_todos_destinos(enviar_mensagem_texto, "⏳ Preparando envio de relatórios...\nPDF - feminicidios")
+    stats_pdf_fem = _enviar_se_existir(pdf_fem)
+
+    enviar_para_todos_destinos(enviar_mensagem_texto, "⏳ Preparando envio de adutoria de RAIs...\nXLSX - feminicidios")
+    stats_xlsx_fem = _enviar_se_existir(xlsx_fem)
+
+    return {
+        "pdf_hom": stats_pdf_hom,
+        "xlsx_hom": stats_xlsx_hom,
+        "pdf_fem": stats_pdf_fem,
+        "xlsx_fem": stats_xlsx_fem,
+    }
 
 # =============================================================================
 # ENVIO DE RELATÓRIOS PDF
@@ -948,10 +1007,18 @@ def main():
             stats_resumos = {'sucessos': 0, 'falhas': 1, 'total': 1}
         
         print("\n" + "="*60)
-        print("📄 ENVIO DE RELATÓRIOS PDF")
+        print("📄 ENVIO DE RELATÓRIOS PDF + AUDITORIA RAIs (XLSX)")
         print("="*60)
         try:
-            stats_pdfs = enviar_relatorios_pdf()
+            stats_envios = enviar_pdfs_e_auditorias_rais()
+            # Agrega estatísticas para o resumo final
+            stats_pdfs = {'sucessos': 0, 'falhas': 0, 'total': 0}
+            for _k, st in (stats_envios or {}).items():
+                if not st:
+                    continue
+                stats_pdfs['sucessos'] += st.get('sucessos', 0)
+                stats_pdfs['falhas'] += st.get('falhas', 0)
+                stats_pdfs['total'] += st.get('total', 0)
         except KeyboardInterrupt:
             print("⚠️ Envio interrompido - continuando...")
             stats_pdfs = {'sucessos': 0, 'falhas': 1, 'total': 1}

@@ -1871,100 +1871,17 @@ for idx, row in enumerate(rows_aisp):
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, texto_periodo_ate_ontem, ln=1, align='L')
 
-# ------------------------------------------------- RELAÇÃO DE RAIs (AO FINAL DO PDF) -------------------------------------------------
-pdf.garantir_espaco_ou_nova_pagina(25)
 columns_rais, rows_rais = resultados["Feminicídios Relação de RAIs"]
 
-# Debug/validação: garante que AISP/RISP realmente estão vindo da SQL
+# --- Auditoria: exporta Relação de RAIs em XLSX (para envio fora do PDF) ---
 try:
-    idx_id = columns_rais.index("ID_RAI") if "ID_RAI" in columns_rais else 0
-    idx_aisp_dbg = columns_rais.index("AISP") if "AISP" in columns_rais else idx_aisp
-    idx_risp_dbg = columns_rais.index("RISP") if "RISP" in columns_rais else idx_risp
-    vazios = [r for r in rows_rais if not (safe_str(r[idx_aisp_dbg]) or "").strip() or not (safe_str(r[idx_risp_dbg]) or "").strip()]
-    if vazios:
-        amostra = ", ".join(str(safe_str(r[idx_id])) for r in vazios[:10])
-        print(f"[RAIs] Atenção: {len(vazios)}/{len(rows_rais)} linhas com AISP/RISP vazios. Ex.: {amostra}", flush=True)
-    else:
-        print(f"[RAIs] OK: {len(rows_rais)} linhas; AISP/RISP preenchidos.", flush=True)
-except Exception as _e:
-    print(f"[RAIs] Debug falhou: {_e}", flush=True)
-
-pdf.set_font('Arial', 'B', 12)
-pdf.set_text_color(0, 0, 0)
-pdf.cell(0, 10, 'Relação de RAIs', ln=1, align='L')
-# Larguras: id_rai, data_fato, dataultimaatualizacao, municipio, aisp, risp (AISP e RISP com mais espaço para nome completo + quebra de linha)
-col_widths_rais = [20, 22, 34, 36, 38, 40]
-altura_linha_rais = 4
-idx_aisp, idx_risp = 4, 5
-
-def _desenhar_cabecalho_rais():
-    pdf.set_font('Arial', 'B', 7)
-    pdf.set_fill_color(230, 230, 230)
-    pdf.set_text_color(0, 0, 0)
-    for i, col in enumerate(columns_rais):
-        pdf.cell(col_widths_rais[i], 6, str(col).replace('_', ' ').upper(), 1, 0, 'C', fill=True)
-    pdf.ln()
-
-_desenhar_cabecalho_rais()
-
-pdf.set_font('Arial', '', 6)
-x_cols_rais = [pdf.l_margin]
-for i in range(len(col_widths_rais) - 1):
-    x_cols_rais.append(x_cols_rais[-1] + col_widths_rais[i])
-
-def _desenhar_celula_texto_quebrado(x: float, y: float, w: float, h: float, texto: str, fill: bool = True):
-    """Desenha uma célula (retângulo) de altura fixa e escreve texto com quebra de linha sem deixar “vazio” visual."""
-    estilo = 'DF' if fill else 'D'
-    pdf.set_text_color(0, 0, 0)
-    pdf.rect(x, y, w, h, estilo)
-    texto = (texto or "").strip() or "N/I"
-    linhas = pdf.multi_cell(w, altura_linha_rais, texto, 0, 'L', split_only=True) or [""]
-    # Sem padding: em células de 1 linha (altura = altura_linha_rais) o padding “come” a linha e fica em branco
-    y_atual = y
-    for linha in linhas:
-        if y_atual + altura_linha_rais > y + h + 1e-6:
-            break
-        pdf.set_xy(x, y_atual)
-        pdf.cell(w, altura_linha_rais, linha, 0, 0, 'L')
-        y_atual += altura_linha_rais
-
-for idx, row in enumerate(rows_rais):
-    pdf.set_text_color(0, 0, 0)
-    if idx % 2 == 0:
-        pdf.set_fill_color(255, 255, 255)
-    else:
-        pdf.set_fill_color(240, 240, 245)
-    aisp_text = (safe_str(row[idx_aisp]) or "").strip() or "N/I"
-    risp_text = (safe_str(row[idx_risp]) or "").strip() or "N/I"
-    linhas_aisp = pdf.multi_cell(col_widths_rais[idx_aisp], altura_linha_rais, aisp_text, 0, 'L', split_only=True)
-    linhas_risp = pdf.multi_cell(col_widths_rais[idx_risp], altura_linha_rais, risp_text, 0, 'L', split_only=True)
-    n_linhas = max(len(linhas_aisp) if linhas_aisp else 1, len(linhas_risp) if linhas_risp else 1)
-    row_height = n_linhas * altura_linha_rais
-
-    # Se a próxima linha não couber, quebra página e repete cabeçalho (evita páginas "quebradas" pelo multi_cell)
-    if pdf.get_y() + row_height > pdf.page_break_trigger:
-        pdf.add_page()
-        pdf.set_font('Arial', 'B', 12)
-        pdf.set_text_color(0, 0, 0)
-        pdf.cell(0, 10, 'Relação de RAIs', ln=1, align='L')
-        _desenhar_cabecalho_rais()
-        pdf.set_font('Arial', '', 6)
-
-    y_start = pdf.get_y()
-    prev_auto = pdf.auto_page_break
-    prev_margin = getattr(pdf, 'b_margin', pdf.b_margin if hasattr(pdf, 'b_margin') else 0)
-    pdf.set_auto_page_break(False)
-    try:
-        for i in range(4):
-            pdf.set_xy(x_cols_rais[i], y_start)
-            pdf.cell(col_widths_rais[i], row_height, safe_str(row[i]), 1, 0, 'C', fill=True)
-        _desenhar_celula_texto_quebrado(x_cols_rais[idx_aisp], y_start, col_widths_rais[idx_aisp], row_height, aisp_text, fill=True)
-        _desenhar_celula_texto_quebrado(x_cols_rais[idx_risp], y_start, col_widths_rais[idx_risp], row_height, risp_text, fill=True)
-        pdf.set_y(y_start + row_height)
-    finally:
-        pdf.set_auto_page_break(prev_auto, prev_margin)
-pdf.set_font('Arial', 'I', 9)
-pdf.cell(0, 8, texto_periodo_ate_hoje, ln=1, align='L')
+    auditoria_path = os.path.join(PROJECT_ROOT, 'pysql', 'reports_pysql', 'auditoria_rais_feminicidio.xlsx')
+    os.makedirs(os.path.dirname(auditoria_path), exist_ok=True)
+    df_rais = pd.DataFrame(rows_rais, columns=[str(c).lower() for c in columns_rais])
+    df_rais.to_excel(auditoria_path, index=False)
+    print(f"XLSX salvo: {auditoria_path}", flush=True)
+except Exception as e:
+    print(f"⚠️ Falha ao gerar XLSX de auditoria de RAIs (feminicídio): {e}", flush=True)
 
 # ------------------------------------------------- SALVANDO O PDF -------------------------------------------------
 
