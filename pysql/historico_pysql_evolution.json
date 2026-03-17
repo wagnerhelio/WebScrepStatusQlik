@@ -19,8 +19,13 @@
       "data": "2026-03-15",
       "timestamp": "2026-03-15T09:09:59.804883",
       "sucesso": true
+    },
+    {
+      "data": "2026-03-16",
+      "timestamp": "2026-03-16T08:00:06.782594",
+      "sucesso": true
     }
   ],
-  "ultima_intercorrencia": null,
+  "ultima_intercorrencia": "2026-03-17T10:37:37.803897",
   "ultima_intercorrencia_resumo": null
 }
