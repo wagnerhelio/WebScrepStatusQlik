@@ -17,6 +17,12 @@ import threading
 # Lock para serializar saída da barra de progresso (evita duas consultas misturarem na mesma linha)
 _progress_lock = threading.Lock()
 
+MESES_ABREV_PT = ("JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ")
+
+def mes_abrev_pt(data):
+    """Retorna abreviação de mês fixa em PT-BR (independe de locale do SO)."""
+    return MESES_ABREV_PT[data.month - 1]
+
 # Define o diretório base do script
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)  # Volta um nível para a raiz do projeto
@@ -388,13 +394,18 @@ feminicidios_hoje, feminicidios_ontem, feminicidios_mes, feminicidios_mes_ontem,
 
 hoje = datetime.now()
 dia_atual = hoje.day
-mes_atual = hoje.strftime('%b').capitalize()  # Ex: 'Jul'
+mes_atual = mes_abrev_pt(hoje)  # Ex: 'ABR'
 ano_atual = hoje.year
 ontem = hoje - timedelta(days=1)
 ontem_data = (hoje - timedelta(days=1)).strftime('%d/%m/%Y')
-mes_ontem = ontem.strftime('%b').capitalize()  # Ex: 'Jul'
+mes_ontem = mes_abrev_pt(ontem)  # Ex: 'MAR'
 dia_ontem = ontem.day
+ano_ontem = ontem.year
 ano_anterior = ano_atual - 1
+
+# Convenção temporal de exibição:
+# - Tempo real: variáveis de hoje/mes_atual (KPIs externos e blocos "dia atual")
+# - Consolidado: variáveis de ontem/mes_ontem (caixa interna e blocos "dia anterior")
 
 # Textos de rodapé: período completo (tabelas/gráficos) e apenas data/hora (só no KPI do dia)
 texto_periodo_ate_hoje = f"De 01/01/{ano_atual} até {hoje.strftime('%d/%m/%Y %H:%M:%S')}"
@@ -402,6 +413,9 @@ texto_periodo_apenas_dia = hoje.strftime('%d/%m/%Y %H:%M:%S')  # só no KPI "Hom
 texto_periodo_ate_ontem = f"De 01/01/{ano_atual} até {ontem_data}"
 # Período anterior (sem hora): 01/01/ano_anterior até ontem
 texto_periodo_anterior = f"De 01/01/{ano_anterior} até {ontem_data}"
+texto_periodo_mes_referencia = (
+    f"Período de referência: 01/{ontem.strftime('%m/%Y')} a {ontem.strftime('%d/%m/%Y')}"
+)
 
 # --- INÍCIO DA GERAÇÃO DO PDF ---
 pdf = PDFComRodape()
@@ -441,11 +455,11 @@ escreve_linha_valor('Homicídios (dia anterior)', homicidios_ontem)
 linha_y += linha_h
 escreve_linha_valor(f'Homicídios no mês {mes_ontem}', homicidios_mes_ontem)
 linha_y += linha_h
-escreve_linha_valor(f'Homicídios no ano {ano_atual}', homicidios_ano)
+escreve_linha_valor(f'Homicídios no ano {ano_atual}', homicidios_ano_ontem)
 linha_y += linha_h
 escreve_linha_valor(f'Feminicídios no mês {mes_ontem}', feminicidios_mes_ontem)
 linha_y += linha_h
-escreve_linha_valor(f'Feminicídios no ano {ano_atual}', feminicidios_ano)
+escreve_linha_valor(f'Feminicídios no ano {ano_atual}', feminicidios_ano_ontem)
 linha_y += linha_h
 
 # Observação
@@ -853,7 +867,7 @@ pdf.garantir_espaco_ou_nova_pagina(70)
 # Título do grafico (tratado como entidade junto com o gráfico abaixo)
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)  # Preto
-titulo_mes_atual = f'Homicídios - Comparativo por dia no mês atual: {hoje.strftime("%b/%Y")}'
+titulo_mes_atual = f'Homicídios - Comparativo por dia no mês de referência (até ontem): {mes_ontem}/{ano_ontem}'
 pdf.cell(0, 10, titulo_mes_atual, ln=1, align='L')
 
 # Cria o DataFrame
@@ -866,7 +880,12 @@ if not df_dia.empty:
     df_dia['HOMICIDIOS'] = df_dia['HOMICIDIOS'].astype(int)
 
     # Pivot para barras agrupadas
-    df_pivot = df_dia.pivot(index='DATA', columns='ANO', values='HOMICIDIOS').fillna(0)
+    df_pivot = df_dia.pivot_table(
+        index='DATA',
+        columns='ANO',
+        values='HOMICIDIOS',
+        aggfunc='sum'
+    ).fillna(0)
     df_pivot = df_pivot.reindex(sorted(df_pivot.index, key=lambda x: int(x.split('/')[0])))
 
     plt.figure(figsize=(10, 2.0))
@@ -916,7 +935,7 @@ if os.path.exists(grafico_dia_path):
     pdf.image(grafico_dia_path, x=5, w=200)
 else:
     pdf.set_font('Arial', 'I', 10)
-    pdf.cell(0, 8, 'Gráfico não disponível', ln=1, align='C')
+    pdf.cell(0, 8, f'Gráfico não disponível para {texto_periodo_mes_referencia}', ln=1, align='C')
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, texto_periodo_ate_ontem, ln=1, align='L')
 
@@ -926,7 +945,7 @@ pdf.cell(0, 8, texto_periodo_ate_ontem, ln=1, align='L')
 # Título da tabela
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)  # Preto
-titulo_por_dia = f'Homicídios comparativo por dia no mês atual :'
+titulo_por_dia = f'Homicídios comparativo por dia no mês de referência (até ontem) :'
 pdf.cell(0, 10, titulo_por_dia, ln=1, align='L')
 
 if df_pivot is not None and not df_pivot.empty:
@@ -959,7 +978,7 @@ if df_pivot is not None and not df_pivot.empty:
         pdf.ln()
 else:
     pdf.set_font('Arial', 'I', 10)
-    pdf.cell(0, 8, 'Sem dados para montar a tabela comparativa por dia nesta execucao.', ln=1, align='L')
+    pdf.cell(0, 8, f'Sem dados para montar a tabela comparativa por dia em {texto_periodo_mes_referencia}.', ln=1, align='L')
 
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, texto_periodo_ate_ontem, ln=1, align='L')
@@ -968,7 +987,7 @@ pdf.cell(0, 8, texto_periodo_ate_ontem, ln=1, align='L')
 # Na virada do mês (ex: 1º mar), dados são do mês de ontem (fev); rótulos usam mes_ontem para bater com a SQL
 columns_regiao_observatorio_atualizada = [
     "REGIÃO",
-    f"{mes_atual}/{ano_anterior} (fechado)",
+    f"{mes_ontem}/{ano_anterior} (fechado)",
     f"{mes_ontem}/{ano_anterior} (até dia {dia_ontem})",
     f"{mes_ontem}/{ano_atual} (até dia {dia_ontem})",
     "%",
@@ -1113,7 +1132,7 @@ columns_dia_regioes, rows_dia_regioes = resultados["Homicídios Comparativo por 
 # Título do grafico
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)
-titulo_mes_regiao = f'Homicídios por dia por Região no mês atual: {hoje.strftime("%b/%Y")}'
+titulo_mes_regiao = f'Homicídios por dia por Região no mês de referência (até ontem): {mes_ontem}/{ano_ontem}'
 pdf.cell(0, 10, titulo_mes_regiao, ln=1, align='L')
 
 # Cria o DataFrame
@@ -1123,7 +1142,12 @@ if not df_comparativo_dia.empty:
     df_comparativo_dia['HOMICIDIOS'] = df_comparativo_dia['HOMICIDIOS'].astype(int)
 
     # Pivot por DATA e REGIAO_OBSERVATORIO
-    df_pivot = df_comparativo_dia.pivot(index='DATA', columns='REGIAO_OBSERVATORIO', values='HOMICIDIOS').fillna(0)
+    df_pivot = df_comparativo_dia.pivot_table(
+        index='DATA',
+        columns='REGIAO_OBSERVATORIO',
+        values='HOMICIDIOS',
+        aggfunc='sum'
+    ).fillna(0)
     df_pivot = df_pivot.reindex(sorted(df_pivot.index, key=lambda x: int(x.split('/')[0])))
 
     plt.figure(figsize=(10, 1.0))
@@ -1174,7 +1198,7 @@ if not df_comparativo_dia.empty and os.path.exists(grafico_dia_regiao_path):
     except Exception as e:
         print(f"Erro ao inserir gráfico dia região: {e}")
         pdf.set_font('Arial', 'I', 10)
-        pdf.cell(0, 8, 'Gráfico não disponível', ln=1, align='C')
+        pdf.cell(0, 8, f'Gráfico não disponível para {texto_periodo_mes_referencia}', ln=1, align='C')
 else:
     if df_comparativo_dia.empty:
         try:
@@ -1190,13 +1214,13 @@ else:
                 pdf.image(grafico_dia_regiao_path, x=65, w=80)
             except Exception:
                 pdf.set_font('Arial', 'I', 10)
-                pdf.cell(0, 8, 'Não há valores registrados', ln=1, align='C')
+                pdf.cell(0, 8, f'Não há valores registrados em {texto_periodo_mes_referencia}', ln=1, align='C')
         else:
             pdf.set_font('Arial', 'I', 10)
-            pdf.cell(0, 8, 'Não há valores registrados', ln=1, align='C')
+            pdf.cell(0, 8, f'Não há valores registrados em {texto_periodo_mes_referencia}', ln=1, align='C')
     else:
         pdf.set_font('Arial', 'I', 10)
-        pdf.cell(0, 8, 'Gráfico não disponível', ln=1, align='C')
+        pdf.cell(0, 8, f'Gráfico não disponível para {texto_periodo_mes_referencia}', ln=1, align='C')
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, texto_periodo_ate_ontem, ln=1, align='L')
 
@@ -1544,7 +1568,7 @@ pdf.garantir_espaco_ou_nova_pagina(80)
 # Rótulos com mes_ontem para virada do mês (ex: 1º mar = dados de fev)
 columns_municipio_top20_atualizada = [
     "REGIÃO",
-    f"{mes_atual}/{ano_anterior} (fechado)",
+    f"{mes_ontem}/{ano_anterior} (fechado)",
     f"{mes_ontem}/{ano_anterior} (até dia {dia_ontem})",
     f"{mes_ontem}/{ano_atual} (até dia {dia_ontem})",
     "%",
@@ -1661,7 +1685,7 @@ pdf.garantir_espaco_ou_nova_pagina(80)
 # Rótulos com mes_ontem para virada do mês
 columns_risp_atualizada = [
     "RISP",
-    f"{mes_atual}/{ano_anterior} (fechado)",
+    f"{mes_ontem}/{ano_anterior} (fechado)",
     f"{mes_ontem}/{ano_anterior} (até dia {dia_ontem})",
     f"{mes_ontem}/{ano_atual} (até dia {dia_ontem})",
     "%",
@@ -1782,7 +1806,7 @@ pdf.garantir_espaco_ou_nova_pagina(80)
 # Rótulos com mes_ontem para virada do mês
 columns_aisp_atualizada = [
     "AISP",
-    f"{mes_atual}/{ano_anterior} (fechado)",
+    f"{mes_ontem}/{ano_anterior} (fechado)",
     f"{mes_ontem}/{ano_anterior} (até dia {dia_ontem})",
     f"{mes_ontem}/{ano_atual} (até dia {dia_ontem})",
     "%",
