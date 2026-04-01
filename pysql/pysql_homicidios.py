@@ -858,6 +858,7 @@ pdf.cell(0, 10, titulo_mes_atual, ln=1, align='L')
 
 # Cria o DataFrame
 df_dia = pd.DataFrame(rows_dia, columns=columns_dia)
+df_pivot = None
 
 # Ajusta tipos e nomes
 if not df_dia.empty:
@@ -928,33 +929,37 @@ pdf.set_text_color(0, 0, 0)  # Preto
 titulo_por_dia = f'Homicídios comparativo por dia no mês atual :'
 pdf.cell(0, 10, titulo_por_dia, ln=1, align='L')
 
-# Transpõe para: colunas = dias, linhas = anos
-df_tab = df_pivot.T
+if df_pivot is not None and not df_pivot.empty:
+    # Transpõe para: colunas = dias, linhas = anos
+    df_tab = df_pivot.T
 
-# Largura total disponível (ajuste conforme sua margem)
-largura_total = 190
-num_colunas = len(df_tab.columns)
-col_width_ano = 12
-col_width = (largura_total - col_width_ano) / num_colunas if num_colunas > 0 else largura_total
+    # Largura total disponível (ajuste conforme sua margem)
+    largura_total = 190
+    num_colunas = len(df_tab.columns)
+    col_width_ano = 12
+    col_width = (largura_total - col_width_ano) / num_colunas if num_colunas > 0 else largura_total
 
-# Cabeçalho
-dias = list(df_tab.columns)
-pdf.set_font('Arial', 'B', 7)
-pdf.set_fill_color(230, 230, 230)
-pdf.set_draw_color(0, 0, 0)
-pdf.set_text_color(0, 0, 0)
-pdf.cell(col_width_ano, 6, 'Ano', 1, 0, 'C', fill=True)
-for dia in dias:
-    pdf.cell(col_width, 6, str(dia), 1, 0, 'C', fill=True)
-pdf.ln()
-
-# Linhas de dados (anos)
-pdf.set_font('Arial', '', 7)
-for ano, row in df_tab.iterrows():
-    pdf.cell(col_width_ano, 6, str(ano), 1, 0, 'C')
-    for valor in row:
-        pdf.cell(col_width, 6, str(int(valor)), 1, 0, 'C')
+    # Cabeçalho
+    dias = list(df_tab.columns)
+    pdf.set_font('Arial', 'B', 7)
+    pdf.set_fill_color(230, 230, 230)
+    pdf.set_draw_color(0, 0, 0)
+    pdf.set_text_color(0, 0, 0)
+    pdf.cell(col_width_ano, 6, 'Ano', 1, 0, 'C', fill=True)
+    for dia in dias:
+        pdf.cell(col_width, 6, str(dia), 1, 0, 'C', fill=True)
     pdf.ln()
+
+    # Linhas de dados (anos)
+    pdf.set_font('Arial', '', 7)
+    for ano, row in df_tab.iterrows():
+        pdf.cell(col_width_ano, 6, str(ano), 1, 0, 'C')
+        for valor in row:
+            pdf.cell(col_width, 6, str(int(valor)), 1, 0, 'C')
+        pdf.ln()
+else:
+    pdf.set_font('Arial', 'I', 10)
+    pdf.cell(0, 8, 'Sem dados para montar a tabela comparativa por dia nesta execucao.', ln=1, align='L')
 
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, texto_periodo_ate_ontem, ln=1, align='L')

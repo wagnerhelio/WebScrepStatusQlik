@@ -49,30 +49,46 @@ evo_instance_token = os.getenv("EVOLUTION_INSTANCE_ID")
 # Suporte a múltiplos destinos (separados por quebra de linha ou vírgula)
 evo_grupo_raw = os.getenv("EVO_DESTINO_GRUPO", "")
 evo_destino_raw = os.getenv("EVO_DESTINO", "")
-# Grupo administrativo para notificação de erros (ex.: BI SSP)
+# Novas variáveis de roteamento (com fallback para legado)
+evo_grupo_oficial_raw = os.getenv("EVO_GRUPO_OFICIAL", "").strip()
+evo_grupo_controle_raw = os.getenv("EVO_GRUPO_CONTROLE", "").strip()
+# Grupo administrativo para notificação de erros (legado)
 evo_grupo_admin = (os.getenv("EVO_GRUPO_ADMIN", "") or "").strip()
 if evo_grupo_admin and "@g.us" not in evo_grupo_admin:
     evo_grupo_admin = ""
 
-# Processa múltiplos grupos (separa por quebras de linha ou vírgula)
-evo_grupos = []
-if evo_grupo_raw:
-    # Remove comentários e separa por quebras de linha ou vírgula
-    linhas = evo_grupo_raw.replace('\n', ',').split(',')
-    for linha in linhas:
-        linha = linha.strip().split('#')[0].strip()  # Remove comentários
-        if linha and '@g.us' in linha:  # Só adiciona se for um grupo válido
-            evo_grupos.append(linha)
 
-# Processa múltiplos destinos individuais
-evo_destinos = []
-if evo_destino_raw:
-    # Remove comentários e separa por quebras de linha ou vírgula
-    linhas = evo_destino_raw.replace('\n', ',').split(',')
-    for linha in linhas:
-        linha = linha.strip().split('#')[0].strip()  # Remove comentários
-        if linha and linha.isdigit():  # Só adiciona se for um número válido
-            evo_destinos.append(linha)
+def _parse_jids(raw: str) -> list[str]:
+    saida = []
+    if not raw:
+        return saida
+    for linha in raw.replace("\n", ",").split(","):
+        linha = linha.strip().split("#")[0].strip()
+        if linha and "@g.us" in linha and linha not in saida:
+            saida.append(linha)
+    return saida
+
+
+def _parse_numbers(raw: str) -> list[str]:
+    saida = []
+    if not raw:
+        return saida
+    for linha in raw.replace("\n", ",").split(","):
+        linha = linha.strip().split("#")[0].strip()
+        if linha and linha.isdigit() and linha not in saida:
+            saida.append(linha)
+    return saida
+
+
+# Legado: grupos gerais e destinos individuais
+evo_grupos = _parse_jids(evo_grupo_raw)
+evo_destinos = _parse_numbers(evo_destino_raw)
+
+# Novo roteamento
+evo_grupos_oficiais = _parse_jids(evo_grupo_oficial_raw) or list(evo_grupos)
+evo_grupos_controle = _parse_jids(evo_grupo_controle_raw)
+if not evo_grupos_controle and evo_grupo_admin:
+    evo_grupos_controle = [evo_grupo_admin]
 
 # Mantém compatibilidade com versão anterior
 evo_grupo = evo_grupos[0] if evo_grupos else ""
@@ -105,7 +121,12 @@ pastas_envio = [reports_pysql_dir, errorlogs_pysql_dir, img_reports_dir]
 # =============================================================================
 
 # Verifica se todas as variáveis obrigatórias estão definidas (permite só --enviar-para)
-total_destinos = len(evo_grupos) + len(evo_destinos) + len(evo_enviar_para_override)
+total_destinos = (
+    len(evo_grupos_oficiais)
+    + len(evo_destinos)
+    + len(evo_enviar_para_override)
+    + len(evo_grupos_controle)
+)
 if not all([evo_api_token, evo_instance_id, evo_instance_token]) or total_destinos == 0:
     print("❌ Variáveis de ambiente obrigatórias não definidas. Verifique o arquivo .env")
     print("📋 Variáveis necessárias:")
@@ -114,7 +135,7 @@ if not all([evo_api_token, evo_instance_id, evo_instance_token]) or total_destin
     print("   - EVOLUTION_INSTANCE_ID")
     print("   - EVO_DESTINO_GRUPO ou EVO_DESTINO")
     print(f"📊 Destinos encontrados: {total_destinos}")
-    print(f"   Grupos: {len(evo_grupos)}")
+    print(f"   Grupos oficiais: {len(evo_grupos_oficiais)}")
     print(f"   Destinos individuais: {len(evo_destinos)}")
     sys.exit(1)
 
@@ -666,21 +687,21 @@ def enviar_mensagem_texto(destinatario, texto):
             ),
             evo_instance_token
         )
-        if destinatario == evo_grupo_admin:
-            print("✅ Notificação enviada ao grupo administrativo", flush=True)
+        if destinatario in destinos_controle():
+            print("✅ Notificação enviada ao grupo de controle", flush=True)
         else:
             print("✅ Mensagem de texto enviada")
         return True
     except Exception as e:
         import traceback
-        if destinatario == evo_grupo_admin:
-            print("❌ Erro ao enviar notificação ao grupo administrativo", flush=True)
+        if destinatario in destinos_controle():
+            print("❌ Erro ao enviar notificação ao grupo de controle", flush=True)
         else:
             print(f"❌ Erro ao enviar mensagem de texto: {e}")
         print(f"🔍 Traceback: {traceback.format_exc()}")
         return False
 
-def enviar_para_todos_destinos(func, *args, **kwargs):
+def _enviar_para_destinos(destinos, func, *args, **kwargs):
     """
     Executa uma função para todos os destinos configurados.
     
@@ -692,8 +713,7 @@ def enviar_para_todos_destinos(func, *args, **kwargs):
     Returns:
         dict: Estatísticas de envio {'sucessos': int, 'falhas': int, 'total': int}
     """
-    # Combina todos os destinos (grupos + individuais + override ex. webhook)
-    todos_destinos = evo_destinos + evo_grupos + evo_enviar_para_override
+    todos_destinos = list(destinos or [])
     
     print(f"📤 Enviando para {len(todos_destinos)} destino(s)")
     
@@ -726,21 +746,69 @@ def enviar_para_todos_destinos(func, *args, **kwargs):
     return estatisticas
 
 
+def destinos_oficiais():
+    """Retorna destinos oficiais para comunicação de produção."""
+    return list(dict.fromkeys(evo_destinos + evo_grupos_oficiais + evo_enviar_para_override))
+
+
+def destinos_controle():
+    """Retorna destinos de controle para notificações operacionais/erro."""
+    return list(dict.fromkeys(evo_grupos_controle))
+
+
+def enviar_para_todos_destinos(func, *args, **kwargs):
+    """Compatibilidade: mantém envio para destinos oficiais."""
+    return _enviar_para_destinos(destinos_oficiais(), func, *args, **kwargs)
+
+
+def enviar_para_destinos_oficiais(func, *args, **kwargs):
+    return _enviar_para_destinos(destinos_oficiais(), func, *args, **kwargs)
+
+
+def enviar_para_destinos_controle(func, *args, **kwargs):
+    return _enviar_para_destinos(destinos_controle(), func, *args, **kwargs)
+
+
 def notificar_erro_admin(mensagem_erro: str) -> bool:
-    """Envia mensagem de erro ao grupo administrativo (EVO_GRUPO_ADMIN), sem expor dados sensíveis."""
-    if not evo_grupo_admin:
+    """Envia mensagem de erro ao grupo de controle (ou admin legado)."""
+    if os.getenv("PYSQL_NOTIFY_CONTROL_ON_FAILURE", "true").strip().lower() not in ("1", "true", "yes"):
+        print("ℹ️ Notificação ao grupo de controle suprimida nesta tentativa.")
+        return False
+    if not destinos_controle():
         return False
     try:
-        return enviar_mensagem_texto(evo_grupo_admin, mensagem_erro)
+        stats = enviar_para_destinos_controle(enviar_mensagem_texto, mensagem_erro)
+        return stats.get("sucessos", 0) > 0
     except Exception:
         return False
+
+
+def avaliar_criterios_aceite(scripts_falharam):
+    """Valida critérios de aceite antes de qualquer envio ao grupo oficial."""
+    artefatos_obrigatorios = [
+        ("PDF - homicidios", os.path.join(reports_pysql_dir, "relatorio_homicidios.pdf")),
+        ("XLSX - homicidios", os.path.join(reports_pysql_dir, "auditoria_rais_homicidio.xlsx")),
+        ("PDF - feminicidios", os.path.join(reports_pysql_dir, "relatorio_feminicidios.pdf")),
+        ("XLSX - feminicidios", os.path.join(reports_pysql_dir, "auditoria_rais_feminicidio.xlsx")),
+    ]
+    faltantes = [nome for nome, caminho in artefatos_obrigatorios if not os.path.exists(caminho)]
+    motivos = []
+    if scripts_falharam:
+        motivos.append("Falha em scripts: " + ", ".join(scripts_falharam))
+    if faltantes:
+        motivos.append("Artefatos obrigatórios ausentes: " + ", ".join(faltantes))
+    return {
+        "aprovado": not motivos,
+        "motivos_reprovacao": motivos,
+        "faltantes": faltantes,
+    }
 
 
 # =============================================================================
 # ENVIO DE RESUMOS DE TEMPOS
 # =============================================================================
 
-def enviar_resumos_tempo():
+def enviar_resumos_tempo(enviador_texto=enviar_para_destinos_oficiais):
     """Envia resumos de tempos de execução para todos os destinos."""
     print("📊 Enviando resumos de tempos de execução...")
     
@@ -756,7 +824,7 @@ def enviar_resumos_tempo():
     
     if not resumos:
         mensagem = "Nenhum resumo de tempo de execução disponível no momento.\n\n" + linha_intercorrencias
-        enviar_para_todos_destinos(enviar_mensagem_texto, mensagem)
+        enviador_texto(enviar_mensagem_texto, mensagem)
         return
     
     # Monta o resumo no formato solicitado (ordem: FEMINICIDIOS, HOMICIDIOS)
@@ -790,12 +858,12 @@ def enviar_resumos_tempo():
         msg += f"Tempo total: {_extrair_tempo_total(resumo_hom)}\n\n"
     
     # Envia para todos os destinos
-    stats_resumos = enviar_para_todos_destinos(enviar_mensagem_texto, msg.strip())
+    stats_resumos = enviador_texto(enviar_mensagem_texto, msg.strip())
     return stats_resumos
 
 
-def enviar_pdfs_e_auditorias_rais():
-    """Envia PDFs e XLSX de auditoria de RAIs na ordem e mensagens solicitadas."""
+def enviar_pdfs_e_auditorias_rais(enviador_texto=enviar_para_destinos_oficiais, enviador_arquivo=enviar_para_destinos_oficiais):
+    """Envia PDFs e XLSX de auditoria de RAIs apenas para artefatos existentes."""
     pdf_hom = os.path.join(reports_pysql_dir, "relatorio_homicidios.pdf")
     pdf_fem = os.path.join(reports_pysql_dir, "relatorio_feminicidios.pdf")
     xlsx_hom = os.path.join(reports_pysql_dir, "auditoria_rais_homicidio.xlsx")
@@ -805,20 +873,49 @@ def enviar_pdfs_e_auditorias_rais():
         if not os.path.exists(caminho):
             print(f"⚠️ Arquivo não encontrado para envio: {caminho}")
             return None
-        return enviar_para_todos_destinos(enviar_arquivo_para, caminho)
+        return enviador_arquivo(enviar_arquivo_para, caminho)
+
+    def _tentar_envio(nome_item: str, prep_msg: str, caminho: str):
+        if not os.path.exists(caminho):
+            print(f"⚠️ {nome_item}: arquivo indisponível, envio ignorado.")
+            return None
+        enviador_texto(enviar_mensagem_texto, prep_msg)
+        return _enviar_se_existir(caminho)
 
     # Mensagens de preparação + envio em sequência
-    enviar_para_todos_destinos(enviar_mensagem_texto, "⏳ Preparando envio de relatórios...\nPDF - homicidios")
-    stats_pdf_hom = _enviar_se_existir(pdf_hom)
+    stats_pdf_hom = _tentar_envio(
+        "PDF homicidios",
+        "⏳ Preparando envio de relatórios...\nPDF - homicidios",
+        pdf_hom,
+    )
+    stats_xlsx_hom = _tentar_envio(
+        "XLSX homicidios",
+        "⏳ Preparando envio de adutoria de RAIs...\nXLSX - homicidios",
+        xlsx_hom,
+    )
+    stats_pdf_fem = _tentar_envio(
+        "PDF feminicidios",
+        "⏳ Preparando envio de relatórios...\nPDF - feminicidios",
+        pdf_fem,
+    )
+    stats_xlsx_fem = _tentar_envio(
+        "XLSX feminicidios",
+        "⏳ Preparando envio de adutoria de RAIs...\nXLSX - feminicidios",
+        xlsx_fem,
+    )
 
-    enviar_para_todos_destinos(enviar_mensagem_texto, "⏳ Preparando envio de adutoria de RAIs...\nXLSX - homicidios")
-    stats_xlsx_hom = _enviar_se_existir(xlsx_hom)
-
-    enviar_para_todos_destinos(enviar_mensagem_texto, "⏳ Preparando envio de relatórios...\nPDF - feminicidios")
-    stats_pdf_fem = _enviar_se_existir(pdf_fem)
-
-    enviar_para_todos_destinos(enviar_mensagem_texto, "⏳ Preparando envio de adutoria de RAIs...\nXLSX - feminicidios")
-    stats_xlsx_fem = _enviar_se_existir(xlsx_fem)
+    faltantes = []
+    if stats_pdf_hom is None:
+        faltantes.append("PDF - homicidios")
+    if stats_xlsx_hom is None:
+        faltantes.append("XLSX - homicidios")
+    if stats_pdf_fem is None:
+        faltantes.append("PDF - feminicidios")
+    if stats_xlsx_fem is None:
+        faltantes.append("XLSX - feminicidios")
+    if faltantes:
+        msg = "⚠️ Alguns artefatos não foram gerados nesta execução:\n- " + "\n- ".join(faltantes)
+        enviador_texto(enviar_mensagem_texto, msg)
 
     return {
         "pdf_hom": stats_pdf_hom,
@@ -872,7 +969,7 @@ def enviar_relatorios_pdf():
 # ENVIO DE LOGS DE ERRO
 # =============================================================================
 
-def enviar_logs_erro():
+def enviar_logs_erro(enviador_texto=enviar_para_destinos_controle, enviador_arquivo=enviar_para_destinos_controle):
     """Envia logs de erro das consultas PySQL."""
     print("📋 Enviando logs de erro...")
     
@@ -892,7 +989,7 @@ def enviar_logs_erro():
         # Envia cada arquivo de erro
         stats_erros = {'sucessos': 0, 'falhas': 0, 'total': 0}
         for arquivo in arquivos_erro:
-            stats_arquivo = enviar_para_todos_destinos(enviar_arquivo_para, arquivo)
+            stats_arquivo = enviador_arquivo(enviar_arquivo_para, arquivo)
             stats_erros['sucessos'] += stats_arquivo['sucessos']
             stats_erros['falhas'] += stats_arquivo['falhas']
             stats_erros['total'] += stats_arquivo['total']
@@ -900,7 +997,7 @@ def enviar_logs_erro():
     else:
         # Envia mensagem de que não há erros
         mensagem = "✅ Nenhum erro encontrado nas consultas PySQL."
-        stats_erros = enviar_para_todos_destinos(enviar_mensagem_texto, mensagem)
+        stats_erros = enviador_texto(enviar_mensagem_texto, mensagem)
         return stats_erros
 
 # =============================================================================
@@ -968,10 +1065,18 @@ def main():
     print(f"📁 Pasta de logs de erro PySQL: {errorlogs_pysql_dir}")
     print(f"📁 Pasta de scripts PySQL: {pysql_dir}")
     
-    print(f"\n📊 Destinos: {len(evo_destinos) + len(evo_grupos)} configurado(s)")
+    print(
+        f"\n📊 Destinos oficiais: {len(destinos_oficiais())} | "
+        f"controle: {len(destinos_controle())}"
+    )
     
     resultados_execucao = {}
     scripts_falharam = []
+    stats_operacional = {'sucessos': 0, 'falhas': 0, 'total': 0}
+    stats_comunicacao = {'sucessos': 0, 'falhas': 0, 'total': 0}
+    stats_resumos = {'sucessos': 0, 'falhas': 0, 'total': 0}
+    stats_pdfs = {'sucessos': 0, 'falhas': 0, 'total': 0}
+    stats_erros = {'sucessos': 0, 'falhas': 0, 'total': 0}
     try:
         print("\n" + "="*60)
         print("🔍 VERIFICAÇÃO DE DEPENDÊNCIAS PYSQL")
@@ -988,65 +1093,90 @@ def main():
             resultados_execucao = {"interrompido": "Execução interrompida"}
             scripts_falharam = []
         
-        # Aviso explícito quando um ou mais scripts falharam (evita mensagem sem PDF)
-        if scripts_falharam:
+        gate_aceite = avaliar_criterios_aceite(scripts_falharam)
+        if not gate_aceite["aprovado"]:
+            motivos = "\n- ".join(gate_aceite["motivos_reprovacao"]) if gate_aceite["motivos_reprovacao"] else "Critérios de aceite não atendidos."
             msg_falha = (
-                "⚠️ *Relatório PySQL*: um ou mais scripts falharam.\n"
-                "Scripts com erro: " + ", ".join(scripts_falharam) + "\n"
-                "Nenhum PDF foi gerado. Os logs de erro serão enviados em seguida."
+                "⚠️ *Relatório PySQL reprovado no validador final.*\n"
+                "Nada será enviado ao grupo oficial.\n"
+                f"Motivos:\n- {motivos}\n"
+                "Serão enviados apenas avisos e logs no grupo de controle."
             )
-            enviar_para_todos_destinos(enviar_mensagem_texto, msg_falha)
-        
-        print("\n" + "="*60)
-        print("📊 ENVIO DE RESUMOS DE TEMPOS")
-        print("="*60)
-        try:
-            stats_resumos = enviar_resumos_tempo()
-        except KeyboardInterrupt:
-            print("⚠️ Envio interrompido - continuando...")
-            stats_resumos = {'sucessos': 0, 'falhas': 1, 'total': 1}
-        
-        print("\n" + "="*60)
-        print("📄 ENVIO DE RELATÓRIOS PDF + AUDITORIA RAIs (XLSX)")
-        print("="*60)
-        try:
-            stats_envios = enviar_pdfs_e_auditorias_rais()
-            # Agrega estatísticas para o resumo final
-            stats_pdfs = {'sucessos': 0, 'falhas': 0, 'total': 0}
-            for _k, st in (stats_envios or {}).items():
-                if not st:
-                    continue
-                stats_pdfs['sucessos'] += st.get('sucessos', 0)
-                stats_pdfs['falhas'] += st.get('falhas', 0)
-                stats_pdfs['total'] += st.get('total', 0)
-        except KeyboardInterrupt:
-            print("⚠️ Envio interrompido - continuando...")
-            stats_pdfs = {'sucessos': 0, 'falhas': 1, 'total': 1}
+            enviar_para_destinos_controle(enviar_mensagem_texto, msg_falha)
+
+            print("\n⚠️ Gate de aceite reprovado. Pulando envios para grupo oficial.")
+            stats_operacional['falhas'] += max(1, len(scripts_falharam))
+            stats_operacional['total'] += max(1, len(scripts_falharam))
+        else:
+            print("\n✅ Gate de aceite aprovado. Envio para grupo oficial liberado.")
+            stats_operacional['sucessos'] += len(resultados_execucao)
+            stats_operacional['total'] += len(resultados_execucao)
+
+            print("\n" + "="*60)
+            print("📊 ENVIO DE RESUMOS DE TEMPOS")
+            print("="*60)
+            try:
+                stats_resumos = enviar_resumos_tempo(enviador_texto=enviar_para_destinos_oficiais) or {'sucessos': 0, 'falhas': 0, 'total': 0}
+            except KeyboardInterrupt:
+                print("⚠️ Envio interrompido - continuando...")
+                stats_resumos = {'sucessos': 0, 'falhas': 1, 'total': 1}
+
+            print("\n" + "="*60)
+            print("📄 ENVIO DE RELATÓRIOS PDF + AUDITORIA RAIs (XLSX)")
+            print("="*60)
+            try:
+                stats_envios = enviar_pdfs_e_auditorias_rais(
+                    enviador_texto=enviar_para_destinos_oficiais,
+                    enviador_arquivo=enviar_para_destinos_oficiais,
+                )
+                # Agrega estatísticas para o resumo final
+                for _k, st in (stats_envios or {}).items():
+                    if not st:
+                        continue
+                    stats_pdfs['sucessos'] += st.get('sucessos', 0)
+                    stats_pdfs['falhas'] += st.get('falhas', 0)
+                    stats_pdfs['total'] += st.get('total', 0)
+            except KeyboardInterrupt:
+                print("⚠️ Envio interrompido - continuando...")
+                stats_pdfs = {'sucessos': 0, 'falhas': 1, 'total': 1}
         
         print("\n" + "="*60)
         print("📋 ENVIO DE LOGS DE ERRO")
         print("="*60)
         try:
-            stats_erros = enviar_logs_erro()
+            stats_erros = enviar_logs_erro(
+                enviador_texto=enviar_para_destinos_controle,
+                enviador_arquivo=enviar_para_destinos_controle,
+            ) or {'sucessos': 0, 'falhas': 0, 'total': 0}
         except KeyboardInterrupt:
             print("⚠️ Envio interrompido - continuando...")
             stats_erros = {'sucessos': 0, 'falhas': 1, 'total': 1}
-        
-        # Calcula estatísticas totais (stats_* podem ser None se pasta não existir)
-        total_sucessos = ((stats_resumos or {}).get('sucessos', 0) +
-                         (stats_pdfs or {}).get('sucessos', 0) +
-                         (stats_erros or {}).get('sucessos', 0))
-        total_falhas = ((stats_resumos or {}).get('falhas', 0) +
-                       (stats_pdfs or {}).get('falhas', 0) +
-                       (stats_erros or {}).get('falhas', 0))
+
+        # Calcula estatísticas de comunicação
+        stats_comunicacao['sucessos'] = (
+            (stats_resumos or {}).get('sucessos', 0) +
+            (stats_pdfs or {}).get('sucessos', 0) +
+            (stats_erros or {}).get('sucessos', 0)
+        )
+        stats_comunicacao['falhas'] = (
+            (stats_resumos or {}).get('falhas', 0) +
+            (stats_pdfs or {}).get('falhas', 0) +
+            (stats_erros or {}).get('falhas', 0)
+        )
+        stats_comunicacao['total'] = stats_comunicacao['sucessos'] + stats_comunicacao['falhas']
         
         print(f"\n📊 ESTATÍSTICAS FINAIS:")
-        print(f"   ✅ Sucessos: {total_sucessos}")
-        print(f"   ❌ Falhas: {total_falhas}")
-        print(f"   📊 Total: {total_sucessos + total_falhas}")
+        print("   Comunicação (mensagens/arquivos):")
+        print(f"   ✅ Sucessos: {stats_comunicacao['sucessos']}")
+        print(f"   ❌ Falhas: {stats_comunicacao['falhas']}")
+        print(f"   📊 Total: {stats_comunicacao['total']}")
+        print("   Operacional (execução dos scripts):")
+        print(f"   ✅ Sucessos: {stats_operacional['sucessos']}")
+        print(f"   ❌ Falhas: {stats_operacional['falhas']}")
+        print(f"   📊 Total: {stats_operacional['total']}")
         
-        # Limpeza condicional - só limpa se houve sucessos
-        if total_sucessos > 0:
+        # Limpeza condicional: só limpa se scripts foram concluídos sem falha e houve envios.
+        if gate_aceite["aprovado"] and stats_comunicacao['sucessos'] > 0:
             print("\n" + "="*60)
             print("🧹 LIMPEZA DAS PASTAS")
             print("="*60)
@@ -1055,29 +1185,29 @@ def main():
             except KeyboardInterrupt:
                 print("⚠️ Limpeza interrompida - continuando...")
         else:
-            print("\n⚠️ Nenhum envio bem-sucedido - mantendo arquivos para reenvio")
+            print("\n⚠️ Mantendo arquivos para investigação/reenvio (falha operacional ou sem envios).")
         
-        if total_falhas == 0 and not scripts_falharam:
+        if stats_comunicacao['falhas'] == 0 and gate_aceite["aprovado"]:
             print("\n✅ Processo PySQL finalizado com sucesso!")
         else:
-            if scripts_falharam:
-                print(f"\n⚠️ Processo PySQL finalizado com falhas: scripts com erro ({', '.join(scripts_falharam)})")
-            if total_falhas > 0:
-                print(f"\n⚠️ Processo PySQL: {total_falhas} falha(s) de envio.")
+            if not gate_aceite["aprovado"]:
+                print("\n⚠️ Processo PySQL finalizado com falhas: critérios de aceite não atendidos.")
+            if stats_comunicacao['falhas'] > 0:
+                print(f"\n⚠️ Processo PySQL: {stats_comunicacao['falhas']} falha(s) de envio.")
 
         # Scripts falharam ou nenhum envio bem-sucedido: grava resumo para o scheduler, notifica admin e sai com código 1
-        if scripts_falharam:
+        if not gate_aceite["aprovado"]:
             try:
                 from pysql.historico_pysql_evolution import escrever_resumo_falha
                 escrever_resumo_falha(
-                    f"Scripts PySQL falharam: {', '.join(scripts_falharam)}. Nenhum PDF gerado (ex.: falha GitLab/repositório)."
+                    "Execução reprovada no validador final. " + "; ".join(gate_aceite["motivos_reprovacao"])
                 )
             except Exception:
                 pass
-            msg = f"⚠️ *PySQL + Evolution*: scripts com erro ({', '.join(scripts_falharam)}). Nenhum PDF gerado. Verifique os logs enviados."
+            msg = "⚠️ *PySQL + Evolution*: execução reprovada no validador final. Nada foi enviado ao grupo oficial."
             notificar_erro_admin(msg)
             sys.exit(1)
-        if total_sucessos == 0:
+        if stats_comunicacao['sucessos'] == 0:
             try:
                 from pysql.historico_pysql_evolution import escrever_resumo_falha
                 escrever_resumo_falha("Falha no envio. Nenhuma mensagem entregue aos destinos.")

@@ -24,6 +24,76 @@
       "data": "2026-03-16",
       "timestamp": "2026-03-16T08:00:06.782594",
       "sucesso": true
+    },
+    {
+      "data": "2026-03-17",
+      "timestamp": "2026-03-17T15:25:22.875363",
+      "sucesso": true
+    },
+    {
+      "data": "2026-03-18",
+      "timestamp": "2026-03-18T08:00:17.129526",
+      "sucesso": true
+    },
+    {
+      "data": "2026-03-19",
+      "timestamp": "2026-03-19T08:00:08.597779",
+      "sucesso": true
+    },
+    {
+      "data": "2026-03-20",
+      "timestamp": "2026-03-20T08:00:18.408117",
+      "sucesso": true
+    },
+    {
+      "data": "2026-03-21",
+      "timestamp": "2026-03-21T08:00:07.919272",
+      "sucesso": true
+    },
+    {
+      "data": "2026-03-22",
+      "timestamp": "2026-03-22T08:00:18.062584",
+      "sucesso": true
+    },
+    {
+      "data": "2026-03-23",
+      "timestamp": "2026-03-23T08:00:47.015915",
+      "sucesso": true
+    },
+    {
+      "data": "2026-03-25",
+      "timestamp": "2026-03-25T08:00:13.959976",
+      "sucesso": true
+    },
+    {
+      "data": "2026-03-26",
+      "timestamp": "2026-03-26T08:00:17.891928",
+      "sucesso": true
+    },
+    {
+      "data": "2026-03-27",
+      "timestamp": "2026-03-27T08:00:51.128141",
+      "sucesso": true
+    },
+    {
+      "data": "2026-03-28",
+      "timestamp": "2026-03-28T08:00:06.219134",
+      "sucesso": true
+    },
+    {
+      "data": "2026-03-29",
+      "timestamp": "2026-03-29T08:00:07.101826",
+      "sucesso": true
+    },
+    {
+      "data": "2026-03-30",
+      "timestamp": "2026-03-30T08:00:55.736312",
+      "sucesso": true
+    },
+    {
+      "data": "2026-03-31",
+      "timestamp": "2026-03-31T08:00:17.833681",
+      "sucesso": true
     }
   ],
   "ultima_intercorrencia": null,

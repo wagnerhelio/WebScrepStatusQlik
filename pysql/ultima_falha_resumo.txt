@@ -1,0 +1,1 @@
+Scripts PySQL falharam: pysql_feminicidio.py, pysql_homicidios.py. Nenhum PDF gerado (ex.: falha GitLab/repositório).

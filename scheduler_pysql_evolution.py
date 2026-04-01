@@ -107,17 +107,37 @@ def executar_tarefa(script_path: str, descricao: str, timeout_seg: int = 10800) 
     for tentativa in range(3):
         try:
             print(f"   Executando {descricao} (tentativa {tentativa + 1}/3)...", flush=True)
+            notificar_controle = tentativa == 2
             result = subprocess.run(
                 [sys.executable, "-u", str(script_path)],
                 cwd=PROJECT_ROOT,
-                env={**os.environ, "PYTHONIOENCODING": "utf-8", "PYTHONUTF8": "1"},
+                env={
+                    **os.environ,
+                    "PYTHONIOENCODING": "utf-8",
+                    "PYTHONUTF8": "1",
+                    "PYSQL_RETRY_ATTEMPT": str(tentativa + 1),
+                    "PYSQL_RETRY_MAX": "3",
+                    "PYSQL_NOTIFY_CONTROL_ON_FAILURE": "true" if notificar_controle else "false",
+                },
                 capture_output=False,
                 timeout=timeout_seg,
             )
             if result.returncode == 0:
                 print(f"   OK {descricao}", flush=True)
                 return True
-            print(f"   Falhou {descricao} (código {result.returncode})", flush=True)
+            if tentativa < 2:
+                print(
+                    f"   Falhou {descricao} (código {result.returncode}) "
+                    f"- nova tentativa {tentativa + 2}/3. "
+                    f"Notificação de controle suprimida nesta tentativa.",
+                    flush=True,
+                )
+            else:
+                print(
+                    f"   Falhou {descricao} (código {result.returncode}) "
+                    f"- última tentativa do ciclo; notificação ao controle liberada.",
+                    flush=True,
+                )
         except subprocess.TimeoutExpired:
             print(f"   Timeout {descricao}", flush=True)
         except KeyboardInterrupt:
