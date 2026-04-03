@@ -406,6 +406,12 @@ ano_anterior = ano_atual - 1
 
 # Textos de rodapé: período completo (tabelas/gráficos) e apenas data/hora (só no KPI do dia)
 texto_periodo_ate_hoje = f"De 01/01/{ano_atual} até {hoje.strftime('%d/%m/%Y %H:%M:%S')}"
+texto_periodo_mes_ate_hoje = (
+    f"De {hoje.replace(day=1).strftime('%d/%m/%Y')} até {hoje.strftime('%d/%m/%Y %H:%M:%S')}"
+)
+texto_periodo_mes_ate_ontem = (
+    f"De {ontem.replace(day=1).strftime('%d/%m/%Y')} até {ontem_data}"
+)
 texto_periodo_apenas_dia = hoje.strftime('%d/%m/%Y %H:%M:%S')  # só no KPI \"Feminicídios em: [data]\"
 texto_periodo_ate_ontem = f"De 01/01/{ano_atual} até {ontem_data}"
 texto_periodo_anterior = f"De 01/01/{ano_anterior} até {ontem_data}"
@@ -499,11 +505,11 @@ pdf.set_text_color(30, 80, 160)
 pdf.set_x(kpi_x)
 pdf.cell(0, 15, str(feminicidios_mes), ln=1, align='C')
 
-#rodape kpi feminicidios em mes (período completo)
+#rodape kpi feminicidios em mes (mês corrente até agora)
 pdf.set_font('Arial', 'I', 8) 
 pdf.set_text_color(0, 0, 0)
 pdf.set_x(kpi_x)
-pdf.cell(0, 8, texto_periodo_ate_hoje, ln=1, align='L')
+pdf.cell(0, 8, texto_periodo_mes_ate_hoje, ln=1, align='L')
  
  # Y final após os KPIs (usado para posicionar o próximo bloco abaixo do mais baixo)
 kpi_end_y = pdf.get_y()
@@ -906,7 +912,7 @@ else:
     pdf.set_font('Arial', 'I', 10)
     pdf.cell(0, 8, f'Gráfico não disponível para {texto_periodo_mes_referencia}', ln=1, align='C')
 pdf.set_font('Arial', 'I', 9)
-pdf.cell(0, 8, texto_periodo_ate_ontem, ln=1, align='L')
+pdf.cell(0, 8, texto_periodo_mes_ate_ontem, ln=1, align='L')
 
 # ------------------------------------------------- TABELA COMPARATIVO POR DIA -------------------------------------------------
 
@@ -950,7 +956,7 @@ else:
     pdf.cell(0, 8, f'Sem dados para montar a tabela comparativa por dia em {texto_periodo_mes_referencia}.', ln=1, align='L')
 
 pdf.set_font('Arial', 'I', 9)
-pdf.cell(0, 8, texto_periodo_ate_ontem, ln=1, align='L')
+pdf.cell(0, 8, texto_periodo_mes_ate_ontem, ln=1, align='L')
 
 # ------------------------------------------------- TABELA DE REGIAO - COMPARATIVO MENSAL E ACUMULADO (DIA ANTERIOR) -------------------------------------------------
 # Na virada do mês (ex: 1º mar), dados são do mês de ontem (fev); rótulos usam mes_ontem para bater com a SQL
@@ -1195,7 +1201,7 @@ else:
         pdf.set_font('Arial', 'I', 10)
         pdf.cell(0, 8, f'Gráfico não disponível para {texto_periodo_mes_referencia}', ln=1, align='C')
 pdf.set_font('Arial', 'I', 9)
-pdf.cell(0, 8, texto_periodo_ate_ontem, ln=1, align='L')
+pdf.cell(0, 8, texto_periodo_mes_ate_ontem, ln=1, align='L')
 
 # ------------------------------------------------- GRAFICO COMPARATIVO POR MES POR REGIÃO -------------------------------------------------
 # Gera o gráfico comparativo de homicídios por mês por região
