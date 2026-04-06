@@ -54,20 +54,80 @@ matplotlib.use('Agg')  # Configura o backend antes de importar pyplot
 def safe_str(item):
     return str(item) if item is not None else ''
 
-# Ordem fixa das regiões nas tabelas: Goiânia, Interior, Entorno do DF (GOIÁS é linha de total no final)
+# Ordem fixa das regiões nas tabelas e gráficos: Goiânia, Interior, Entorno do DF (demais por último)
 ORDEM_REGIOES = ("GOIÂNIA", "INTERIOR", "ENTORNO DO DF")
+
+
+def indice_ordem_regiao(nome):
+    """Chave de ordenação: 0=Goiânia, 1=Interior, 2=Entorno DF, 3=demais."""
+    if nome is None:
+        nome = ""
+    else:
+        nome = str(nome).strip().upper().replace("Â", "A")
+    if "GOIANIA" in nome:
+        return 0
+    if "INTERIOR" in nome:
+        return 1
+    if "ENTORNO" in nome or " DF" in nome:
+        return 2
+    return 3
+
+
+def ordenar_colunas_regiao(columns):
+    """Ordena nomes de região (colunas ou índice) na ordem fixa."""
+    return sorted(list(columns), key=indice_ordem_regiao)
+
+
+def indice_empilhamento_grafico_mes_regiao(nome):
+    """Empilhamento vertical do gráfico mês a mês: 1ª série = base. Entorno (0), Interior (1), Goiânia (2)."""
+    if nome is None:
+        nome = ""
+    else:
+        nome = str(nome).strip().upper().replace("Â", "A")
+    if "ENTORNO" in nome or " DF" in nome:
+        return 0
+    if "INTERIOR" in nome:
+        return 1
+    if "GOIANIA" in nome:
+        return 2
+    return 3
+
+
+def ordenar_colunas_grafico_mes_regiao(columns):
+    """Colunas do gráfico mês a mês: base Entorno do DF, meio Interior, topo Goiânia."""
+    return sorted(list(columns), key=indice_empilhamento_grafico_mes_regiao)
+
+
+def cor_grafico_mes_regiao(nome):
+    """Cor por região no gráfico mês a mês (Entorno azul, Goiânia laranja, Interior verde)."""
+    if nome is None:
+        nome = ""
+    else:
+        nome = str(nome).strip().upper().replace("Â", "A")
+    if "ENTORNO" in nome or " DF" in nome:
+        return "#1f77b4"
+    if "GOIANIA" in nome:
+        return "#ff7f0e"
+    if "INTERIOR" in nome:
+        return "#2ca02c"
+    return "#7f7f7f"
+
+
 def ordenar_linhas_regiao(rows, col_regiao=0):
     """Ordena as linhas da tabela de regiões: GOIÂNIA, INTERIOR, ENTORNO DO DF."""
-    def indice_regiao(row):
-        nome = (row[col_regiao] or "").strip().upper().replace("Â", "A")
-        if "GOIANIA" in nome:
-            return 0
-        if "INTERIOR" in nome:
-            return 1
-        if "ENTORNO" in nome or " DF" in nome:
-            return 2
-        return 3
-    return sorted(rows, key=indice_regiao)
+    return sorted(rows, key=lambda row: indice_ordem_regiao(row[col_regiao]))
+
+
+def percentual_variacao(novo, antigo):
+    """Variação percentual (novo - antigo) / antigo * 100, alinhada às colunas % do relatório."""
+    try:
+        a = float(antigo)
+        n = float(novo)
+    except (TypeError, ValueError):
+        return 0.0
+    if a == 0:
+        return 0.0
+    return (n - a) / a * 100.0
 
 def safe_print_progress(text):
     """Função segura para imprimir progresso no Windows"""
@@ -609,17 +669,19 @@ if rows_regiao_observatorio:
     # Inicializa totais
     totais = [0] * len(rows_regiao_observatorio[0])
     
-    # Calcula totais para colunas numéricas (excluindo a primeira coluna que é texto)
+    # Soma apenas colunas de contagem (1–3 e 5–6); % (4 e 7) vêm do SQL por linha e não são aditivas
     for row in rows_regiao_observatorio:
         for i, item in enumerate(row):
-            if i > 0:  # Pula a primeira coluna (REGIÃO)
+            if i > 0 and i not in [4, 7]:  # Pula REGIÃO e colunas de %
                 try:
-                    if i in [4, 7]:  # Colunas de porcentagem
-                        totais[i] += float(item) if item is not None else 0
-                    else:  # Colunas numéricas
-                        totais[i] += int(item) if item is not None else 0
+                    totais[i] += int(item) if item is not None else 0
                 except (ValueError, TypeError):
                     pass  # Ignora valores não numéricos
+    
+    # Recalcula % da linha GOIÁS a partir dos totais (mesma lógica que o SQL por linha)
+    if len(totais) > 7:
+        totais[4] = percentual_variacao(totais[3], totais[2])
+        totais[7] = percentual_variacao(totais[6], totais[5])
     
     # Cria linha de total
     linha_total = ["GOIÁS"]
@@ -1082,17 +1144,19 @@ if rows_regiao_observatorio:
     # Inicializa totais
     totais = [0] * len(rows_regiao_observatorio[0])
     
-    # Calcula totais para colunas numéricas (excluindo a primeira coluna que é texto)
+    # Soma apenas colunas de contagem (1–3 e 5–6); % (4 e 7) vêm do SQL por linha e não são aditivas
     for row in rows_regiao_observatorio:
         for i, item in enumerate(row):
-            if i > 0:  # Pula a primeira coluna (REGIÃO)
+            if i > 0 and i not in [4, 7]:  # Pula REGIÃO e colunas de %
                 try:
-                    if i in [4, 7]:  # Colunas de porcentagem
-                        totais[i] += float(item) if item is not None else 0
-                    else:  # Colunas numéricas
-                        totais[i] += int(item) if item is not None else 0
+                    totais[i] += int(item) if item is not None else 0
                 except (ValueError, TypeError):
                     pass  # Ignora valores não numéricos
+    
+    # Recalcula % da linha GOIÁS a partir dos totais (mesma lógica que o SQL por linha)
+    if len(totais) > 7:
+        totais[4] = percentual_variacao(totais[3], totais[2])
+        totais[7] = percentual_variacao(totais[6], totais[5])
     
     # Cria linha de total
     linha_total = ["GOIÁS"]
@@ -1155,9 +1219,10 @@ if not df_comparativo_dia.empty:
         aggfunc='sum'
     ).fillna(0)
     df_pivot = df_pivot.reindex(sorted(df_pivot.index, key=lambda x: int(x.split('/')[0])))
+    df_pivot = df_pivot[ordenar_colunas_regiao(df_pivot.columns)]
 
     plt.figure(figsize=(10, 1.0))
-    regioes = sorted(df_pivot.columns)
+    regioes = list(df_pivot.columns)
     bar_width = 0.25
     x = range(len(df_pivot.index))
 
@@ -1253,69 +1318,57 @@ if not df_comparativo_mes.empty:
     
     # Ordena por número do mês
     df_pivot_mes = df_pivot_mes.reindex(sorted(df_pivot_mes.index, key=lambda x: df_comparativo_mes[df_comparativo_mes['MES'] == x]['NUMERO_MES'].iloc[0]))
+    df_pivot_mes = df_pivot_mes[ordenar_colunas_grafico_mes_regiao(df_pivot_mes.columns)]
 
-    #plt.figure(figsize=(10, 3.0))
-    
-    # Cria o gráfico de barras empilhadas
-    ax = df_pivot_mes.plot(kind='bar', stacked=True, width=0.7, figsize=(10, 2.0))  
-    
-    # Adiciona os valores nas barras
+    # Barras verticais empilhadas + faixas: base = Entorno do DF, meio = Interior, topo = Goiânia.
+    _cols = list(df_pivot_mes.columns)
+    _colors = [cor_grafico_mes_regiao(c) for c in _cols]
+    ax = df_pivot_mes.plot(kind='bar', stacked=True, width=0.7, figsize=(10, 2.0), color=_colors)
+
     for c in ax.containers:
         ax.bar_label(c, label_type='center', fontsize=8)
-    
-    # Adiciona os totais no topo das barras
+
     totais = df_pivot_mes.sum(axis=1)
     for i, total in enumerate(totais):
         if total > 0:
             ax.text(i, total + 1, f'{int(total)}', ha='center', va='bottom', fontsize=8)
-    
-    # Adiciona fundo esmairecido por região conectando as barras
-    bar_width = 0.7  # Largura das barras
+
+    # Fundo esmairecido por região conectando as barras
+    bar_width = 0.7
     x_positions = np.arange(len(df_pivot_mes.index))
-    
-    # Para cada região, cria áreas esmairecidas
+
     for i, regiao in enumerate(df_pivot_mes.columns):
-        # Valores da região específica
         valores_regiao = df_pivot_mes[regiao].values
-        
-        # Calcula a base para empilhamento (soma das regiões anteriores)
         base = np.zeros_like(valores_regiao)
         for j in range(i):
             valores_anterior = df_pivot_mes[df_pivot_mes.columns[j]].values
             base += valores_anterior
-        
-        # Obtém a cor da região das barras (padrão seaborn)
+
         cor_regiao = ax.containers[i][0].get_facecolor()
-        
-        # Cria áreas esmairecidas entre cada par de barras consecutivas
+
         for k in range(len(x_positions) - 1):
-            # Ponta direita da barra atual
-            x1 = x_positions[k] + bar_width/2
+            x1 = x_positions[k] + bar_width / 2
             y1 = base[k] + valores_regiao[k]
-            
-            # Ponta esquerda da próxima barra
-            x2 = x_positions[k+1] - bar_width/2
-            y2 = base[k+1] + valores_regiao[k+1]
-            
-            # Cria pontos suavizados entre os dois pontos
+            x2 = x_positions[k + 1] - bar_width / 2
+            y2 = base[k + 1] + valores_regiao[k + 1]
             x_area = np.linspace(x1, x2, 50)
             y_area = np.linspace(y1, y2, 50)
-            
-            # Adiciona uma pequena ondulação
             wave_amplitude = max(valores_regiao) * 0.01 if max(valores_regiao) > 0 else 0.3
             wave = wave_amplitude * np.sin(np.linspace(0, np.pi, 50))
             y_area += wave
-            
-            # Desenha apenas a área esmairecida preenchendo todo o espaço entre as barras
-            base_area = np.linspace(base[k], base[k+1], 50)
+            base_area = np.linspace(base[k], base[k + 1], 50)
             ax.fill_between(x_area, base_area, y_area, color=cor_regiao, alpha=0.25, zorder=1)
-    
-    plt.legend(title='REGIÃO', bbox_to_anchor=(1.00, 1), loc='upper left', fontsize=8, title_fontsize=9)
+
+    handles, labels_leg = ax.get_legend_handles_labels()
+    by_label = {str(l): h for l, h in zip(labels_leg, handles)}
+    _cols_leg = list(reversed(_cols))
+    handles_ord = [by_label[str(c)] for c in _cols_leg if str(c) in by_label]
+    labels_ord = [c for c in _cols_leg if str(c) in by_label]
+    ax.legend(handles_ord, labels_ord, title='REGIÃO', bbox_to_anchor=(1.00, 1), loc='upper left', fontsize=8, title_fontsize=9)
     plt.ylabel('Homicídios')
     plt.yticks([])
     plt.xlabel('')
     plt.xticks(range(len(df_pivot_mes.index)), list(df_pivot_mes.index), rotation=0)
-    #plt.tight_layout()   
     
     # Salva o gráfico com tratamento de erro
     try:
@@ -1358,6 +1411,7 @@ if not df_comparativo_mes.empty:
     
     # Ordena por número do mês
     df_tabela = df_tabela.reindex(sorted(df_tabela.columns, key=lambda x: df_comparativo_mes[df_comparativo_mes['MES'] == x]['NUMERO_MES'].iloc[0]), axis=1)
+    df_tabela = df_tabela.reindex(ordenar_colunas_regiao(df_tabela.index))
     
     # Adiciona linha de totais
     totais_mes = df_tabela.sum()
@@ -1422,6 +1476,7 @@ if not df_comparativo_semana.empty:
     
     # Pivot por DIA_SEMANA e REGIAO_OBSERVATORIO
     df_pivot_semana = df_comparativo_semana.pivot(index='DIA_SEMANA', columns='REGIAO_OBSERVATORIO', values='HOMICIDIOS').fillna(0)
+    df_pivot_semana = df_pivot_semana[ordenar_colunas_regiao(df_pivot_semana.columns)]
     
     # Ordena os dias da semana corretamente (domingo=1, segunda=2, ..., sábado=7)
     df_pivot_semana = df_pivot_semana.reindex(sorted(df_pivot_semana.index, key=lambda x: df_comparativo_semana[df_comparativo_semana['DIA_SEMANA'] == x]['NUMERO_DIA_SEMANA'].iloc[0]))
