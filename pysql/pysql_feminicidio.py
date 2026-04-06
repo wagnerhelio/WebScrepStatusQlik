@@ -291,17 +291,17 @@ def ordenar_colunas_grafico_mes_regiao(columns):
     return sorted(list(columns), key=indice_empilhamento_grafico_mes_regiao)
 
 
-def cor_grafico_mes_regiao(nome):
-    """Cor por região no gráfico mês a mês (Entorno azul, Goiânia laranja, Interior verde)."""
+def cor_regiao_observatorio(nome):
+    """Cor fixa por região em todos os gráficos: Goiânia azul, Interior laranja, Entorno do DF verde."""
     if nome is None:
         nome = ""
     else:
         nome = str(nome).strip().upper().replace("Â", "A")
-    if "ENTORNO" in nome or " DF" in nome:
-        return "#1f77b4"
     if "GOIANIA" in nome:
-        return "#ff7f0e"
+        return "#1f77b4"
     if "INTERIOR" in nome:
+        return "#ff7f0e"
+    if "ENTORNO" in nome or " DF" in nome:
         return "#2ca02c"
     return "#7f7f7f"
 
@@ -1198,7 +1198,13 @@ if not df_comparativo_dia.empty:
     x = range(len(df_pivot.index))
 
     for i, regiao in enumerate(regioes):
-        bars = plt.bar([xi + i * bar_width for xi in x], df_pivot[regiao], width=bar_width, label=regiao)
+        bars = plt.bar(
+            [xi + i * bar_width for xi in x],
+            df_pivot[regiao],
+            width=bar_width,
+            label=regiao,
+            color=cor_regiao_observatorio(regiao),
+        )
         for bar in bars:
             height = bar.get_height()
             if height > 0:
@@ -1295,7 +1301,7 @@ if not df_comparativo_mes.empty:
 
     # Barras verticais empilhadas + faixas: base = Entorno do DF, meio = Interior, topo = Goiânia.
     _cols = list(df_pivot_mes.columns)
-    _colors = [cor_grafico_mes_regiao(c) for c in _cols]
+    _colors = [cor_regiao_observatorio(c) for c in _cols]
     ax = df_pivot_mes.plot(kind='bar', stacked=True, width=0.7, figsize=(10, 2.0), color=_colors)
 
     for c in ax.containers:
@@ -1455,10 +1461,11 @@ if not df_comparativo_semana.empty:
     # Inverte a ordem para que domingo apareça no topo do gráfico horizontal
     df_pivot_semana = df_pivot_semana.iloc[::-1]
 
+    _cols_sem = list(df_pivot_semana.columns)
+    _colors_sem = [cor_regiao_observatorio(c) for c in _cols_sem]
+
     plt.figure(figsize=(10, 2.0))
-    
-    # Cria o gráfico de barras empilhadas
-    ax = df_pivot_semana.plot(kind='barh', stacked=True, width=0.7, figsize=(10, 3.0))
+    ax = df_pivot_semana.plot(kind='barh', stacked=True, width=0.7, figsize=(10, 3.0), color=_colors_sem)
     
     # Adiciona os valores nas barras
     for c in ax.containers:
