@@ -124,6 +124,16 @@
       "data": "2026-04-06",
       "timestamp": "2026-04-06T08:00:02.051472",
       "sucesso": true
+    },
+    {
+      "data": "2026-04-07",
+      "timestamp": "2026-04-07T09:09:29.119505",
+      "sucesso": true
+    },
+    {
+      "data": "2026-04-08",
+      "timestamp": "2026-04-08T08:00:46.744914",
+      "sucesso": true
     }
   ],
   "ultima_intercorrencia": null,
