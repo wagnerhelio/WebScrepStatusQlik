@@ -890,7 +890,7 @@ def enviar_pdfs_e_auditorias_rais(enviador_texto=enviar_para_destinos_oficiais, 
     )
     stats_xlsx_hom = _tentar_envio(
         "XLSX homicidios",
-        "⏳ Preparando envio de adutoria de RAIs...\nXLSX - homicidios",
+        "⏳ Preparando envio de auditoria de RAIs...\nXLSX - homicidios",
         xlsx_hom,
     )
     stats_pdf_fem = _tentar_envio(
@@ -900,7 +900,7 @@ def enviar_pdfs_e_auditorias_rais(enviador_texto=enviar_para_destinos_oficiais, 
     )
     stats_xlsx_fem = _tentar_envio(
         "XLSX feminicidios",
-        "⏳ Preparando envio de adutoria de RAIs...\nXLSX - feminicidios",
+        "⏳ Preparando envio de auditoria de RAIs...\nXLSX - feminicidios",
         xlsx_fem,
     )
 

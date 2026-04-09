@@ -134,6 +134,11 @@
       "data": "2026-04-08",
       "timestamp": "2026-04-08T08:00:46.744914",
       "sucesso": true
+    },
+    {
+      "data": "2026-04-09",
+      "timestamp": "2026-04-09T08:00:03.994939",
+      "sucesso": true
     }
   ],
   "ultima_intercorrencia": null,
