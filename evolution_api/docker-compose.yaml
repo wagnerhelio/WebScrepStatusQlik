@@ -1,5 +1,9 @@
 # Evolution API - use imagem oficial (atendai/evolution-api) quando não houver código-fonte
 # Para build local: descomente "build" e comente "image", e tenha o repositório completo
+#
+# Rede dokploy-network: necessária para integração com Dokploy/reverse-proxy na mesma máquina.
+# Abaixo ela é criada pelo compose (não é "external"), assim funciona em PC novo sem "docker network create".
+# Se o Dokploy já tiver criado essa rede neste host, pode ocorrer conflito de nome — nesse caso alinhe com a equipa de deploy.
 services:
   api:
     container_name: evolution_api
@@ -84,4 +88,5 @@ networks:
     name: evolution-net
     driver: bridge
   dokploy-network:
-    external: true
+    name: dokploy-network
+    driver: bridge

@@ -142,7 +142,7 @@ powershell -ExecutionPolicy Bypass -File "C:\Users\wagner.hsilva\Documents\GitHu
 powershell -ExecutionPolicy Bypass -File "C:\Users\wagner.hsilva\Documents\GitHub\WebScrepStatusQlik\parar_pysql_evolution.ps1"
 ```
 
-**Docker Desktop x containers da Evolution:** os passos do script que “verificam o Docker” apenas garantem que o **motor Docker** responde (`docker info`). **Não** aparecem imagens nem containers da Evolution no app até você subir a stack — manualmente (`cd evolution_api` e `docker compose up -d`) ou definindo **`EVOLUTION_DOCKER_COMPOSE_UP=true`** no `.env` da raiz (exige `evolution_api\.env` configurado). Se a Evolution já roda em **outro servidor**, deixe essa opção desligada e use só `EVOLUTION_BASE_URL` apontando para esse host.
+**Docker e Evolution no compose:** com o motor Docker OK, o `iniciar_pysql_evolution.ps1` verifica se o container **`evolution_api`** está em execução; se não estiver, roda **`docker compose up -d`** em `evolution_api` (baixa imagens se necessário). Exige `evolution_api\.env` e `docker-compose.yaml`. Para **não** subir nem verificar compose nesta máquina (Evolution só em outro servidor), defina **`EVOLUTION_DOCKER_COMPOSE_UP=false`** no `.env` da raiz.
 
 ### Execução Automática (Recomendada)
 ```bash

@@ -8,7 +8,7 @@
   2. Verificar Python (3.10+), criar .venv e instalar dependências se necessário; ativar a venv
   3. Se o Docker Desktop não estiver instalado, instalar automaticamente (winget ou instalador oficial)
   4. Verificar se o Docker está ativo; se não, iniciar e aguardar normalizar
-  5. Opcional: subir stack Evolution API no Docker (docker compose) se EVOLUTION_DOCKER_COMPOSE_UP=true
+  5. Se evolution_api nao estiver rodando no Docker, executar docker compose up -d (use EVOLUTION_DOCKER_COMPOSE_UP=false para desligar)
   6. Registrar webhook na Evolution (se EVOLUTION_WEBHOOK_AUTO_REGISTER=true no .env)
   7. Rodar scheduler_pysql_evolution.py (e servidor webhook em thread)
 .EXAMPLE
@@ -312,44 +312,60 @@ if (-not $dockerOk) {
 } else {
     Write-Host "      Docker ja esta ativo." -ForegroundColor Green
 }
-Write-Host "      Lembrete: o app Docker Desktop so lista imagens/containers que voce sobe (ex.: passo [5/8] ou manualmente)." -ForegroundColor DarkGray
 
-# 5) Opcional: stack Evolution API (API + Redis + Postgres) - so aparece no app apos compose up
-Write-Host "[5/8] Evolution API no Docker (compose - opcional)..." -ForegroundColor Yellow
-$composeUp = [Environment]::GetEnvironmentVariable("EVOLUTION_DOCKER_COMPOSE_UP", "Process")
+function Test-EvolutionApiContainerRunning {
+    if (-not (Get-Command docker -ErrorAction SilentlyContinue)) { return $false }
+    try {
+        $prevEap = $ErrorActionPreference
+        $ErrorActionPreference = "SilentlyContinue"
+        $raw = & docker ps -q --filter "name=evolution_api" --filter "status=running" 2>&1
+        $ErrorActionPreference = $prevEap
+        if ($LASTEXITCODE -ne 0) { return $false }
+        return -not [string]::IsNullOrWhiteSpace(($raw | Out-String).Trim())
+    } catch {
+        $ErrorActionPreference = "Stop"
+        return $false
+    }
+}
+
+# 5) Evolution API no Docker: sobe o compose apenas se o container da API nao estiver ativo
+Write-Host "[5/8] Containers Evolution API (docker compose)..." -ForegroundColor Yellow
 $evoApiDir = Join-Path $ProjectRoot "evolution_api"
 $composeFile = Join-Path $evoApiDir "docker-compose.yaml"
 $evoEnvFile = Join-Path $evoApiDir ".env"
+$composeDisabled = [Environment]::GetEnvironmentVariable("EVOLUTION_DOCKER_COMPOSE_UP", "Process")
 
-if ($composeUp -eq "true" -or $composeUp -eq "1") {
-    if (-not (Test-Path -LiteralPath $composeFile)) {
-        Write-Host "      Aviso: evolution_api\docker-compose.yaml nao encontrado." -ForegroundColor Yellow
-    } elseif (-not (Test-Path -LiteralPath $evoEnvFile)) {
-        Write-Host "      Aviso: crie evolution_api\.env (baseado em evolution_api\.env.example) para o compose." -ForegroundColor Yellow
-    } elseif (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
-        Write-Host "      Aviso: comando 'docker' indisponivel." -ForegroundColor Yellow
-    } else {
-        Push-Location $evoApiDir
-        try {
-            Write-Host "      docker compose up -d (pasta evolution_api)..." -ForegroundColor Gray
-            & docker compose up -d 2>&1 | Out-Host
-            $exitCompose = $LASTEXITCODE
-            if ($exitCompose -ne 0 -and (Get-Command docker-compose -ErrorAction SilentlyContinue)) {
-                Write-Host "      Tentando docker-compose up -d..." -ForegroundColor Gray
-                & docker-compose up -d 2>&1 | Out-Host
-                $exitCompose = $LASTEXITCODE
-            }
-            if ($exitCompose -ne 0) {
-                Write-Host "      Aviso: compose retornou $exitCompose. Confira evolution_api\.env, portas e logs." -ForegroundColor Yellow
-            } else {
-                Write-Host "      OK. Containers no Docker Desktop: evolution_api, evolution_redis, evolution_postgres (nomes do compose)." -ForegroundColor Green
-            }
-        } finally {
-            Pop-Location
-        }
-    }
+if ($composeDisabled -eq "false" -or $composeDisabled -eq "0") {
+    Write-Host "      Pulado: EVOLUTION_DOCKER_COMPOSE_UP=false no .env da raiz." -ForegroundColor Gray
+} elseif (-not (Test-Path -LiteralPath $composeFile)) {
+    Write-Host "      Aviso: evolution_api\docker-compose.yaml nao encontrado." -ForegroundColor Yellow
+} elseif (-not (Test-Path -LiteralPath $evoEnvFile)) {
+    Write-Host "      Aviso: evolution_api\.env ausente. Copie evolution_api\.env.example e configure POSTGRES_* e DATABASE_*." -ForegroundColor Yellow
+} elseif (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
+    Write-Host "      Aviso: comando docker indisponivel." -ForegroundColor Yellow
+} elseif (-not $dockerOk) {
+    Write-Host "      Aviso: Docker daemon nao responde; nao foi possivel verificar/subir containers." -ForegroundColor Yellow
+} elseif (Test-EvolutionApiContainerRunning) {
+    Write-Host "      OK. Container evolution_api ja em execucao." -ForegroundColor Green
 } else {
-    Write-Host "      Pulado. Para subir API+Redis+Postgres localmente: EVOLUTION_DOCKER_COMPOSE_UP=true no .env da raiz." -ForegroundColor Gray
+    Write-Host "      evolution_api nao esta rodando. Executando docker compose up -d (baixa imagens se necessario)..." -ForegroundColor Yellow
+    Push-Location $evoApiDir
+    try {
+        & docker compose up -d 2>&1 | Out-Host
+        $exitCompose = $LASTEXITCODE
+        if ($exitCompose -ne 0 -and (Get-Command docker-compose -ErrorAction SilentlyContinue)) {
+            Write-Host "      Tentando docker-compose up -d..." -ForegroundColor Gray
+            & docker-compose up -d 2>&1 | Out-Host
+            $exitCompose = $LASTEXITCODE
+        }
+        if ($exitCompose -ne 0) {
+            Write-Host "      Aviso: compose retornou $exitCompose. Verifique evolution_api\.env e evolution_api\docker-compose.yaml." -ForegroundColor Yellow
+        } else {
+            Write-Host "      OK. Stack iniciada (evolution_api, evolution_redis, evolution_postgres)." -ForegroundColor Green
+        }
+    } finally {
+        Pop-Location
+    }
 }
 
 # 6) Registrar webhook na Evolution (se .env tiver EVOLUTION_WEBHOOK_AUTO_REGISTER=true)
