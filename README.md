@@ -113,6 +113,35 @@ docker-compose up -d
 
 ## 🚀 Execução do Sistema
 
+### PySQL + Evolution API (Windows — PowerShell)
+
+Na pasta raiz do repositório, use os scripts que ativam a venv, tratam o Docker (incluindo instalação se necessário), registram o webhook na Evolution e sobem o `scheduler_pysql_evolution.py`:
+
+```powershell
+cd C:\caminho\para\WebScrepStatusQlik
+
+# Iniciar o fluxo PySQL + Evolution (webhook + scheduler)
+powershell -ExecutionPolicy Bypass -File ".\iniciar_pysql_evolution.ps1"
+
+# Parar processos desse fluxo (scheduler, webhook, etc.)
+powershell -ExecutionPolicy Bypass -File ".\parar_pysql_evolution.ps1"
+```
+
+Se a política de execução já permitir scripts locais, pode usar diretamente:
+
+```powershell
+.\iniciar_pysql_evolution.ps1
+.\parar_pysql_evolution.ps1
+```
+
+Alternativa com **caminho absoluto** (útil em atalhos, Agendador de Tarefas ou sem `cd` antes; ajuste a pasta se o clone estiver em outro local):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File "C:\Users\wagner.hsilva\Documents\GitHub\WebScrepStatusQlik\iniciar_pysql_evolution.ps1"
+
+powershell -ExecutionPolicy Bypass -File "C:\Users\wagner.hsilva\Documents\GitHub\WebScrepStatusQlik\parar_pysql_evolution.ps1"
+```
+
 ### Execução Automática (Recomendada)
 ```bash
 # Execute o scheduler principal
