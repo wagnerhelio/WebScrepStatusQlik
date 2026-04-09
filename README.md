@@ -144,6 +144,36 @@ powershell -ExecutionPolicy Bypass -File "C:\Users\wagner.hsilva\Documents\GitHu
 
 **Docker e Evolution no compose:** com o motor Docker OK, o `iniciar_pysql_evolution.ps1` verifica se o container **`evolution_api`** está em execução; se não estiver, roda **`docker compose up -d`** em `evolution_api` (baixa imagens se necessário). Exige `evolution_api\.env` e `docker-compose.yaml`. Para **não** subir nem verificar compose nesta máquina (Evolution só em outro servidor), defina **`EVOLUTION_DOCKER_COMPOSE_UP=false`** no `.env` da raiz.
 
+### Testes PySQL + Evolution (somente grupo de controle)
+
+Scripts **PowerShell** na **raiz** (chamam os `.py` com a venv). Enviam **apenas** para `EVO_GRUPO_CONTROLE` ou, se vazio, para `EVO_GRUPO_ADMIN` — **não** para o grupo oficial (`EVO_DESTINO_GRUPO` / `EVO_GRUPO_OFICIAL`). Exige `.venv` e `.env` da raiz configurado.
+
+```powershell
+cd C:\caminho\para\WebScrepStatusQlik
+
+# Mensagem de teste (OK + hostname / IPs da máquina)
+powershell -ExecutionPolicy Bypass -File ".\testar_pysql_evolution.ps1"
+
+# Rodar scripts PySQL e enviar resumos, PDFs/XLSX e logs só ao grupo de controle (prefixo [TESTE])
+powershell -ExecutionPolicy Bypass -File ".\tester_relatorio_pysql_evolution.ps1"
+```
+
+Atalho, se a política de execução permitir:
+
+```powershell
+.\testar_pysql_evolution.ps1
+.\tester_relatorio_pysql_evolution.ps1
+```
+
+Implementação: `testar_pysql_evolution.py` e `tester_relatorio_pysql_evolution.py` na mesma pasta (invocados automaticamente pelos `.ps1`).
+
+Caminho absoluto (atalhos / Agendador de Tarefas; ajuste a pasta do clone):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File "C:\Users\wagner.hsilva\Documents\GitHub\WebScrepStatusQlik\testar_pysql_evolution.ps1"
+powershell -ExecutionPolicy Bypass -File "C:\Users\wagner.hsilva\Documents\GitHub\WebScrepStatusQlik\tester_relatorio_pysql_evolution.ps1"
+```
+
 ### Execução Automática (Recomendada)
 ```bash
 # Execute o scheduler principal
