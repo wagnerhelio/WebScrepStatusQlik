@@ -350,12 +350,15 @@ if ($composeDisabled -eq "false" -or $composeDisabled -eq "0") {
 } else {
     Write-Host "      evolution_api nao esta rodando. Executando docker compose up -d (baixa imagens se necessario)..." -ForegroundColor Yellow
     Push-Location $evoApiDir
+    $prevComposeErr = $ErrorActionPreference
     try {
-        & docker compose up -d 2>&1 | Out-Host
+        # Docker envia progresso (pull/build) para stderr; com ErrorActionPreference=Stop o PowerShell trata como erro fatal.
+        $ErrorActionPreference = "Continue"
+        & docker compose up -d 2>&1 | ForEach-Object { Write-Host $_ }
         $exitCompose = $LASTEXITCODE
         if ($exitCompose -ne 0 -and (Get-Command docker-compose -ErrorAction SilentlyContinue)) {
             Write-Host "      Tentando docker-compose up -d..." -ForegroundColor Gray
-            & docker-compose up -d 2>&1 | Out-Host
+            & docker-compose up -d 2>&1 | ForEach-Object { Write-Host $_ }
             $exitCompose = $LASTEXITCODE
         }
         if ($exitCompose -ne 0) {
@@ -364,6 +367,7 @@ if ($composeDisabled -eq "false" -or $composeDisabled -eq "0") {
             Write-Host "      OK. Stack iniciada (evolution_api, evolution_redis, evolution_postgres)." -ForegroundColor Green
         }
     } finally {
+        $ErrorActionPreference = $prevComposeErr
         Pop-Location
     }
 }
