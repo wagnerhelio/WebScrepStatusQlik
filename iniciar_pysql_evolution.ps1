@@ -5,7 +5,7 @@
 .DESCRIPTION
   Execute este script em vez de "python scheduler_pysql_evolution.py" para:
   1. Ajustar ExecutionPolicy (RemoteSigned, CurrentUser) se necessário
-  2. Ir para a pasta do projeto e ativar a venv
+  2. Verificar Python (3.10+), criar .venv e instalar dependências se necessário; ativar a venv
   3. Se o Docker Desktop não estiver instalado, instalar automaticamente (winget ou instalador oficial)
   4. Verificar se o Docker está ativo; se não, iniciar e aguardar normalizar
   5. Registrar webhook na Evolution (se EVOLUTION_WEBHOOK_AUTO_REGISTER=true no .env)
@@ -51,13 +51,104 @@ try {
     Write-Host "[1/7] Aviso: nao foi possivel alterar ExecutionPolicy. Continuando..." -ForegroundColor Yellow
 }
 
-# 2) Ativar venv
-$venvActivate = Join-Path $ProjectRoot ".venv\Scripts\Activate.ps1"
-if (-not (Test-Path $venvActivate)) {
-    Write-Host "[2/7] ERRO: venv nao encontrada em .venv\Scripts\Activate.ps1" -ForegroundColor Red
+# 2) Python: versao minima, criar .venv se ausente, pip install, ativar venv
+$MinPythonMajor = 3
+$MinPythonMinor = 10
+
+function Get-PythonVersionLine {
+    param(
+        [Parameter(Mandatory)][string]$CommandName,
+        [string[]]$PrefixArgs = @()
+    )
+    try {
+        if ($PrefixArgs.Count -gt 0) {
+            $o = & $CommandName @PrefixArgs "--version" 2>&1
+        } else {
+            $o = & $CommandName --version 2>&1
+        }
+        return ($o | Out-String).Trim()
+    } catch {
+        return $null
+    }
+}
+
+function Test-PythonVersionOk {
+    param([string]$VersionLine, [int]$NeedMajor, [int]$NeedMinor)
+    if ([string]::IsNullOrWhiteSpace($VersionLine)) { return $false }
+    if ($VersionLine -match 'Python\s+(\d+)\.(\d+)') {
+        $maj = [int]$Matches[1]
+        $min = [int]$Matches[2]
+        if ($maj -gt $NeedMajor) { return $true }
+        if ($maj -eq $NeedMajor -and $min -ge $NeedMinor) { return $true }
+    }
+    return $false
+}
+
+function Resolve-PythonForVenv {
+    param([int]$NeedMajor, [int]$NeedMinor)
+    if (Get-Command py -ErrorAction SilentlyContinue) {
+        $line = Get-PythonVersionLine "py" @("-3")
+        if (Test-PythonVersionOk $line $NeedMajor $NeedMinor) {
+            return @{ Mode = "py"; Args = @("-3"); VersionLine = $line }
+        }
+    }
+    foreach ($name in @("python", "python3")) {
+        $cmd = Get-Command $name -ErrorAction SilentlyContinue
+        if (-not $cmd) { continue }
+        $line = Get-PythonVersionLine $name @()
+        if (Test-PythonVersionOk $line $NeedMajor $NeedMinor) {
+            return @{ Mode = "exe"; Exe = $cmd.Source; VersionLine = $line }
+        }
+    }
+    return $null
+}
+
+Write-Host "[2/7] Verificando Python e ambiente virtual (.venv)..." -ForegroundColor Yellow
+$pythonLauncher = Resolve-PythonForVenv $MinPythonMajor $MinPythonMinor
+if (-not $pythonLauncher) {
+    Write-Host "      ERRO: nenhum Python $($MinPythonMajor).$($MinPythonMinor)+ encontrado (py -3, python ou python3 no PATH)." -ForegroundColor Red
+    Write-Host "      Instale Python $($MinPythonMajor).$($MinPythonMinor)+ em https://www.python.org/downloads/ ou 'winget install Python.Python.3.12'" -ForegroundColor Yellow
     exit 1
 }
-Write-Host "[2/7] Ativando venv..." -ForegroundColor Yellow
+Write-Host "      Python OK: $($pythonLauncher.VersionLine)" -ForegroundColor Green
+
+$venvDir = Join-Path $ProjectRoot ".venv"
+$venvActivate = Join-Path $ProjectRoot ".venv\Scripts\Activate.ps1"
+$venvPython = Join-Path $ProjectRoot ".venv\Scripts\python.exe"
+$reqFile = Join-Path $ProjectRoot "requirements.txt"
+
+if (-not (Test-Path $venvActivate)) {
+    Write-Host "      .venv nao encontrado. Criando em '$venvDir'..." -ForegroundColor Yellow
+    if ($pythonLauncher.Mode -eq "py") {
+        & py @($pythonLauncher.Args) -m venv $venvDir
+    } else {
+        & $pythonLauncher.Exe -m venv $venvDir
+    }
+    if ($LASTEXITCODE -ne 0 -or -not (Test-Path $venvPython)) {
+        Write-Host "      ERRO: falha ao executar 'python -m venv .venv'." -ForegroundColor Red
+        exit 1
+    }
+    if (-not (Test-Path $reqFile)) {
+        Write-Host "      Aviso: requirements.txt nao encontrado. Pulei pip install." -ForegroundColor Yellow
+    } else {
+        Write-Host "      Instalando dependencias (requirements.txt). Pode levar alguns minutos..." -ForegroundColor Yellow
+        & $venvPython -m pip install --upgrade pip
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "      ERRO: pip upgrade falhou." -ForegroundColor Red
+            exit 1
+        }
+        & $venvPython -m pip install -r $reqFile
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "      ERRO: pip install -r requirements.txt falhou." -ForegroundColor Red
+            exit 1
+        }
+        Write-Host "      Dependencias instaladas." -ForegroundColor Green
+    }
+} else {
+    Write-Host "      .venv ja existe." -ForegroundColor Green
+}
+
+Write-Host "      Ativando venv..." -ForegroundColor Yellow
 . $venvActivate
 Write-Host "      OK." -ForegroundColor Green
 
