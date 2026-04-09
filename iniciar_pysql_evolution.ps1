@@ -314,8 +314,8 @@ if (-not $dockerOk) {
 }
 Write-Host "      Lembrete: o app Docker Desktop so lista imagens/containers que voce sobe (ex.: passo [5/8] ou manualmente)." -ForegroundColor DarkGray
 
-# 5) Opcional: stack Evolution API (API + Redis + Postgres) — so aparece no app apos "compose up"
-Write-Host "[5/8] Evolution API no Docker (compose — opcional)..." -ForegroundColor Yellow
+# 5) Opcional: stack Evolution API (API + Redis + Postgres) - so aparece no app apos compose up
+Write-Host "[5/8] Evolution API no Docker (compose - opcional)..." -ForegroundColor Yellow
 $composeUp = [Environment]::GetEnvironmentVariable("EVOLUTION_DOCKER_COMPOSE_UP", "Process")
 $evoApiDir = Join-Path $ProjectRoot "evolution_api"
 $composeFile = Join-Path $evoApiDir "docker-compose.yaml"
