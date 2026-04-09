@@ -8,8 +8,9 @@
   2. Verificar Python (3.10+), criar .venv e instalar dependências se necessário; ativar a venv
   3. Se o Docker Desktop não estiver instalado, instalar automaticamente (winget ou instalador oficial)
   4. Verificar se o Docker está ativo; se não, iniciar e aguardar normalizar
-  5. Registrar webhook na Evolution (se EVOLUTION_WEBHOOK_AUTO_REGISTER=true no .env)
-  6. Rodar scheduler_pysql_evolution.py (e servidor webhook em thread)
+  5. Opcional: subir stack Evolution API no Docker (docker compose) se EVOLUTION_DOCKER_COMPOSE_UP=true
+  6. Registrar webhook na Evolution (se EVOLUTION_WEBHOOK_AUTO_REGISTER=true no .env)
+  7. Rodar scheduler_pysql_evolution.py (e servidor webhook em thread)
 .EXAMPLE
   PS> .\iniciar_pysql_evolution.ps1
 #>
@@ -18,13 +19,36 @@ $ErrorActionPreference = "Stop"
 $ProjectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $ProjectRoot
 
+function Import-DotEnvForProcess {
+    param([string]$Path)
+    if (-not (Test-Path -LiteralPath $Path)) { return }
+    Get-Content -LiteralPath $Path -Encoding UTF8 | ForEach-Object {
+        $line = $_ -replace "`r$", ""
+        $t = $line.Trim()
+        if ($t -eq "" -or $t.StartsWith("#")) { return }
+        $ix = $t.IndexOf("=")
+        if ($ix -lt 1) { return }
+        $key = $t.Substring(0, $ix).Trim()
+        $val = $t.Substring($ix + 1).Trim()
+        if ($val.Length -ge 2) {
+            $q0 = $val[0]
+            $q1 = $val[$val.Length - 1]
+            if (($q0 -eq [char]34 -and $q1 -eq [char]34) -or ($q0 -eq [char]39 -and $q1 -eq [char]39)) {
+                $val = $val.Substring(1, $val.Length - 2)
+            }
+        }
+        [Environment]::SetEnvironmentVariable($key, $val, "Process")
+    }
+}
+Import-DotEnvForProcess (Join-Path $ProjectRoot ".env")
+
 # 0) Garantir ambiente limpo: encerrar qualquer instancia anterior do fluxo PySQL+Evolution
 $pararScript = Join-Path $ProjectRoot "parar_pysql_evolution.ps1"
 if (Test-Path $pararScript) {
     Write-Host "============================================================" -ForegroundColor Cyan
     Write-Host " Orquestrador PySQL + Evolution API" -ForegroundColor Cyan
     Write-Host "============================================================" -ForegroundColor Cyan
-    Write-Host "[0/7] Garantindo ambiente limpo (encerrando processos anteriores)..." -ForegroundColor Yellow
+    Write-Host "[0/8] Garantindo ambiente limpo (encerrando processos anteriores)..." -ForegroundColor Yellow
     & $pararScript | Out-Host
     if ($LASTEXITCODE -ne 0) {
         Write-Host "      Aviso: parar_pysql_evolution retornou $LASTEXITCODE. Continuando." -ForegroundColor Yellow
@@ -41,14 +65,14 @@ if (Test-Path $pararScript) {
 try {
     $current = Get-ExecutionPolicy -Scope CurrentUser -ErrorAction SilentlyContinue
     if ($current -eq "Restricted" -or $current -eq "Undefined") {
-        Write-Host "[1/7] Ajustando politica de execucao (RemoteSigned, CurrentUser)..." -ForegroundColor Yellow
+        Write-Host "[1/8] Ajustando politica de execucao (RemoteSigned, CurrentUser)..." -ForegroundColor Yellow
         Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
         Write-Host "      OK." -ForegroundColor Green
     } else {
-        Write-Host "[1/7] Politica de execucao ja permitida para este usuario." -ForegroundColor Green
+        Write-Host "[1/8] Politica de execucao ja permitida para este usuario." -ForegroundColor Green
     }
 } catch {
-    Write-Host "[1/7] Aviso: nao foi possivel alterar ExecutionPolicy. Continuando..." -ForegroundColor Yellow
+    Write-Host "[1/8] Aviso: nao foi possivel alterar ExecutionPolicy. Continuando..." -ForegroundColor Yellow
 }
 
 # 2) Python: versao minima, criar .venv se ausente, pip install, ativar venv
@@ -103,7 +127,7 @@ function Resolve-PythonForVenv {
     return $null
 }
 
-Write-Host "[2/7] Verificando Python e ambiente virtual (.venv)..." -ForegroundColor Yellow
+Write-Host "[2/8] Verificando Python e ambiente virtual (.venv)..." -ForegroundColor Yellow
 $pythonLauncher = Resolve-PythonForVenv $MinPythonMajor $MinPythonMinor
 if (-not $pythonLauncher) {
     Write-Host "      ERRO: nenhum Python $($MinPythonMajor).$($MinPythonMinor)+ encontrado (py -3, python ou python3 no PATH)." -ForegroundColor Red
@@ -174,9 +198,10 @@ function Test-DockerDaemonReady {
 }
 
 function Install-DockerDesktopIfNeeded {
-    Write-Host "[3/7] Verificando instalacao do Docker Desktop..." -ForegroundColor Yellow
+    Write-Host "[3/8] Verificando instalacao do Docker Desktop..." -ForegroundColor Yellow
     if (Test-DockerDaemonReady) {
         Write-Host "      Docker ja esta ativo (daemon OK)." -ForegroundColor Green
+        Write-Host "      Nota: isso so confirma o motor Docker (docker info). Nao inicia containers da Evolution aqui." -ForegroundColor DarkGray
         return $true
     }
     if (Get-DockerDesktopExePath) {
@@ -251,7 +276,7 @@ function Install-DockerDesktopIfNeeded {
 $null = Install-DockerDesktopIfNeeded
 
 # 4) Docker: verificar e, se desligado, iniciar e aguardar
-Write-Host "[4/7] Verificando Docker..." -ForegroundColor Yellow
+Write-Host "[4/8] Verificando Docker..." -ForegroundColor Yellow
 $dockerOk = $false
 try {
     $null = docker info 2>&1
@@ -262,7 +287,7 @@ if (-not $dockerOk) {
     $dockerExe = Get-DockerDesktopExePath
     if ($dockerExe) {
         Write-Host "      Docker nao estava em execucao. Iniciando Docker Desktop..." -ForegroundColor Yellow
-        Start-Process -FilePath $dockerExe -WindowStyle Hidden
+        Start-Process -FilePath $dockerExe -WindowStyle Minimized
         $maxWait = 120
         $waited = 0
         while ($waited -lt $maxWait) {
@@ -287,15 +312,54 @@ if (-not $dockerOk) {
 } else {
     Write-Host "      Docker ja esta ativo." -ForegroundColor Green
 }
+Write-Host "      Lembrete: o app Docker Desktop so lista imagens/containers que voce sobe (ex.: passo [5/8] ou manualmente)." -ForegroundColor DarkGray
 
-# 5) Registrar webhook na Evolution (se .env tiver EVOLUTION_WEBHOOK_AUTO_REGISTER=true)
-Write-Host "[5/7] Verificando/registrando webhook na Evolution API..." -ForegroundColor Yellow
+# 5) Opcional: stack Evolution API (API + Redis + Postgres) — so aparece no app apos "compose up"
+Write-Host "[5/8] Evolution API no Docker (compose — opcional)..." -ForegroundColor Yellow
+$composeUp = [Environment]::GetEnvironmentVariable("EVOLUTION_DOCKER_COMPOSE_UP", "Process")
+$evoApiDir = Join-Path $ProjectRoot "evolution_api"
+$composeFile = Join-Path $evoApiDir "docker-compose.yaml"
+$evoEnvFile = Join-Path $evoApiDir ".env"
+
+if ($composeUp -eq "true" -or $composeUp -eq "1") {
+    if (-not (Test-Path -LiteralPath $composeFile)) {
+        Write-Host "      Aviso: evolution_api\docker-compose.yaml nao encontrado." -ForegroundColor Yellow
+    } elseif (-not (Test-Path -LiteralPath $evoEnvFile)) {
+        Write-Host "      Aviso: crie evolution_api\.env (baseado em evolution_api\.env.example) para o compose." -ForegroundColor Yellow
+    } elseif (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
+        Write-Host "      Aviso: comando 'docker' indisponivel." -ForegroundColor Yellow
+    } else {
+        Push-Location $evoApiDir
+        try {
+            Write-Host "      docker compose up -d (pasta evolution_api)..." -ForegroundColor Gray
+            & docker compose up -d 2>&1 | Out-Host
+            $exitCompose = $LASTEXITCODE
+            if ($exitCompose -ne 0 -and (Get-Command docker-compose -ErrorAction SilentlyContinue)) {
+                Write-Host "      Tentando docker-compose up -d..." -ForegroundColor Gray
+                & docker-compose up -d 2>&1 | Out-Host
+                $exitCompose = $LASTEXITCODE
+            }
+            if ($exitCompose -ne 0) {
+                Write-Host "      Aviso: compose retornou $exitCompose. Confira evolution_api\.env, portas e logs." -ForegroundColor Yellow
+            } else {
+                Write-Host "      OK. Containers no Docker Desktop: evolution_api, evolution_redis, evolution_postgres (nomes do compose)." -ForegroundColor Green
+            }
+        } finally {
+            Pop-Location
+        }
+    }
+} else {
+    Write-Host "      Pulado. Para subir API+Redis+Postgres localmente: EVOLUTION_DOCKER_COMPOSE_UP=true no .env da raiz." -ForegroundColor Gray
+}
+
+# 6) Registrar webhook na Evolution (se .env tiver EVOLUTION_WEBHOOK_AUTO_REGISTER=true)
+Write-Host "[6/8] Verificando/registrando webhook na Evolution API..." -ForegroundColor Yellow
 & (Join-Path $ProjectRoot ".venv\Scripts\python.exe") (Join-Path $ProjectRoot "evolution_api\registrar_webhook.py")
 if ($LASTEXITCODE -ne 0) { Write-Host "      Aviso: registro do webhook falhou. Continuando." -ForegroundColor Yellow }
 else { Write-Host "      OK." -ForegroundColor Green }
 
-# 6) Rodar o scheduler (e webhook de comando por @ no WhatsApp, se habilitado)
-Write-Host "[6/7] Iniciando scheduler PySQL + Evolution (e webhook)..." -ForegroundColor Yellow
+# 7) Rodar o scheduler (e webhook de comando por @ no WhatsApp, se habilitado)
+Write-Host "[7/8] Iniciando scheduler PySQL + Evolution (e webhook)..." -ForegroundColor Yellow
 Write-Host "============================================================" -ForegroundColor Cyan
 & (Join-Path $ProjectRoot ".venv\Scripts\python.exe") (Join-Path $ProjectRoot "scheduler_pysql_evolution.py")
 exit $LASTEXITCODE

@@ -142,6 +142,8 @@ powershell -ExecutionPolicy Bypass -File "C:\Users\wagner.hsilva\Documents\GitHu
 powershell -ExecutionPolicy Bypass -File "C:\Users\wagner.hsilva\Documents\GitHub\WebScrepStatusQlik\parar_pysql_evolution.ps1"
 ```
 
+**Docker Desktop x containers da Evolution:** os passos do script que “verificam o Docker” apenas garantem que o **motor Docker** responde (`docker info`). **Não** aparecem imagens nem containers da Evolution no app até você subir a stack — manualmente (`cd evolution_api` e `docker compose up -d`) ou definindo **`EVOLUTION_DOCKER_COMPOSE_UP=true`** no `.env` da raiz (exige `evolution_api\.env` configurado). Se a Evolution já roda em **outro servidor**, deixe essa opção desligada e use só `EVOLUTION_BASE_URL` apontando para esse host.
+
 ### Execução Automática (Recomendada)
 ```bash
 # Execute o scheduler principal
