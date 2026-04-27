@@ -54,6 +54,19 @@ matplotlib.use('Agg')  # Configura o backend antes de importar pyplot
 def safe_str(item):
     return str(item) if item is not None else ''
 
+
+def filtrar_dados_dia_regiao(df, somente_ate_ontem=False):
+    df = df.copy()
+    if 'ANO' in df.columns:
+        df['ANO'] = df['ANO'].astype(int)
+        df = df[df['ANO'] == ano_atual]
+
+    if somente_ate_ontem and 'DATA' in df.columns:
+        dias = pd.to_numeric(df['DATA'].astype(str).str.split('/').str[0], errors='coerce')
+        df = df[dias <= ontem.day]
+
+    return df
+
 # Ordem fixa das regiões nas tabelas e gráficos: Goiânia, Interior, Entorno do DF (demais por último)
 ORDEM_REGIOES = ("GOIÂNIA", "INTERIOR", "ENTORNO DO DF")
 
@@ -581,6 +594,10 @@ kpi_end_y = pdf.get_y()
 y_after_header = max(caixa_y + caixa_h, kpi_end_y) + 8
 pdf.set_xy(pdf.l_margin, y_after_header)
 
+pdf.set_font('Arial', 'B', 14)
+pdf.set_text_color(0, 0, 0)
+pdf.cell(0, 8, 'Gráficos e tabelas - dados até hoje', ln=1, align='L')
+
 columns_regiao_observatorio_atualizada = [
     "REGIÃO",
     f"{mes_atual}/{ano_anterior} (fechado)",
@@ -718,6 +735,114 @@ if rows_regiao_observatorio:
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, texto_periodo_ate_hoje, ln=1, align='L')
 
+# Gera o gráfico comparativo de homicídios por dia por região
+pdf.garantir_espaco_ou_nova_pagina(80)
+columns_dia_regioes, rows_dia_regioes = resultados["Homicídios Comparativo por Dia por Regiões"]
+
+# Título do grafico
+pdf.set_font('Arial', 'B', 12)
+pdf.set_text_color(0, 0, 0)
+titulo_mes_regiao = f'Homicídios por dia por Região no mês de referência (até hoje): {mes_atual}/{ano_atual}'
+pdf.cell(0, 10, titulo_mes_regiao, ln=1, align='L')
+
+# Cria o DataFrame
+df_comparativo_dia = pd.DataFrame(rows_dia_regioes, columns=columns_dia_regioes)
+df_comparativo_dia = filtrar_dados_dia_regiao(df_comparativo_dia, somente_ate_ontem=False)
+
+if not df_comparativo_dia.empty:
+    df_comparativo_dia['HOMICIDIOS'] = df_comparativo_dia['HOMICIDIOS'].astype(int)
+    if 'ANO' in df_comparativo_dia.columns:
+        df_comparativo_dia['ANO'] = df_comparativo_dia['ANO'].astype(int)
+        df_comparativo_dia = df_comparativo_dia[df_comparativo_dia['ANO'] == ano_atual]
+
+    # Pivot por DATA e REGIAO_OBSERVATORIO
+    df_pivot = df_comparativo_dia.pivot_table(
+        index='DATA',
+        columns='REGIAO_OBSERVATORIO',
+        values='HOMICIDIOS',
+        aggfunc='sum'
+    ).fillna(0)
+    df_pivot = df_pivot.reindex(sorted(df_pivot.index, key=lambda x: int(x.split('/')[0])))
+    df_pivot = df_pivot[ordenar_colunas_regiao(df_pivot.columns)]
+
+    plt.figure(figsize=(10, 1.0))
+    regioes = list(df_pivot.columns)
+    bar_width = 0.25
+    x = range(len(df_pivot.index))
+
+    for i, regiao in enumerate(regioes):
+        bars = plt.bar(
+            [xi + i * bar_width for xi in x],
+            df_pivot[regiao],
+            width=bar_width,
+            label=regiao,
+            color=cor_regiao_observatorio(regiao),
+        )
+        for bar in bars:
+            height = bar.get_height()
+            if height > 0:
+                plt.text(
+                    bar.get_x() + bar.get_width() / 2,
+                    height + 0.1,
+                    f'{int(height)}',
+                    ha='center',
+                    va='bottom',
+                    fontsize=8
+                )
+
+    plt.legend(title='REGIÃO', bbox_to_anchor=(1.00, 1), loc='upper left', fontsize=8, title_fontsize=9)
+    plt.ylabel('Homicídios')
+    plt.yticks([])
+    plt.xlabel('')
+
+    plt.xticks([xi + bar_width * (len(regioes)/2 - 0.5) for xi in x], list(df_pivot.index), rotation=45)
+
+    # Salva o gráfico com tratamento de erro
+    try:
+        plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_dia_regiao_ate_hoje.png'), dpi=150, bbox_inches='tight')
+    except Exception as e:
+        print(f"Erro ao salvar gráfico: {e}")
+        try:
+            plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_dia_regiao_ate_hoje.png'), format='png', dpi=100)
+        except Exception as e2:
+            print(f"Erro ao salvar com configurações básicas: {e2}")
+            plt.figure(figsize=(10, 3.0))
+            plt.text(0.5, 0.5, 'Gráfico não disponível', ha='center', va='center', transform=plt.gca().transAxes)
+            plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_dia_regiao_ate_hoje.png'), format='png', dpi=100)
+    plt.close()
+
+# Adiciona o gráfico ao PDF apenas se foi gerado (dados não vazios); evita FPDF "Not a PNG file" com arquivo antigo/corrompido
+grafico_dia_regiao_path = os.path.join(relatorio_dir, 'grafico_homicidios_dia_regiao_ate_hoje.png')
+if not df_comparativo_dia.empty and os.path.exists(grafico_dia_regiao_path):
+    try:
+        pdf.image(grafico_dia_regiao_path, x=5, w=200)
+    except Exception as e:
+        print(f"Erro ao inserir gráfico dia região: {e}")
+        pdf.set_font('Arial', 'I', 10)
+        pdf.cell(0, 8, f'Gráfico não disponível para {texto_periodo_mes_referencia}', ln=1, align='C')
+else:
+    if df_comparativo_dia.empty:
+        try:
+            fig, ax = plt.subplots(figsize=(4, 0.8))
+            ax.axis('off')
+            ax.text(0.5, 0.5, 'Não há valores registrados', ha='center', va='center', fontsize=11, color='#666666')
+            plt.savefig(grafico_dia_regiao_path, dpi=150, bbox_inches='tight', facecolor='white')
+            plt.close()
+        except Exception as e:
+            print(f"Erro ao gerar placeholder gráfico dia região: {e}")
+        if os.path.exists(grafico_dia_regiao_path):
+            try:
+                pdf.image(grafico_dia_regiao_path, x=5, w=200)
+            except Exception:
+                pdf.set_font('Arial', 'I', 10)
+                pdf.cell(0, 8, f'Não há valores registrados em {texto_periodo_mes_referencia}', ln=1, align='C')
+        else:
+            pdf.set_font('Arial', 'I', 10)
+            pdf.cell(0, 8, f'Não há valores registrados em {texto_periodo_mes_referencia}', ln=1, align='C')
+    else:
+        pdf.set_font('Arial', 'I', 10)
+        pdf.cell(0, 8, f'Gráfico não disponível para {texto_periodo_mes_referencia}', ln=1, align='C')
+
 # ------------------------------------------------- TABELA DE HOMICÍDIOS POR MUNICÍPIO DIÁRIO-------------------------------------------------
 # Gera a tabela de homicídios por município
 
@@ -766,7 +891,140 @@ pdf.cell(0, 4, 'F - FEMININO | M - MASCULINO | NI - NÃO INFORMADO', ln=1, align
 pdf.set_text_color(0, 0, 0)
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, texto_periodo_ate_hoje, ln=1, align='L')
-# ------------------------------------------------- GRAFICO DE HOMICÍDIOS ÚLTIMOS 2 ANOS -------------------------------------------------
+
+
+# ------------------------------------------------- GRAFICO COMPARATIVO POR DIA -------------------------------------------------
+# Gera o gráfico comparativo de homicídios por dia
+columns_dia, rows_dia = resultados["Homicídios Comparativo por Dia"]
+
+pdf.garantir_espaco_ou_nova_pagina(70)
+# Título do grafico (tratado como entidade junto com o gráfico abaixo)
+pdf.set_font('Arial', 'B', 12)
+pdf.set_text_color(0, 0, 0)  # Preto
+titulo_mes_atual = f'Homicídios - Comparativos por dia no mês/ano de referência (até hoje): {mes_atual}/{ano_atual}'
+pdf.cell(0, 10, titulo_mes_atual, ln=1, align='L')
+
+# Cria o DataFrame
+df_dia = pd.DataFrame(rows_dia, columns=columns_dia)
+df_pivot = None
+df_pivot_tabela = None
+
+df_dia = df_dia.copy()
+
+# Ajusta tipos e nomes
+if not df_dia.empty:
+    df_dia['ANO'] = df_dia['ANO'].astype(int)
+    df_dia['HOMICIDIOS'] = df_dia['HOMICIDIOS'].astype(int)
+
+    # Pivot para barras agrupadas do gráfico com todos os anos retornados (incluindo 2025 e 2026)
+    df_pivot = df_dia.pivot_table(
+        index='DATA',
+        columns='ANO',
+        values='HOMICIDIOS',
+        aggfunc='sum'
+    ).fillna(0)
+
+    # Pivot para a tabela com todos os anos
+    df_pivot_tabela = df_dia.pivot_table(
+        index='DATA',
+        columns='ANO',
+        values='HOMICIDIOS',
+        aggfunc='sum'
+    ).fillna(0)
+    df_pivot = df_pivot.reindex(sorted(df_pivot.index, key=lambda x: int(x.split('/')[0])))
+
+    plt.figure(figsize=(10, 2.0))
+    anos = sorted(df_pivot.columns)
+    bar_width = 0.4
+    x = range(len(df_pivot.index))
+    #cores = ['#3b3b98', '#218c5a']  # Azul e verde
+
+    for i, ano in enumerate(anos):
+        bars = plt.bar([xi + i*bar_width for xi in x], df_pivot[ano], width=bar_width, label=str(ano))
+        #bars = plt.bar([xi + i*bar_width for xi in x], df_pivot[ano], width=bar_width, label=str(ano), color=cores[i % len(cores)])
+        # Adiciona o valor acima de cada barra
+        for bar in bars:
+            height = bar.get_height()
+            if height > 0:
+                plt.text(
+                    bar.get_x() + bar.get_width() / 2,
+                    height + 0.1,
+                    f'{int(height)}',
+                    ha='center',
+                    va='bottom',
+                    fontsize=8
+                )
+    plt.legend(title='ANO', bbox_to_anchor=(1.00, 1), loc='upper left', fontsize=8, title_fontsize=9)
+    plt.ylabel('Homicídios')
+    plt.yticks([])
+    plt.xticks([xi + bar_width/2 for xi in x], list(df_pivot.index), rotation=45)
+    
+    # Salva o gráfico com tratamento de erro
+    try:
+        plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_dia.png'), dpi=150, bbox_inches='tight')
+    except Exception as e:
+        print(f"Erro ao salvar gráfico: {e}")
+        try:
+            plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_dia.png'), format='png', dpi=100)
+        except Exception as e2:
+            print(f"Erro ao salvar com configurações básicas: {e2}")
+            plt.figure(figsize=(10, 3.0))
+            plt.text(0.5, 0.5, 'Gráfico não disponível', ha='center', va='center', transform=plt.gca().transAxes)
+            plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_dia.png'), format='png', dpi=100)
+    plt.close()
+
+# Adiciona o DataFrame ao PDF 
+# Verifica se o arquivo existe antes de adicionar ao PDF
+grafico_dia_path = os.path.join(relatorio_dir, 'grafico_homicidios_dia.png')
+if os.path.exists(grafico_dia_path):
+    pdf.image(grafico_dia_path, x=5, w=200)
+else:
+    pdf.set_font('Arial', 'I', 10)
+    pdf.cell(0, 8, f'Gráfico não disponível para {texto_periodo_mes_referencia}', ln=1, align='C')
+pdf.set_font('Arial', 'I', 9)
+pdf.cell(0, 8, texto_periodo_mes_ate_hoje, ln=1, align='L')
+
+# ------------------------------------------------- TABELA COMPARATIVO POR DIA -------------------------------------------------
+
+
+# Título da tabela
+pdf.set_font('Arial', 'B', 12)
+pdf.set_text_color(0, 0, 0)  # Preto
+titulo_por_dia = f'Homicídios por dia e ano no mês de referência (até hoje) :'
+pdf.cell(0, 10, titulo_por_dia, ln=1, align='L')
+
+if df_pivot_tabela is not None and not df_pivot_tabela.empty:
+    # Transpõe para: colunas = dias, linhas = anos
+    df_tab = df_pivot_tabela.T
+
+    # Largura total disponível (ajuste conforme sua margem)
+    largura_total = 190
+    num_colunas = len(df_tab.columns)
+    col_width_ano = 12
+    col_width = (largura_total - col_width_ano) / num_colunas if num_colunas > 0 else largura_total
+
+    # Cabeçalho
+    dias = list(df_tab.columns)
+    pdf.set_font('Arial', 'B', 7)
+    pdf.set_fill_color(230, 230, 230)
+    pdf.set_draw_color(0, 0, 0)
+    pdf.set_text_color(0, 0, 0)
+    pdf.cell(col_width_ano, 6, 'Ano', 1, 0, 'C', fill=True)
+    for dia in dias:
+        pdf.cell(col_width, 6, str(dia), 1, 0, 'C', fill=True)
+    pdf.ln()
+
+    # Linhas de dados (anos)
+    pdf.set_font('Arial', '', 7)
+    for ano, row in df_tab.iterrows():
+        pdf.cell(col_width_ano, 6, str(ano), 1, 0, 'C')
+        for valor in row:
+            pdf.cell(col_width, 6, str(int(valor)), 1, 0, 'C')
+        pdf.ln()
+else:
+    pdf.set_font('Arial', 'I', 10)
+    pdf.cell(0, 8, f'Sem dados para montar a tabela comparativa por dia em {texto_periodo_mes_referencia}.', ln=1, align='L')
+
 # Gera o gráfico de linhas comparando homicídios mês a mês dos dois últimos anos
 colunas_homicidio_2anos, linhas_homicidio_2anos = resultados["Homicídios Comparativo por 2 Anos"]
 
@@ -925,131 +1183,11 @@ for idx, linha in enumerate(linhas_homicidio_todos_anos):
     pdf.ln()
 
 pdf.set_font('Arial', 'I', 9)
-pdf.cell(0, 8, texto_periodo_ate_hoje, ln=1, align='L')
+pdf.cell(0, 8, texto_periodo_mes_ate_hoje, ln=1, align='L')
 
-# ------------------------------------------------- GRAFICO COMPARATIVO POR DIA -------------------------------------------------
-# Gera o gráfico comparativo de homicídios por dia
-columns_dia, rows_dia = resultados["Homicídios Comparativo por Dia"]
-
-pdf.garantir_espaco_ou_nova_pagina(70)
-# Título do grafico (tratado como entidade junto com o gráfico abaixo)
-pdf.set_font('Arial', 'B', 12)
-pdf.set_text_color(0, 0, 0)  # Preto
-titulo_mes_atual = f'Homicídios - Comparativo por dia no mês de referência (até ontem): {mes_ontem}/{ano_ontem}'
-pdf.cell(0, 10, titulo_mes_atual, ln=1, align='L')
-
-# Cria o DataFrame
-df_dia = pd.DataFrame(rows_dia, columns=columns_dia)
-df_pivot = None
-
-# Ajusta tipos e nomes
-if not df_dia.empty:
-    df_dia['ANO'] = df_dia['ANO'].astype(int)
-    df_dia['HOMICIDIOS'] = df_dia['HOMICIDIOS'].astype(int)
-
-    # Pivot para barras agrupadas
-    df_pivot = df_dia.pivot_table(
-        index='DATA',
-        columns='ANO',
-        values='HOMICIDIOS',
-        aggfunc='sum'
-    ).fillna(0)
-    df_pivot = df_pivot.reindex(sorted(df_pivot.index, key=lambda x: int(x.split('/')[0])))
-
-    plt.figure(figsize=(10, 2.0))
-    anos = sorted(df_pivot.columns)
-    bar_width = 0.4
-    x = range(len(df_pivot.index))
-    #cores = ['#3b3b98', '#218c5a']  # Azul e verde
-
-    for i, ano in enumerate(anos):
-        bars = plt.bar([xi + i*bar_width for xi in x], df_pivot[ano], width=bar_width, label=str(ano))
-        #bars = plt.bar([xi + i*bar_width for xi in x], df_pivot[ano], width=bar_width, label=str(ano), color=cores[i % len(cores)])
-        # Adiciona o valor acima de cada barra
-        for bar in bars:
-            height = bar.get_height()
-            if height > 0:
-                plt.text(
-                    bar.get_x() + bar.get_width() / 2,
-                    height + 0.1,
-                    f'{int(height)}',
-                    ha='center',
-                    va='bottom',
-                    fontsize=8
-                )
-    plt.legend(title='ANO', bbox_to_anchor=(1.00, 1), loc='upper left', fontsize=8, title_fontsize=9)
-    plt.ylabel('Homicídios')
-    plt.yticks([])
-    plt.xticks([xi + bar_width/2 for xi in x], list(df_pivot.index), rotation=45)
-    
-    # Salva o gráfico com tratamento de erro
-    try:
-        plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_dia.png'), dpi=150, bbox_inches='tight')
-    except Exception as e:
-        print(f"Erro ao salvar gráfico: {e}")
-        try:
-            plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_dia.png'), format='png', dpi=100)
-        except Exception as e2:
-            print(f"Erro ao salvar com configurações básicas: {e2}")
-            plt.figure(figsize=(10, 3.0))
-            plt.text(0.5, 0.5, 'Gráfico não disponível', ha='center', va='center', transform=plt.gca().transAxes)
-            plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_dia.png'), format='png', dpi=100)
-    plt.close()
-
-# Adiciona o DataFrame ao PDF 
-# Verifica se o arquivo existe antes de adicionar ao PDF
-grafico_dia_path = os.path.join(relatorio_dir, 'grafico_homicidios_dia.png')
-if os.path.exists(grafico_dia_path):
-    pdf.image(grafico_dia_path, x=5, w=200)
-else:
-    pdf.set_font('Arial', 'I', 10)
-    pdf.cell(0, 8, f'Gráfico não disponível para {texto_periodo_mes_referencia}', ln=1, align='C')
-pdf.set_font('Arial', 'I', 9)
-pdf.cell(0, 8, texto_periodo_mes_ate_ontem, ln=1, align='L')
-
-# ------------------------------------------------- TABELA COMPARATIVO POR DIA -------------------------------------------------
-
-
-# Título da tabela
-pdf.set_font('Arial', 'B', 12)
-pdf.set_text_color(0, 0, 0)  # Preto
-titulo_por_dia = f'Homicídios comparativo por dia no mês de referência (até ontem) :'
-pdf.cell(0, 10, titulo_por_dia, ln=1, align='L')
-
-if df_pivot is not None and not df_pivot.empty:
-    # Transpõe para: colunas = dias, linhas = anos
-    df_tab = df_pivot.T
-
-    # Largura total disponível (ajuste conforme sua margem)
-    largura_total = 190
-    num_colunas = len(df_tab.columns)
-    col_width_ano = 12
-    col_width = (largura_total - col_width_ano) / num_colunas if num_colunas > 0 else largura_total
-
-    # Cabeçalho
-    dias = list(df_tab.columns)
-    pdf.set_font('Arial', 'B', 7)
-    pdf.set_fill_color(230, 230, 230)
-    pdf.set_draw_color(0, 0, 0)
-    pdf.set_text_color(0, 0, 0)
-    pdf.cell(col_width_ano, 6, 'Ano', 1, 0, 'C', fill=True)
-    for dia in dias:
-        pdf.cell(col_width, 6, str(dia), 1, 0, 'C', fill=True)
-    pdf.ln()
-
-    # Linhas de dados (anos)
-    pdf.set_font('Arial', '', 7)
-    for ano, row in df_tab.iterrows():
-        pdf.cell(col_width_ano, 6, str(ano), 1, 0, 'C')
-        for valor in row:
-            pdf.cell(col_width, 6, str(int(valor)), 1, 0, 'C')
-        pdf.ln()
-else:
-    pdf.set_font('Arial', 'I', 10)
-    pdf.cell(0, 8, f'Sem dados para montar a tabela comparativa por dia em {texto_periodo_mes_referencia}.', ln=1, align='L')
-
-pdf.set_font('Arial', 'I', 9)
-pdf.cell(0, 8, texto_periodo_mes_ate_ontem, ln=1, align='L')
+pdf.set_font('Arial', 'B', 14)
+pdf.set_text_color(0, 0, 0)
+pdf.cell(0, 8, 'Gráficos e tabelas - dados até ontem', ln=1, align='L')
 
 # ------------------------------------------------- TABELA DE REGIAO - COMPARATIVO MENSAL E ACUMULADO (DIA ANTERIOR) -------------------------------------------------
 # Na virada do mês (ex: 1º mar), dados são do mês de ontem (fev); rótulos usam mes_ontem para bater com a SQL
@@ -1190,26 +1328,28 @@ if rows_regiao_observatorio:
     pdf.ln()
     pdf.set_font('Arial', '', 7)  # Volta para fonte normal
 
-# Legenda período dia anterior (sem hora)
+# Legenda período dia atual (sem hora)
 pdf.set_font('Arial', 'I', 9)
-pdf.cell(0, 8, texto_periodo_ate_ontem, ln=1, align='L')
+pdf.cell(0, 8, texto_periodo_mes_ate_hoje, ln=1, align='L')
 
 pdf.garantir_espaco_ou_nova_pagina(80)
-# ------------------------------------------------- GRAFICO COMPARATIVO POR DIA POR REGIÃO -------------------------------------------------
-# Gera o gráfico comparativo de homicídios por dia por região
 columns_dia_regioes, rows_dia_regioes = resultados["Homicídios Comparativo por Dia por Regiões"]
 
-# Título do grafico
+# Título do gráfico
 pdf.set_font('Arial', 'B', 12)
 pdf.set_text_color(0, 0, 0)
-titulo_mes_regiao = f'Homicídios por dia por Região no mês de referência (até ontem): {mes_ontem}/{ano_ontem}'
+titulo_mes_regiao = f'Homicídios por dia por Região no mês de referência (até ontem): {mes_atual}/{ano_atual}'
 pdf.cell(0, 10, titulo_mes_regiao, ln=1, align='L')
 
 # Cria o DataFrame
 df_comparativo_dia = pd.DataFrame(rows_dia_regioes, columns=columns_dia_regioes)
+df_comparativo_dia = filtrar_dados_dia_regiao(df_comparativo_dia, somente_ate_ontem=True)
 
 if not df_comparativo_dia.empty:
     df_comparativo_dia['HOMICIDIOS'] = df_comparativo_dia['HOMICIDIOS'].astype(int)
+    if 'ANO' in df_comparativo_dia.columns:
+        df_comparativo_dia['ANO'] = df_comparativo_dia['ANO'].astype(int)
+        df_comparativo_dia = df_comparativo_dia[df_comparativo_dia['ANO'] == ano_atual]
 
     # Pivot por DATA e REGIAO_OBSERVATORIO
     df_pivot = df_comparativo_dia.pivot_table(
@@ -1250,28 +1390,27 @@ if not df_comparativo_dia.empty:
     plt.ylabel('Homicídios')
     plt.yticks([])
     plt.xlabel('')
-    
     plt.xticks([xi + bar_width * (len(regioes)/2 - 0.5) for xi in x], list(df_pivot.index), rotation=45)
 
     # Salva o gráfico com tratamento de erro
     try:
-        plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_dia_regiao.png'), dpi=150, bbox_inches='tight')
+        plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_dia_regiao_ate_ontem.png'), dpi=150, bbox_inches='tight')
     except Exception as e:
         print(f"Erro ao salvar gráfico: {e}")
         try:
-            plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_dia_regiao.png'), format='png', dpi=100)
+            plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_dia_regiao_ate_ontem.png'), format='png', dpi=100)
         except Exception as e2:
             print(f"Erro ao salvar com configurações básicas: {e2}")
             plt.figure(figsize=(10, 3.0))
             plt.text(0.5, 0.5, 'Gráfico não disponível', ha='center', va='center', transform=plt.gca().transAxes)
-            plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_dia_regiao.png'), format='png', dpi=100)
+            plt.savefig(os.path.join(relatorio_dir, 'grafico_homicidios_dia_regiao_ate_ontem.png'), format='png', dpi=100)
     plt.close()
 
 # Adiciona o gráfico ao PDF apenas se foi gerado (dados não vazios); evita FPDF "Not a PNG file" com arquivo antigo/corrompido
-grafico_dia_regiao_path = os.path.join(relatorio_dir, 'grafico_homicidios_dia_regiao.png')
-if not df_comparativo_dia.empty and os.path.exists(grafico_dia_regiao_path):
+grafico_dia_regiao_ate_ontem_path = os.path.join(relatorio_dir, 'grafico_homicidios_dia_regiao_ate_ontem.png')
+if not df_comparativo_dia.empty and os.path.exists(grafico_dia_regiao_ate_ontem_path):
     try:
-        pdf.image(grafico_dia_regiao_path, x=5, w=200)
+        pdf.image(grafico_dia_regiao_ate_ontem_path, x=5, w=200)
     except Exception as e:
         print(f"Erro ao inserir gráfico dia região: {e}")
         pdf.set_font('Arial', 'I', 10)
@@ -1282,13 +1421,13 @@ else:
             fig, ax = plt.subplots(figsize=(4, 0.8))
             ax.axis('off')
             ax.text(0.5, 0.5, 'Não há valores registrados', ha='center', va='center', fontsize=11, color='#666666')
-            plt.savefig(grafico_dia_regiao_path, dpi=150, bbox_inches='tight', facecolor='white')
+            plt.savefig(grafico_dia_regiao_ate_ontem_path, dpi=150, bbox_inches='tight', facecolor='white')
             plt.close()
         except Exception as e:
             print(f"Erro ao gerar placeholder gráfico dia região: {e}")
-        if os.path.exists(grafico_dia_regiao_path):
+        if os.path.exists(grafico_dia_regiao_ate_ontem_path):
             try:
-                pdf.image(grafico_dia_regiao_path, x=65, w=80)
+                pdf.image(grafico_dia_regiao_ate_ontem_path, x=5, w=200)
             except Exception:
                 pdf.set_font('Arial', 'I', 10)
                 pdf.cell(0, 8, f'Não há valores registrados em {texto_periodo_mes_referencia}', ln=1, align='C')
@@ -1298,6 +1437,7 @@ else:
     else:
         pdf.set_font('Arial', 'I', 10)
         pdf.cell(0, 8, f'Gráfico não disponível para {texto_periodo_mes_referencia}', ln=1, align='C')
+
 pdf.set_font('Arial', 'I', 9)
 pdf.cell(0, 8, texto_periodo_mes_ate_ontem, ln=1, align='L')
 

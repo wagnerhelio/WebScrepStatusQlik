@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(python -m py_compile \"c:\\\\Users\\\\Emanuel\\\\Documents\\\\GitHub\\\\WebScrepStatusQlik\\\\pysql\\\\pysql_homicidios.py\")",
+      "PowerShell(python -m py_compile \"c:\\\\Users\\\\Emanuel\\\\Documents\\\\GitHub\\\\WebScrepStatusQlik\\\\pysql\\\\pysql_feminicidio.py\")",
+      "PowerShell(if \\($?\\) { \"homicidios OK\" } else { \"homicidios FAIL\" })",
+      "PowerShell(if \\($?\\) { \"feminicidio OK\" } else { \"feminicidio FAIL\" })"
+    ]
+  }
+}
